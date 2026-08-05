@@ -1,4 +1,0 @@
-https://onlyny.com/collections/shop-all
-
-coba lihat layout shopnya dan implementasikan dan sesuaikan dengan style di project ini
-perhatikan sekalian responsive display nya ya 
