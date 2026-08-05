@@ -240,8 +240,10 @@ export default function Home() {
 
       <section className={styles.about} id="about">
         <div className={`${styles.aboutHeader} reveal`}>
-          <h2 className={styles.aboutTitle}>ABOUT</h2>
-          <h2 className={styles.aboutTitle}>OFFSTAGE</h2>
+          <h2 className={styles.aboutTitle}>
+            <span>ABOUT</span>
+            <span>OFFSTAGE</span>
+          </h2>
         </div>
 
         <div className={`${styles.aboutGrid} reveal`}>

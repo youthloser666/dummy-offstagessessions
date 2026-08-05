@@ -52,7 +52,7 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
                         TikTok
                     </a>
                 </div>
-                <div className="footer-copy">© 2025 Offstage Sessions</div>
+                <div className="footer-copy">© 2026 Offstage Sessions</div>
             </div>
 
             <div className="footer-big-text">{footerBigText}</div>

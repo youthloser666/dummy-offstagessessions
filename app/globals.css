@@ -438,6 +438,8 @@ footer {
   background: var(--bg);
   padding: 100px 5% 60px;
   border-top: 1px solid var(--muted);
+  overflow: hidden;
+  position: relative;
 }
 
 .footer-top {
@@ -565,11 +567,16 @@ footer {
 
 .footer-big-text {
   font-family: 'Moderniz', sans-serif;
-  font-size: clamp(3rem, 10vw, 10rem);
+  font-size: clamp(2rem, 7.5vw, 8.5rem);
   opacity: 0.04;
   line-height: 1;
   margin-top: 60px;
   text-transform: uppercase;
+  max-width: 100%;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  letter-spacing: -0.02em;
 }
 
 /* ============================================
@@ -660,7 +667,7 @@ footer {
   }
 
   .footer-big-text {
-    font-size: clamp(2.5rem, 14vw, 7rem);
+    font-size: clamp(1.8rem, 8.5vw, 5.5rem);
   }
 }
 
@@ -710,6 +717,10 @@ footer {
 
   .footer-copy {
     width: 100%;
+  }
+
+  .footer-big-text {
+    font-size: clamp(1.4rem, 7.5vw, 3.8rem);
   }
 
   .marquee-item {

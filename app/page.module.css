@@ -576,9 +576,6 @@
 }
 
 .aboutHeader {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
     margin-bottom: 40px;
 }
 
@@ -586,10 +583,13 @@
     font-family: 'Moderniz', sans-serif;
     font-size: clamp(3rem, 7vw, 6.2rem);
     font-weight: 900;
-    line-height: 0.95;
+    line-height: 1;
     text-transform: uppercase;
     color: var(--white);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .aboutGrid {
@@ -611,6 +611,7 @@
     line-height: 1.85;
     color: rgba(255, 255, 255, 0.85);
     letter-spacing: 0.01em;
+    text-align: justify;
 }
 
 .aboutStats {
@@ -766,7 +767,6 @@
         font-size: 1.4rem;
     }
 
-    .aboutHeader,
     .aboutGrid {
         grid-template-columns: 1fr;
         gap: 24px;
