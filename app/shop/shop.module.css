@@ -1,0 +1,501 @@
+/* ============================================
+   SHOP PAGE — OnlyNY-Inspired Layout
+   Offstage Dark Theme Adaptation
+   ============================================ */
+
+/* ---- Category Cards Section ---- */
+.categorySection {
+    padding: 108px 5% 0;
+}
+
+.categoryScroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+}
+
+.categoryScroll::-webkit-scrollbar {
+    display: none;
+}
+
+.categoryCard {
+    flex: 0 0 calc(25% - 12px);
+    min-width: 200px;
+    aspect-ratio: 16/9;
+    position: relative;
+    overflow: hidden;
+    border-radius: 3px;
+    cursor: pointer;
+    scroll-snap-align: start;
+    border: 1px solid var(--muted);
+    background: none;
+    padding: 0;
+    transition: border-color 0.3s;
+}
+
+.categoryCard:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.categoryCardActive {
+    border-color: var(--acid);
+}
+
+.categoryImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.5);
+    transition: filter 0.5s, transform 0.5s;
+}
+
+.categoryCard:hover .categoryImg {
+    filter: grayscale(0.5) brightness(0.6);
+    transform: scale(1.05);
+}
+
+.categoryCardActive .categoryImg {
+    filter: grayscale(0.3) brightness(0.55);
+}
+
+.categoryOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.1) 100%);
+    pointer-events: none;
+}
+
+.categoryName {
+    position: absolute;
+    bottom: 16px;
+    left: 20px;
+    font-family: 'Anton', sans-serif;
+    font-size: 1.2rem;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    z-index: 1;
+}
+
+.categoryCardActive .categoryName {
+    color: var(--acid);
+}
+
+/* ---- Shop Header & Toolbar ---- */
+.shopHeader {
+    padding: 50px 5% 0;
+}
+
+.collectionTitle {
+    font-family: 'Anton', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+}
+
+.shopToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--muted);
+}
+
+.filterBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--white);
+    padding: 8px 18px;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+
+.filterBtn:hover {
+    border-color: var(--white);
+}
+
+.filterBtnActive {
+    border-color: var(--acid);
+    color: var(--acid);
+    background: rgba(0, 255, 0, 0.04);
+}
+
+.toolbarRight {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.productCount {
+    font-size: 0.68rem;
+    opacity: 0.35;
+    letter-spacing: 0.08em;
+    font-family: 'Space Mono', monospace;
+}
+
+.sortSelect {
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--white);
+    padding: 8px 16px;
+    font-size: 0.68rem;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    outline: none;
+    border-radius: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23555' stroke-width='1.2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.sortSelect option {
+    background: var(--gray);
+}
+
+/* ---- Product Grid ---- */
+.shopSection {
+    padding: 32px 5% 100px;
+}
+
+.productsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* ---- Product Card ---- */
+.productCard {
+    cursor: pointer;
+    position: relative;
+}
+
+.productImg {
+    aspect-ratio: 1/1;
+    background: var(--gray-mid);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--muted);
+}
+
+.productImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.8);
+    transition: filter 0.4s ease, transform 0.5s ease;
+}
+
+.productCard:hover .productImage {
+    filter: grayscale(0);
+    transform: scale(1.04);
+}
+
+/* Product Badge */
+.productBadge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    background: var(--acid);
+    color: #000;
+}
+
+.badgeSoldOut {
+    background: var(--muted);
+    color: var(--dim);
+}
+
+.badgeLimited {
+    background: var(--white);
+    color: #000;
+}
+
+/* Quick Add Overlay */
+.quickAdd {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.productCard:hover .quickAdd {
+    transform: translateY(0);
+}
+
+.quickAddInner {
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 14px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.quickAddLabel {
+    display: block;
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 8px;
+    font-family: 'Space Mono', monospace;
+}
+
+.sizeButtons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.sizeBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    padding: 6px 12px;
+    font-size: 0.65rem;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+    letter-spacing: 0.06em;
+}
+
+.sizeBtn:hover {
+    background: var(--white);
+    color: #000;
+    border-color: var(--white);
+}
+
+/* Product Info (below image) */
+.productInfo {
+    text-align: center;
+    padding: 14px 4px 0;
+}
+
+.productSize {
+    font-size: 0.62rem;
+    opacity: 0.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-family: 'Space Mono', monospace;
+}
+
+.productName {
+    font-family: 'Anton', sans-serif;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.productPrice {
+    font-size: 0.8rem;
+    color: var(--white);
+    opacity: 0.65;
+    font-family: 'Space Mono', monospace;
+}
+
+.soldOutText {
+    color: var(--dim);
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* ---- Pagination ---- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid var(--muted);
+}
+
+.pageBtn {
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--white);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.pageBtn:hover:not(:disabled) {
+    border-color: var(--white);
+}
+
+.pageBtn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.pageBtnActive {
+    background: var(--acid);
+    color: #000;
+    border-color: var(--acid);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+/* ---- Large Tablet / Small Desktop ---- */
+@media (max-width: 1100px) {
+    .productsGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .categoryCard {
+        flex: 0 0 calc(33.333% - 11px);
+    }
+}
+
+/* ---- Tablet ---- */
+@media (max-width: 900px) {
+    .productsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .categoryCard {
+        flex: 0 0 calc(50% - 8px);
+        min-width: 180px;
+    }
+
+    .shopHeader {
+        padding: 36px 5% 0;
+    }
+
+    .collectionTitle {
+        font-size: 1.6rem;
+        margin-bottom: 18px;
+    }
+
+    .shopSection {
+        padding: 24px 5% 80px;
+    }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 600px) {
+    .categorySection {
+        padding: 88px 5% 0;
+    }
+
+    .categoryScroll {
+        gap: 10px;
+    }
+
+    .categoryCard {
+        flex: 0 0 calc(50% - 5px);
+        min-width: 150px;
+        aspect-ratio: 3/2;
+    }
+
+    .categoryName {
+        font-size: 0.95rem;
+        bottom: 12px;
+        left: 14px;
+    }
+
+    .productsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .shopHeader {
+        padding: 28px 5% 0;
+    }
+
+    .shopToolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .toolbarRight {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .collectionTitle {
+        font-size: 1.4rem;
+        margin-bottom: 14px;
+    }
+
+    .productName {
+        font-size: 0.8rem;
+    }
+
+    .productPrice {
+        font-size: 0.72rem;
+    }
+
+    .productInfo {
+        padding: 10px 2px 0;
+    }
+
+    /* Hide quick-add on mobile (touch) */
+    .quickAdd {
+        display: none;
+    }
+
+    .shopSection {
+        padding: 20px 5% 60px;
+    }
+
+    .pagination {
+        margin-top: 40px;
+        padding-top: 30px;
+    }
+
+    .pageBtn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.7rem;
+    }
+
+    .filterBtn {
+        font-size: 0.62rem;
+        padding: 7px 14px;
+    }
+
+    .sortSelect {
+        font-size: 0.62rem;
+    }
+}

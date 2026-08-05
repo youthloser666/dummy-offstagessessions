@@ -1,0 +1,295 @@
+.filterBar {
+    padding: 40px 5% 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--white);
+    padding: 8px 20px;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+
+.filterBtn:hover {
+    border-color: var(--white);
+    color: var(--white);
+}
+
+.filterBtnActive {
+    border-color: var(--acid);
+    color: var(--acid);
+    background: rgba(200, 255, 0, 0.05);
+}
+
+.showsSection {
+    padding: 60px 5% 120px;
+}
+
+.monthGroup {
+    margin-bottom: 80px;
+}
+
+.monthLabel {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--muted);
+}
+
+.eventItem {
+    display: grid;
+    grid-template-columns: 100px 60px 1fr 200px 140px;
+    align-items: center;
+    gap: 30px;
+    padding: 28px 0;
+    border-bottom: 1px solid rgba(46, 46, 46, 0.6);
+    transition: background 0.3s, padding-left 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--white);
+}
+
+.eventItem:hover {
+    background: rgba(255, 255, 255, 0.02);
+    padding-left: 10px;
+}
+
+.eventDate {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    opacity: 0.35;
+    text-transform: uppercase;
+    line-height: 1.6;
+}
+
+.eventNum {
+    font-family: 'Anton';
+    font-size: 2rem;
+    opacity: 0.06;
+    transition: opacity 0.3s, color 0.3s;
+}
+
+.eventItem:hover .eventNum {
+    opacity: 0.2;
+    color: var(--acid);
+}
+
+.eventName {
+    font-family: 'Anton';
+    font-size: clamp(1.1rem, 2vw, 1.8rem);
+}
+
+.eventVenue {
+    font-size: 0.72rem;
+    opacity: 0.4;
+    margin-top: 6px;
+}
+
+.eventTime {
+    font-size: 0.7rem;
+    opacity: 0.3;
+    letter-spacing: 0.08em;
+}
+
+.eventTags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 2px;
+}
+
+.tagHouse {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tagTechno {
+    border: 1px solid rgba(200, 255, 0, 0.25);
+    color: var(--acid);
+}
+
+.tagBass {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.tagFree {
+    border: 1px solid rgba(200, 255, 0, 0.4);
+    color: var(--acid);
+    background: rgba(200, 255, 0, 0.06);
+}
+
+/* Featured */
+.eventFeatured {
+    background: var(--gray);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 320px;
+    border: 1px solid var(--muted);
+}
+
+.eventFeaturedImg {
+    position: relative;
+    overflow: hidden;
+}
+
+.eventFeaturedImg img {
+    filter: grayscale(1) brightness(0.6);
+    transition: scale 0.6s;
+}
+
+.eventFeatured:hover .eventFeaturedImg img {
+    scale: 1.04;
+}
+
+.eventFeaturedContent {
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.featuredBadge {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--acid);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.featuredBadge::before {
+    content: '';
+    width: 20px;
+    height: 1px;
+    background: var(--acid);
+}
+
+.featuredTitle {
+    font-family: 'Anton';
+    font-size: clamp(2rem, 4vw, 4rem);
+    line-height: 0.9;
+    margin-bottom: 16px;
+}
+
+.featuredMeta {
+    font-size: 0.75rem;
+    opacity: 0.4;
+    line-height: 2;
+}
+
+.featuredCta {
+    display: inline-block;
+    margin-top: 30px;
+    background: var(--white);
+    color: #000;
+    padding: 12px 28px;
+    font-family: 'Anton';
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: background 0.3s, color 0.3s;
+}
+
+.featuredCta:hover {
+    background: var(--acid);
+    color: #000;
+}
+
+/* ---- Shows Responsive ---- */
+@media (max-width: 900px) {
+    .eventItem {
+        grid-template-columns: 80px 1fr;
+        gap: 16px;
+    }
+
+    .eventTime,
+    .eventNum,
+    .eventTags {
+        display: none;
+    }
+
+    .eventFeatured {
+        grid-template-columns: 1fr;
+    }
+
+    .eventFeaturedImg {
+        height: 220px;
+    }
+
+    .eventFeaturedImg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .eventFeaturedContent {
+        padding: 30px 24px;
+    }
+
+    .showsSection {
+        padding: 40px 5% 80px;
+    }
+
+    .filterBar {
+        padding: 28px 5% 0;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .eventItem {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 18px 0;
+    }
+
+    .eventName {
+        font-size: 1.1rem;
+    }
+
+    .eventVenue {
+        font-size: 0.65rem;
+    }
+
+    .eventDate {
+        font-size: 0.65rem;
+    }
+
+    .monthGroup {
+        margin-bottom: 50px;
+    }
+
+    .featuredTitle {
+        font-size: 2rem;
+    }
+
+    .eventFeaturedImg {
+        height: 180px;
+    }
+}
