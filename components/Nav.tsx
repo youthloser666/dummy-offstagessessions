@@ -77,8 +77,8 @@ export default function Nav() {
                         <Image
                             src="/image/offstages.gif"
                             alt="Offstage Sessions"
-                            width={200}
-                            height={112}
+                            width={320}
+                            height={180}
                             priority
                             unoptimized
                         />
@@ -105,7 +105,7 @@ export default function Nav() {
                     <button
                         className={`nav-hamburger${isOpen ? ' open' : ''}`}
                         onClick={toggleMenu}
-                        aria-label="Menu"
+                        aria-label="Toggle Navigation Menu"
                     >
                         <span />
                         <span />

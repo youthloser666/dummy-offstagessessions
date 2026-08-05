@@ -3,6 +3,7 @@ import './globals.css';
 import Cursor from '@/components/Cursor';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
+import ClientShell from '@/components/ClientShell';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -18,10 +19,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <Cursor />
-        <Nav />
-        {children}
-        <Footer footerBigText="Offstage Sessions" />
+        <ClientShell>
+          <Cursor />
+          <Nav />
+          {children}
+          <Footer footerBigText="Offstage Sessions" />
+        </ClientShell>
       </body>
     </html>
   );

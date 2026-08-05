@@ -8,7 +8,7 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
     return (
         <footer id="contact">
             <div className="footer-top">
-                <div className="footer-headline anton reveal">
+                <div className="footer-headline reveal">
                     Stay
                     <br />
                     <span>Up To</span>

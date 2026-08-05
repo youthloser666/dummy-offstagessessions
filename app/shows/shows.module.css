@@ -1,5 +1,5 @@
 .filterBar {
-    padding: 40px 5% 0;
+    padding: 108px 5% 0;
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -257,7 +257,7 @@
     }
 
     .filterBar {
-        padding: 28px 5% 0;
+        padding: 88px 5% 0;
         gap: 8px;
     }
 }

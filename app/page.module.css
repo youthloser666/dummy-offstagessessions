@@ -136,7 +136,7 @@
     flex-direction: column;
     justify-content: space-between;
     background: var(--bg);
-    padding: 120px 0 0;
+    padding: 140px 0 0;
     overflow: hidden;
 }
 
@@ -152,11 +152,11 @@
     font-family: 'Moderniz', sans-serif;
     font-style: normal;
     font-weight: 900;
-    font-size: clamp(3rem, 9vw, 8.5rem);
-    line-height: 0.95;
+    font-size: clamp(3.8rem, 9.5vw, 9.5rem);
+    line-height: 0.92;
     color: var(--white);
     text-transform: uppercase;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
 }
 
 .statementHeading em {
@@ -169,13 +169,14 @@
     justify-content: flex-end;
     align-items: flex-end;
     padding: 0 5% 40px;
+    margin-top: 30px;
 }
 
 .statementTag {
     font-family: 'Moderniz', sans-serif;
     font-weight: 900;
-    font-size: clamp(2rem, 5vw, 5rem);
-    line-height: 0.95;
+    font-size: clamp(2.2rem, 5.5vw, 5.5rem);
+    line-height: 0.92;
     color: var(--white);
     text-transform: uppercase;
     text-align: right;
@@ -701,22 +702,19 @@
     }
 
     .statementHeading {
-        font-size: clamp(2rem, 7vw, 5rem);
+        font-size: clamp(2.8rem, 8.5vw, 6.5rem);
+        line-height: 0.92;
     }
 
     .statementTag {
-        font-size: clamp(1.4rem, 4vw, 3.5rem);
+        font-size: clamp(1.8rem, 5vw, 4rem);
+        line-height: 0.92;
     }
 
     .showsTitleCard {
         margin-right: 20px;
     }
 
-    .showCard {
-        width: 300px;
-        height: 440px;
-        padding: 24px;
-    }
 }
 
 @media (max-width: 600px) {
@@ -735,16 +733,24 @@
     }
 
     .statement {
-        padding: 60px 0 0;
-        min-height: auto;
+        padding: 80px 0 0;
+        min-height: 80vh;
     }
 
     .statementHeading {
-        font-size: clamp(1.4rem, 7.5vw, 2.4rem);
+        font-size: clamp(2rem, 9vw, 3.4rem);
+        line-height: 0.92;
+        letter-spacing: -0.02em;
+    }
+
+    .statementBottom {
+        padding: 0 5% 24px;
+        margin-top: 20px;
     }
 
     .statementTag {
-        font-size: clamp(1.1rem, 5vw, 1.8rem);
+        font-size: clamp(1.4rem, 6.5vw, 2.4rem);
+        line-height: 0.92;
     }
 
     .genresGrid {
@@ -771,11 +777,6 @@
         gap: 20px;
     }
 
-    .showCard {
-        width: 280px;
-        height: 400px;
-        padding: 20px;
-    }
 
     .moreInfoBtn {
         margin-bottom: 12px;

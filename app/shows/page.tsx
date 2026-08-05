@@ -32,14 +32,6 @@ export default function ShowsPage() {
 
     return (
         <main>
-            <div className="page-hero">
-                <div className="page-hero-label">Events & Tickets</div>
-                <h1 className="page-hero-title reveal">
-                    UP<br />COMING<br /><em>Shows</em>
-                </h1>
-                <div className="page-hero-bg-text">Shows</div>
-            </div>
-
             <div className={`${styles.filterBar} reveal`}>
                 {FILTERS.map((filter) => (
                     <button

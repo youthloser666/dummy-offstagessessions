@@ -114,6 +114,11 @@
         padding: 100px 5% 20px;
     }
 
+    .mediaTitle,
+    .archivesTitle {
+        font-size: clamp(1.6rem, 5vw, 3.5rem);
+    }
+
     .galleryBand {
         height: clamp(120px, 22vw, 180px);
     }
@@ -126,12 +131,16 @@
 
 @media (max-width: 600px) {
     .mediaHeader {
-        padding: 90px 5% 16px;
+        padding: 96px 5% 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
     }
 
     .mediaTitle,
     .archivesTitle {
-        font-size: clamp(1.8rem, 8vw, 3rem);
+        font-size: clamp(1.1rem, 5.2vw, 2rem);
+        letter-spacing: -0.02em;
     }
 
     .galleryBand {
@@ -139,13 +148,14 @@
     }
 
     .galleryName {
-        font-size: clamp(1.4rem, 6vw, 2.2rem);
-        bottom: 10px;
-        left: 14px;
+        font-size: clamp(1.2rem, 5.2vw, 2rem);
+        bottom: 12px;
+        left: 16px;
+        max-width: 90%;
     }
 
     .galleryList {
-        gap: 3px;
-        padding: 0 4%;
+        gap: 4px;
+        padding: 0 5%;
     }
 }
