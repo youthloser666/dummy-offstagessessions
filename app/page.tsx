@@ -151,16 +151,9 @@ export default function Home() {
       <section className={styles.instagramSection}>
         <div className={styles.instagramHeader}>
           <h2 className={styles.instagramTitle}>
-            FOLLOW US ON <span>INSTAGRAM</span>
+            <span>FOLLOW US ON</span>
+            <span className={styles.instagramOutline}>INSTAGRAM</span>
           </h2>
-          <a
-            href="https://instagram.com/offstagesession"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.instagramLink}
-          >
-            @OFFSTAGESESSION
-          </a>
         </div>
 
         <div className={styles.instagramMarquee}>
