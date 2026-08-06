@@ -10,92 +10,75 @@ const PRODUCTS_PER_PAGE = 8;
 
 export default function ShopPage() {
     useReveal();
-    const [activeCategory, setActiveCategory] = useState('All');
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
     const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
 
-    const filteredProducts = useMemo(() => {
-        let filtered = products.filter((p) => {
-            if (activeCategory === 'All') return true;
-            return p.category === activeCategory;
-        });
+    const sortedProducts = useMemo(() => {
+        let sorted = [...products];
 
         switch (sortBy) {
             case 'price-low':
-                filtered = [...filtered].sort((a, b) => a.price - b.price);
+                sorted.sort((a, b) => a.price - b.price);
                 break;
             case 'price-high':
-                filtered = [...filtered].sort((a, b) => b.price - a.price);
+                sorted.sort((a, b) => b.price - a.price);
                 break;
             default:
                 break;
         }
 
-        return filtered;
-    }, [activeCategory, sortBy]);
+        return sorted;
+    }, [sortBy]);
 
-    const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-    const paginatedProducts = filteredProducts.slice(
+    const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
+    const paginatedProducts = sortedProducts.slice(
         (currentPage - 1) * PRODUCTS_PER_PAGE,
         currentPage * PRODUCTS_PER_PAGE
     );
 
-    const handleCategoryClick = (categoryId: string) => {
-        setActiveCategory(categoryId);
-        setCurrentPage(1);
-    };
-
     return (
         <main>
-            {/* Category Cards — Horizontal Scroll */}
-            <div className={`${styles.categorySection} reveal`}>
-                <div className={styles.categoryScroll}>
-                    {shopCategories.map((cat) => (
-                        <button
-                            key={cat.id}
-                            className={`${styles.categoryCard} ${activeCategory === cat.id ? styles.categoryCardActive : ''}`}
-                            onClick={() => handleCategoryClick(cat.id)}
-                        >
+            {/* Running Merchandise Marquee Banner */}
+            <div className={`${styles.shopMarqueeSection} reveal`}>
+                <div className={styles.shopMarqueeTrack}>
+                    {[...products, ...products].map((item, idx) => (
+                        <div key={`${item.id}-${idx}`} className={styles.shopMarqueeCard}>
                             <Image
-                                src={cat.image}
-                                alt={cat.name}
+                                src={item.image}
+                                alt={item.name}
                                 width={400}
                                 height={260}
-                                className={styles.categoryImg}
+                                className={styles.shopMarqueeImg}
                             />
-                            <div className={styles.categoryOverlay} />
-                            <span className={styles.categoryName}>{cat.name}</span>
-                        </button>
+                            <div className={styles.shopMarqueeOverlay} />
+                            <div className={styles.shopMarqueeInfo}>
+                                <span className={styles.shopMarqueeCategory}>{item.category}</span>
+                                <h3 className={styles.shopMarqueeTitle}>{item.name}</h3>
+                                <span className={styles.shopMarqueePrice}>${item.price}</span>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
 
-            {/* Collection Title + Filter/Sort Bar */}
+            {/* Collection Title + Sort Toolbar */}
             <div className={styles.shopHeader}>
                 <h2 className={`${styles.collectionTitle} reveal`}>
-                    {activeCategory === 'All' ? 'Shop All' : activeCategory}
+                    Shop All
                 </h2>
                 <div className={`${styles.shopToolbar} reveal`}>
-                    <button
-                        className={`${styles.filterBtn} ${activeCategory !== 'All' ? styles.filterBtnActive : ''}`}
-                        onClick={() => handleCategoryClick('All')}
-                    >
-                        {activeCategory === 'All' ? 'Filter' : `✕ ${activeCategory}`}
-                        {activeCategory === 'All' && (
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1 3H11M3 6H9M5 9H7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-                            </svg>
-                        )}
-                    </button>
                     <div className={styles.toolbarRight}>
                         <span className={styles.productCount}>
-                            {filteredProducts.length} item{filteredProducts.length !== 1 ? 's' : ''}
+                            {sortedProducts.length} item{sortedProducts.length !== 1 ? 's' : ''}
                         </span>
                         <select
                             className={styles.sortSelect}
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            onChange={(e) => {
+                                setSortBy(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         >
                             <option value="newest">Sort by: Newest</option>
                             <option value="price-low">Price: Low — High</option>

@@ -24,7 +24,8 @@
     font-family: 'Moderniz', sans-serif;
     font-size: clamp(2.5rem, 6vw, 5rem);
     font-weight: 700;
-    color: var(--white);
+    color: transparent;
+    -webkit-text-stroke: 2px var(--acid);
     text-transform: uppercase;
     letter-spacing: 0.02em;
     line-height: 0.9;
@@ -79,13 +80,16 @@
     left: 24px;
     z-index: 2;
     font-family: 'Moderniz', sans-serif;
-    font-size: clamp(2rem, 5vw, 4.5rem);
+    font-size: clamp(1.4rem, 3.2vw, 2.8rem);
     font-weight: 900;
     color: #fff;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    line-height: 1;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    max-width: 85%;
+    overflow-wrap: break-word;
+    word-break: normal;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -124,8 +128,10 @@
     }
 
     .galleryName {
+        font-size: clamp(1.2rem, 3vw, 2.2rem);
         bottom: 14px;
         left: 20px;
+        max-width: 88%;
     }
 }
 
@@ -148,10 +154,11 @@
     }
 
     .galleryName {
-        font-size: clamp(1.2rem, 5.2vw, 2rem);
+        font-size: clamp(1rem, 4vw, 1.5rem);
         bottom: 12px;
         left: 16px;
         max-width: 90%;
+        line-height: 1.15;
     }
 
     .galleryList {

@@ -1,70 +1,53 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import InteractiveLogo from '@/components/InteractiveLogo';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useReveal } from '@/hooks/useReveal';
-import { shows, upcomingShows } from '@/lib/data';
+import { upcomingShows } from '@/lib/data';
 import styles from './page.module.css';
+
+const instagramPosts = [
+  {
+    id: 1,
+    image: '/image/tobehonest.png',
+    caption: 'TO BE HONEST — Sound Garden',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 2,
+    image: '/image/nightswim.png',
+    caption: 'NIGHT SWIM — 3 Year Anniversary',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 3,
+    image: '/image/growgarden.png',
+    caption: 'GROW GARDEN — Open Air',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 4,
+    image: '/image/latecheckout.png',
+    caption: 'LATE CHECKOUT — Waterfront',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 5,
+    image: '/image/jackie.png',
+    caption: 'JACKIE HOLLANDER — Soundstage',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 6,
+    image: '/image/shipwreck.png',
+    caption: 'SHIP WREK — Power Plant',
+    url: 'https://instagram.com/offstagesession',
+  },
+];
 
 export default function Home() {
   useReveal();
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-
-    const ctx = gsap.context(() => {
-      // Upcoming Shows horizontal scroll trigger
-      const showsWrapper = document.getElementById('shows-hscroll');
-      if (showsWrapper) {
-        const getScrollAmount = () => Math.max(0, showsWrapper.scrollWidth - window.innerWidth);
-        gsap.to(showsWrapper, {
-          x: () => -getScrollAmount(),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#shows-container',
-            start: 'top top',
-            end: () => '+=' + getScrollAmount(),
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-
-      // Explore Venues horizontal scroll trigger
-      const venuesWrapper = document.getElementById('hscroll');
-      if (venuesWrapper) {
-        const getScrollAmount = () => Math.max(0, venuesWrapper.scrollWidth - window.innerWidth);
-        gsap.to(venuesWrapper, {
-          x: () => -getScrollAmount(),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '#venues-container',
-            start: 'top top',
-            end: () => '+=' + getScrollAmount(),
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-      }
-    });
-
-    const timer = setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 200);
-
-    return () => {
-      clearTimeout(timer);
-      ctx.revert();
-    };
-  }, []);
-
-  const previewShows = shows.slice(0, 3); // Map first 3 items
 
   return (
     <main>
@@ -132,30 +115,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Upcoming Shows Scroll Container */}
-      <div className={`${styles.hScrollContainer} ${styles.hScrollContainerShows}`} id="shows-container">
-        <div className={styles.hScrollWrapper} id="shows-hscroll">
-          <span className={styles.hSectionLabel}></span>
+      {/* Upcoming Shows — Instagram Grid */}
+      <section className={styles.showsSection}>
+        <div className={styles.showsHeader}>
+          <h2 className={styles.upcomingTitle}>
+            <span className={styles.titleSolid}>UPCOMING</span>
+            <span className={styles.titleOutline}>SHOWS</span>
+          </h2>
+          <Link href="/shows" className={styles.showsViewAll}>VIEW ALL SHOWS</Link>
+        </div>
 
-          <div className={styles.showsTitleCard}>
-            <h2 className={styles.upcomingTitle}>
-              <span className={styles.titleSolid}>UPCOMING</span>
-              <span className={styles.titleOutline}>SHOWS</span>
-            </h2>
-          </div>
-
+        <div className={styles.showsGrid}>
           {upcomingShows.map((show) => (
-            <Link key={show.id} href={`/shows#show-${show.id}`} className={styles.showCard}>
+            <Link key={show.id} href={`/shows#show-${show.id}`} className={styles.showsGridCard}>
               <Image
                 src={show.poster}
                 alt={show.name}
                 width={600}
-                height={800}
-                className={styles.showPosterImg}
-                style={{ objectFit: 'cover' }}
+                height={600}
+                className={styles.showsGridCardImg}
               />
-              <div className={styles.showCardInner}>
-                <span className={styles.moreInfoBtn}>MORE INFORMATIONS</span>
+              <div className={styles.showsGridCardOverlay} />
+              <div className={styles.showsGridCardInfo}>
                 <div className={styles.showDate}>{show.dateCode}</div>
                 <h3 className={styles.showName}>{show.name}</h3>
                 {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
@@ -164,85 +145,56 @@ export default function Home() {
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Explore Venues Scroll Container */}
-      <div className={`${styles.hScrollContainer} ${styles.hScrollContainerVenues}`} id="venues-container">
-        <div className={styles.hScrollWrapper} id="hscroll">
-          <span className={styles.hSectionLabel}>Explore Venues</span>
-          <div className={styles.card}>
-            <Image
-              src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600"
-              alt="Warehouse"
-              width={600}
-              height={800}
-              style={{ objectFit: 'cover' }}
-            />
-            <div className={styles.cardInner}>
-              <h3>Warehouses</h3>
-              <div className={styles.cardSub}>Industrial underground</div>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <Image
-              src="https://images.unsplash.com/photo-1574391884720-bbc3740c59d1?w=600"
-              alt="Bar"
-              width={600}
-              height={800}
-              style={{ objectFit: 'cover' }}
-            />
-            <div className={styles.cardInner}>
-              <h3>Bars & Clubs</h3>
-              <div className={styles.cardSub}>Intimate floor</div>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <Image
-              src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600"
-              alt="Outdoor"
-              width={600}
-              height={800}
-              style={{ objectFit: 'cover' }}
-            />
-            <div className={styles.cardInner}>
-              <h3>Outdoor</h3>
-              <div className={styles.cardSub}>Open air sessions</div>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <Image
-              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600"
-              alt="Festival"
-              width={600}
-              height={800}
-              style={{ objectFit: 'cover' }}
-            />
-            <div className={styles.cardInner}>
-              <h3>Festivals</h3>
-              <div className={styles.cardSub}>Large scale energy</div>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <Image
-              src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=600"
-              alt="Pop-up"
-              width={600}
-              height={800}
-              style={{ objectFit: 'cover' }}
-            />
-            <div className={styles.cardInner}>
-              <h3>Pop-Ups</h3>
-              <div className={styles.cardSub}>Unexpected spaces</div>
-            </div>
-          </div>
+      {/* Instagram Feed */}
+      <section className={styles.instagramSection}>
+        <div className={styles.instagramHeader}>
+          <h2 className={styles.instagramTitle}>
+            FOLLOW US ON <span>INSTAGRAM</span>
+          </h2>
+          <a
+            href="https://instagram.com/offstagesession"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.instagramLink}
+          >
+            @OFFSTAGESESSION
+          </a>
         </div>
-      </div>
+
+        <div className={styles.instagramMarquee}>
+          {/* Double the posts for seamless loop */}
+          {[...instagramPosts, ...instagramPosts].map((post, i) => (
+            <a
+              key={`${post.id}-${i}`}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagramPost}
+            >
+              <Image
+                src={post.image}
+                alt={post.caption}
+                width={300}
+                height={300}
+                className={styles.instagramPostImg}
+              />
+              <div className={styles.instagramPostOverlay}>
+                <span className={styles.instagramPostIcon}>
+                  ↗ {post.caption}
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <section className={styles.about} id="about">
         <div className={`${styles.aboutHeader} reveal`}>
           <h2 className={styles.aboutTitle}>
             <span>ABOUT</span>
-            <span>OFFSTAGE</span>
+            <span className={styles.aboutTitleOutline}>OFFSTAGE</span>
           </h2>
         </div>
 
@@ -261,31 +213,31 @@ export default function Home() {
               As the crowds grew, so did the vision. Offstage began bringing in nationally and globally recognized artists while staying rooted in the local scene that made it possible. Each event is built with intention, from the sound and production to the energy in the room, blending house, techno, bass, and everything in between. The goal has always been to create moments that feel personal, inclusive, and electric, whether it is an intimate dance floor or a packed room moving as one.
             </p>
 
-            <div className={styles.aboutStats}>
-              <div>
-                <div className={styles.statNum}>50+</div>
-                <div className={styles.statLabel}>Events curated</div>
-              </div>
-              <div>
-                <div className={styles.statNum}>2</div>
-                <div className={styles.statLabel}>Cities, one scene</div>
-              </div>
-              <div>
-                <div className={styles.statNum}>EST 2023</div>
-                <div className={styles.statLabel}>Founded</div>
-              </div>
-            </div>
           </div>
         </div>
 
         <div className={`${styles.aboutImageBanner} reveal`}>
-          <Image
-            src="/crowd.jpeg"
-            alt="Crowd"
-            width={1200}
-            height={500}
-            className={styles.bannerImg}
-          />
+          {[
+            '/image/1.webp',
+            '/image/2.webp',
+            '/image/3.webp',
+            '/image/4.webp',
+            '/image/5.webp',
+            '/image/6_web.webp',
+            '/image/7_web.webp',
+            '/image/8_web.webp',
+            '/image/9_web.webp',
+            '/image/10_web.webp',
+          ].map((src, i) => (
+            <Image
+              key={src}
+              src={src}
+              alt={`Offstage moment ${i + 1}`}
+              width={1200}
+              height={500}
+              className={`${styles.bannerImg} ${styles[`bannerSlide${i}`]}`}
+            />
+          ))}
           <div className={styles.aboutBadge}>BORN IN BALTIMORE · EST 2023</div>
         </div>
       </section>

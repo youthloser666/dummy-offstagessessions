@@ -453,7 +453,7 @@ footer {
 
 .footer-headline {
   font-family: 'Moderniz', sans-serif;
-  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-size: clamp(3.5rem, 7vw, 7rem);
   line-height: 0.9;
   text-transform: uppercase;
 }
@@ -473,9 +473,9 @@ footer {
 }
 
 .footer-desc {
-  font-size: 0.8rem;
+  font-size: 1.05rem;
   line-height: 1.9;
-  opacity: 0.35;
+  opacity: 0.7;
   margin-bottom: 40px;
 }
 
@@ -519,7 +519,7 @@ footer {
 
 .form-note {
   font-size: 0.65rem;
-  opacity: 0.2;
+  opacity: 0.4;
   margin-top: 14px;
 }
 
@@ -536,7 +536,7 @@ footer {
   font-family: 'Anton';
   font-size: 0.9rem;
   letter-spacing: 0.2em;
-  opacity: 0.1;
+  opacity: 0.4;
 }
 
 .footer-socials {
@@ -550,7 +550,7 @@ footer {
   font-size: 0.65rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  opacity: 0.3;
+  opacity: 0.6;
   transition: opacity 0.3s, color 0.3s;
 }
 
@@ -561,14 +561,14 @@ footer {
 
 .footer-copy {
   font-size: 0.65rem;
-  opacity: 0.18;
+  opacity: 0.5;
   letter-spacing: 0.08em;
 }
 
 .footer-big-text {
   font-family: 'Moderniz', sans-serif;
   font-size: clamp(2rem, 7.5vw, 8.5rem);
-  opacity: 0.04;
+  opacity: 0.08;
   line-height: 1;
   margin-top: 60px;
   text-transform: uppercase;

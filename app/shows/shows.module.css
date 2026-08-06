@@ -41,255 +41,301 @@
 .monthLabel {
     font-size: 0.65rem;
     letter-spacing: 0.3em;
-    color: var(--dim);
+    color: var(--acid);
     text-transform: uppercase;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--muted);
+    font-family: 'Moderniz', sans-serif;
+    font-weight: 700;
 }
 
-.eventItem {
+.showsGrid {
     display: grid;
-    grid-template-columns: 100px 60px 1fr 200px 140px;
-    align-items: center;
-    gap: 30px;
-    padding: 28px 0;
-    border-bottom: 1px solid rgba(46, 46, 46, 0.6);
-    transition: background 0.3s, padding-left 0.3s;
-    cursor: pointer;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.showsGridCard {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 2px;
+    border: 1px solid var(--muted);
     text-decoration: none;
-    color: var(--white);
+    display: block;
+    transition: border-color 0.4s ease, transform 0.35s ease;
 }
 
-.eventItem:hover {
-    background: rgba(255, 255, 255, 0.02);
-    padding-left: 10px;
+.showsGridCard:hover {
+    border-color: var(--acid);
+    transform: translateY(-4px);
 }
 
-.eventDate {
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    opacity: 0.35;
-    text-transform: uppercase;
-    line-height: 1.6;
+.showsGridCardImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.3) brightness(0.55);
+    transition: filter 0.6s ease, transform 0.6s ease;
 }
 
-.eventNum {
-    font-family: 'Anton';
-    font-size: 2rem;
-    opacity: 0.06;
-    transition: opacity 0.3s, color 0.3s;
+.showsGridCard:hover .showsGridCardImg {
+    filter: grayscale(0) brightness(0.75);
+    transform: scale(1.06);
 }
 
-.eventItem:hover .eventNum {
-    opacity: 0.2;
-    color: var(--acid);
+.showsGridCardOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.2) 75%, transparent 100%);
+    z-index: 1;
 }
 
-.eventName {
-    font-family: 'Anton';
-    font-size: clamp(1.1rem, 2vw, 1.8rem);
-}
-
-.eventVenue {
-    font-size: 0.72rem;
-    opacity: 0.4;
-    margin-top: 6px;
-}
-
-.eventTime {
-    font-size: 0.7rem;
-    opacity: 0.3;
-    letter-spacing: 0.08em;
-}
-
-.eventTags {
+.showsGridCardInfo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    z-index: 2;
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 3px;
+}
+
+.showDate {
+    color: var(--acid);
+    font-family: 'Moderniz', sans-serif;
+    font-size: clamp(1.4rem, 2.5vw, 2.4rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.showName {
+    color: var(--white);
+    font-family: 'Moderniz', sans-serif;
+    font-size: clamp(1rem, 1.6vw, 1.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+}
+
+.showSub {
+    color: var(--white);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(0.55rem, 0.85vw, 0.68rem);
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+    opacity: 0.85;
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.showVenue {
+    color: var(--white);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(0.55rem, 0.85vw, 0.68rem);
+    font-weight: 700;
+    line-height: 1.25;
+    text-transform: uppercase;
+    opacity: 0.65;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.tagsRow {
+    display: flex;
+    gap: 4px;
     flex-wrap: wrap;
+    margin-bottom: 10px;
 }
 
 .tag {
     display: inline-block;
-    padding: 3px 10px;
-    font-size: 0.58rem;
-    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    font-size: 0.52rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     border-radius: 2px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .tagHouse {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .tagTechno {
-    border: 1px solid rgba(200, 255, 0, 0.25);
+    border: 1px solid rgba(0, 255, 0, 0.4);
     color: var(--acid);
 }
 
 .tagBass {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .tagFree {
-    border: 1px solid rgba(200, 255, 0, 0.4);
+    border: 1px solid rgba(0, 255, 0, 0.5);
     color: var(--acid);
-    background: rgba(200, 255, 0, 0.06);
+    background: rgba(0, 255, 0, 0.08);
 }
 
-/* Featured */
-.eventFeatured {
-    background: var(--gray);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    min-height: 320px;
-    border: 1px solid var(--muted);
-}
-
-.eventFeaturedImg {
-    position: relative;
-    overflow: hidden;
-}
-
-.eventFeaturedImg img {
-    filter: grayscale(1) brightness(0.6);
-    transition: scale 0.6s;
-}
-
-.eventFeatured:hover .eventFeaturedImg img {
-    scale: 1.04;
-}
-
-.eventFeaturedContent {
-    padding: 50px 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.featuredBadge {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    color: var(--acid);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    display: flex;
+.ticketBtn {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-}
-
-.featuredBadge::before {
-    content: '';
-    width: 20px;
-    height: 1px;
-    background: var(--acid);
-}
-
-.featuredTitle {
-    font-family: 'Anton';
-    font-size: clamp(2rem, 4vw, 4rem);
-    line-height: 0.9;
-    margin-bottom: 16px;
-}
-
-.featuredMeta {
-    font-size: 0.75rem;
-    opacity: 0.4;
-    line-height: 2;
-}
-
-.featuredCta {
-    display: inline-block;
-    margin-top: 30px;
-    background: var(--white);
-    color: #000;
-    padding: 12px 28px;
-    font-family: 'Anton';
-    font-size: 1rem;
-    letter-spacing: 0.05em;
+    justify-content: center;
+    gap: 4px;
+    border: 1.5px solid var(--acid);
+    color: var(--acid);
+    background: transparent;
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: Arial, Helvetica, sans-serif;
     text-decoration: none;
     transition: background 0.3s, color 0.3s;
+    white-space: nowrap;
+    width: fit-content;
 }
 
-.featuredCta:hover {
+.showsGridCard:hover .ticketBtn {
     background: var(--acid);
-    color: #000;
+    color: var(--bg);
 }
 
-/* ---- Shows Responsive ---- */
-@media (max-width: 900px) {
-    .eventItem {
-        grid-template-columns: 80px 1fr;
-        gap: 16px;
-    }
-
-    .eventTime,
-    .eventNum,
-    .eventTags {
-        display: none;
-    }
-
-    .eventFeatured {
-        grid-template-columns: 1fr;
-    }
-
-    .eventFeaturedImg {
-        height: 220px;
-    }
-
-    .eventFeaturedImg img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .eventFeaturedContent {
-        padding: 30px 24px;
+/* ---- Responsive ---- */
+@media (max-width: 960px) {
+    .filterBar {
+        padding: 88px 5% 0;
+        gap: 8px;
     }
 
     .showsSection {
         padding: 40px 5% 80px;
     }
 
-    .filterBar {
-        padding: 88px 5% 0;
-        gap: 8px;
+    .showsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .showsGridCardInfo {
+        padding: 16px;
+        gap: 2px;
+    }
+
+    .showDate {
+        font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+        margin-bottom: 2px;
+    }
+
+    .showName {
+        font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+        margin-bottom: 2px;
+    }
+
+    .showSub,
+    .showVenue {
+        font-size: 0.6rem;
+        line-height: 1.2;
+    }
+
+    .tagsRow {
+        margin-bottom: 8px;
+        gap: 4px;
+    }
+
+    .tag {
+        font-size: 0.5rem;
+        padding: 2px 5px;
+    }
+
+    .ticketBtn {
+        padding: 4px 12px;
+        font-size: 0.55rem;
     }
 }
 
 @media (max-width: 600px) {
-    .eventItem {
-        grid-template-columns: 1fr;
-        gap: 8px;
-        padding: 18px 0;
+    .filterBar {
+        padding: 78px 5% 0;
+        gap: 6px;
     }
 
-    .eventName {
-        font-size: 1.1rem;
-    }
-
-    .eventVenue {
-        font-size: 0.65rem;
-    }
-
-    .eventDate {
-        font-size: 0.65rem;
+    .filterBtn {
+        padding: 6px 14px;
+        font-size: 0.6rem;
     }
 
     .monthGroup {
         margin-bottom: 50px;
     }
 
-    .featuredTitle {
-        font-size: 2rem;
+    .showsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
 
-    .eventFeaturedImg {
-        height: 180px;
+    .showsGridCardInfo {
+        padding: 12px;
+        gap: 1px;
+    }
+
+    .showDate {
+        font-size: clamp(1.05rem, 3.8vw, 1.4rem);
+        margin-bottom: 1px;
+    }
+
+    .showName {
+        font-size: clamp(0.8rem, 3vw, 1rem);
+        margin-bottom: 1px;
+        line-height: 1.05;
+    }
+
+    .showSub,
+    .showVenue {
+        font-size: 0.52rem;
+        margin-bottom: 1px;
+        line-height: 1.15;
+    }
+
+    .tagsRow {
+        margin-bottom: 6px;
+        gap: 3px;
+    }
+
+    .tag {
+        font-size: 0.48rem;
+        padding: 1.5px 5px;
+        letter-spacing: 0.02em;
+    }
+
+    .ticketBtn {
+        padding: 3.5px 10px;
+        font-size: 0.52rem;
+        letter-spacing: 0.04em;
     }
 }

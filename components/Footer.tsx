@@ -16,10 +16,9 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
                     Date
                 </div>
                 <div className="reveal">
-                    <div className="footer-right-label">Newsletter</div>
                     <p className="footer-desc">
-                        Get the latest Baltimore and DMV electronic dance music events
-                        delivered straight to your inbox. No spam — just shows.
+                        Be the first to know about upcoming events, exclusive drops, and
+                        everything happening in the Baltimore and DMV dance music scene.
                     </p>
                     <NewsletterForm />
                 </div>
