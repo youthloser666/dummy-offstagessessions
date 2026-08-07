@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-export function useReveal() {
+export function useReveal(dependencies: any[] = []) {
     useEffect(() => {
         const revealEls = document.querySelectorAll('.reveal');
         if (!revealEls.length) return;
@@ -32,5 +32,5 @@ export function useReveal() {
             revealEls.forEach((el) => observer.unobserve(el));
             observer.disconnect();
         };
-    }, []);
+    }, dependencies);
 }

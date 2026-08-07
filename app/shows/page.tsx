@@ -10,8 +10,8 @@ import styles from './shows.module.css';
 const FILTERS = ['All', 'House', 'Techno', 'Bass', 'Free Events'];
 
 export default function ShowsPage() {
-    useReveal();
     const [activeFilter, setActiveFilter] = useState('All');
+    useReveal([activeFilter]);
 
     // Filter shows based on activeFilter
     const filteredShows = shows.filter((show) => {

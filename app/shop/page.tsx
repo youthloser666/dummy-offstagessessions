@@ -9,11 +9,12 @@ import styles from './shop.module.css';
 const PRODUCTS_PER_PAGE = 8;
 
 export default function ShopPage() {
-    useReveal();
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
     const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+    useReveal([currentPage, sortBy]);
 
     useEffect(() => {
         const interval = setInterval(() => {
