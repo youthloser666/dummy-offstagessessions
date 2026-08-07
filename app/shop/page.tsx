@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { useReveal } from '@/hooks/useReveal';
 import { products, shopCategories } from '@/lib/data';
@@ -13,6 +13,14 @@ export default function ShopPage() {
     const [sortBy, setSortBy] = useState('newest');
     const [currentPage, setCurrentPage] = useState(1);
     const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentHeroIndex((prev) => (prev + 1) % products.length);
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
     const sortedProducts = useMemo(() => {
         let sorted = [...products];
@@ -39,27 +47,28 @@ export default function ShopPage() {
 
     return (
         <main>
-            {/* Running Merchandise Marquee Banner */}
-            <div className={`${styles.shopMarqueeSection} reveal`}>
-                <div className={styles.shopMarqueeTrack}>
-                    {[...products, ...products].map((item, idx) => (
-                        <div key={`${item.id}-${idx}`} className={styles.shopMarqueeCard}>
-                            <Image
-                                src={item.image}
-                                alt={item.name}
-                                width={400}
-                                height={260}
-                                className={styles.shopMarqueeImg}
-                            />
-                            <div className={styles.shopMarqueeOverlay} />
-                            <div className={styles.shopMarqueeInfo}>
-                                <span className={styles.shopMarqueeCategory}>{item.category}</span>
-                                <h3 className={styles.shopMarqueeTitle}>{item.name}</h3>
-                                <span className={styles.shopMarqueePrice}>${item.price}</span>
-                            </div>
+            {/* Full-Width Hero Image Banner */}
+            <div className={`${styles.heroBanner} reveal`}>
+                {products.map((item, idx) => (
+                    <div 
+                        key={item.id} 
+                        className={`${styles.heroSlide} ${idx === currentHeroIndex ? styles.activeSlide : ''}`}
+                    >
+                        <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className={styles.heroImg}
+                            priority={idx === 0}
+                        />
+                        <div className={styles.heroOverlay} />
+                        <div className={styles.heroInfo}>
+                            <span className={styles.heroCategory}>{item.category}</span>
+                            <h2 className={styles.heroTitle}>{item.name}</h2>
+                            <span className={styles.heroPrice}>${item.price}</span>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
 
             {/* Collection Title + Sort Toolbar */}

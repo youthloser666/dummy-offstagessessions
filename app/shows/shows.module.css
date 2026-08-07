@@ -34,21 +34,6 @@
     padding: 60px 5% 120px;
 }
 
-.monthGroup {
-    margin-bottom: 80px;
-}
-
-.monthLabel {
-    font-size: 0.65rem;
-    letter-spacing: 0.3em;
-    color: var(--acid);
-    text-transform: uppercase;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--muted);
-    font-family: 'Moderniz', sans-serif;
-    font-weight: 700;
-}
 
 .showsGrid {
     display: grid;
@@ -290,9 +275,6 @@
         font-size: 0.6rem;
     }
 
-    .monthGroup {
-        margin-bottom: 50px;
-    }
 
     .showsGrid {
         grid-template-columns: repeat(2, 1fr);

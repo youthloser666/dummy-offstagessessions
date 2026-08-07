@@ -3,106 +3,92 @@
    Offstage Dark Theme Adaptation
    ============================================ */
 
-/* ---- Running Merchandise Marquee Banner ---- */
-.shopMarqueeSection {
-    padding: 108px 0 0;
-    overflow: hidden;
+/* ---- Full-Width Hero Image Banner ---- */
+.heroBanner {
+    position: relative;
     width: 100%;
+    height: 60vh;
+    min-height: 450px;
+    margin-top: 70px;
+    overflow: hidden;
     background: var(--bg);
 }
 
-.shopMarqueeTrack {
-    display: flex;
-    width: max-content;
-    gap: 14px;
-    animation: shopMarqueeScroll 40s linear infinite;
+.heroSlide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    pointer-events: none;
 }
 
-.shopMarqueeTrack:hover {
-    animation-play-state: paused;
+.heroSlide.activeSlide {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-.shopMarqueeCard {
-    width: 320px;
-    height: 180px;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    border-radius: 2px;
-    border: 1px solid var(--muted);
-    cursor: pointer;
-    transition: border-color 0.3s ease;
-}
-
-.shopMarqueeCard:hover {
-    border-color: var(--acid);
-}
-
-.shopMarqueeImg {
-    width: 100%;
-    height: 100%;
+.heroImg {
     object-fit: cover;
-    filter: grayscale(0.4) brightness(0.6);
-    transition: filter 0.5s ease, transform 0.5s ease;
+    filter: brightness(0.65) grayscale(0.2);
+    transition: transform 6s ease-out;
+    transform: scale(1);
 }
 
-.shopMarqueeCard:hover .shopMarqueeImg {
-    filter: grayscale(0) brightness(0.8);
+.heroSlide.activeSlide .heroImg {
     transform: scale(1.05);
 }
 
-.shopMarqueeOverlay {
+.heroOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
-    pointer-events: none;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
     z-index: 1;
 }
 
-.shopMarqueeInfo {
+.heroInfo {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 16px;
+    padding: 60px 5%;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    align-items: flex-start;
+    gap: 8px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, opacity 0.8s ease 0.3s;
 }
 
-.shopMarqueeCategory {
-    font-size: 0.55rem;
-    letter-spacing: 0.15em;
+.heroSlide.activeSlide .heroInfo {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.heroCategory {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--acid);
     font-family: 'Space Mono', monospace;
     font-weight: 700;
 }
 
-.shopMarqueeTitle {
+.heroTitle {
     font-family: 'Anton', sans-serif;
-    font-size: 1.1rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
     text-transform: uppercase;
     color: var(--white);
-    line-height: 1.1;
+    line-height: 1;
     margin: 0;
 }
 
-.shopMarqueePrice {
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.75);
-    font-family: Arial, Helvetica, sans-serif;
+.heroPrice {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'Space Mono', monospace;
     font-weight: 700;
-}
-
-@keyframes shopMarqueeScroll {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
 }
 
 /* ---- Shop Header & Toolbar ---- */
@@ -433,13 +419,14 @@
 
 /* ---- Mobile ---- */
 @media (max-width: 600px) {
-    .shopMarqueeSection {
-        padding-top: 84px;
+    .heroBanner {
+        height: 50vh;
+        min-height: 350px;
+        margin-top: 60px;
     }
-
-    .shopMarqueeCard {
-        width: 220px;
-        height: 135px;
+    
+    .heroInfo {
+        padding: 40px 5%;
     }
 
     .productsGrid {

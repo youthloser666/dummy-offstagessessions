@@ -20,12 +20,7 @@ export default function ShowsPage() {
         return show.tags.includes(activeFilter);
     });
 
-    // Group all filtered shows by month
-    const groupedByMonth = filteredShows.reduce((groups, show) => {
-        if (!groups[show.month]) groups[show.month] = [];
-        groups[show.month].push(show);
-        return groups;
-    }, {} as Record<string, typeof shows>);
+
 
     return (
         <main>
@@ -43,62 +38,57 @@ export default function ShowsPage() {
             </div>
 
             <div className={styles.showsSection}>
-                {Object.entries(groupedByMonth).map(([month, monthShows]) => (
-                    <div key={month} className={styles.monthGroup}>
-                        <div className={`${styles.monthLabel} reveal`}>{month}</div>
-                        <div className={styles.showsGrid}>
-                            {monthShows.map((show) => (
-                                <div
-                                    key={show.id}
-                                    id={`show-${show.id}`}
-                                    className={`${styles.showsGridCard} reveal`}
-                                >
-                                    <Image
-                                        src={show.poster}
-                                        alt={show.name}
-                                        width={600}
-                                        height={800}
-                                        className={styles.showsGridCardImg}
-                                    />
-                                    <div className={styles.showsGridCardOverlay} />
-                                    <div className={styles.showsGridCardInfo}>
-                                        <div className={styles.showDate}>{show.dateCode}</div>
-                                        <h3 className={styles.showName}>{show.name}</h3>
-                                        {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
-                                        <div className={styles.showVenue}>{show.venue}</div>
-                                        <div className={styles.tagsRow}>
-                                            {show.tags.map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className={`${styles.tag} ${tag === 'House'
-                                                            ? styles.tagHouse
-                                                            : tag === 'Techno'
-                                                                ? styles.tagTechno
-                                                                : tag === 'Bass'
-                                                                    ? styles.tagBass
-                                                                    : styles.tagFree
-                                                        }`}
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {show.ticketUrl && (
-                                            <a
-                                                href={show.ticketUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className={styles.ticketBtn}
-                                            >
-                                                GET TICKETS ↗
-                                            </a>
-                                        )}
-                                    </div>
+                <div className={styles.showsGrid}>
+                    {filteredShows.map((show) => (
+                        <div
+                            key={show.id}
+                            id={`show-${show.id}`}
+                            className={`${styles.showsGridCard} reveal`}
+                        >
+                            <Image
+                                src={show.poster}
+                                alt={show.name}
+                                width={600}
+                                height={800}
+                                className={styles.showsGridCardImg}
+                            />
+                            <div className={styles.showsGridCardOverlay} />
+                            <div className={styles.showsGridCardInfo}>
+                                <div className={styles.showDate}>{show.dateCode}</div>
+                                <h3 className={styles.showName}>{show.name}</h3>
+                                {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
+                                <div className={styles.showVenue}>{show.venue}</div>
+                                <div className={styles.tagsRow}>
+                                    {show.tags.map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className={`${styles.tag} ${tag === 'House'
+                                                    ? styles.tagHouse
+                                                    : tag === 'Techno'
+                                                        ? styles.tagTechno
+                                                        : tag === 'Bass'
+                                                            ? styles.tagBass
+                                                            : styles.tagFree
+                                                }`}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
                                 </div>
-                            ))}
+                                {show.ticketUrl && (
+                                    <a
+                                        href={show.ticketUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={styles.ticketBtn}
+                                    >
+                                        GET TICKETS ↗
+                                    </a>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </main>
     );
