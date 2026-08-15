@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import InteractiveLogo from '@/components/InteractiveLogo';
+import { useEffect, useState } from 'react';
+import Logo3D from '@/components/Logo3D';
 import { useReveal } from '@/hooks/useReveal';
 import { upcomingShows } from '@/lib/data';
 import styles from './page.module.css';
@@ -48,6 +49,10 @@ const instagramPosts = [
 
 export default function Home() {
   useReveal();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <main>
@@ -57,7 +62,7 @@ export default function Home() {
         </video>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          <InteractiveLogo />
+          {mounted && <Logo3D />}
         </div>
       </section>
 
