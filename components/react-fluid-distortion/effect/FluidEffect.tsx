@@ -1,6 +1,6 @@
 import { Effect, EffectAttribute } from 'postprocessing';
 import { Texture, Uniform, Vector3 } from 'three';
-import compositeFrag from '../glsl/composite.ts';
+import compositeFrag from '../glsl/composite';
 import { type EffectProps } from '../types';
 import { hexToRgb } from '../utils';
 

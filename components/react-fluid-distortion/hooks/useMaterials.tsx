@@ -3,15 +3,15 @@ import { useEffect, useMemo } from 'react';
 import { useThree } from '@react-three/fiber';
 import { DEFAULT_CONFIG, REFRESH_RATE } from '../constant';
 
-import baseVertex from '../glsl/base.ts';
-import clearFrag from '../glsl/clear.ts';
-import curlFrag from '../glsl/curl.ts';
-import divergenceFrag from '../glsl/divergence.ts';
-import gradientSubstractFrag from '../glsl/gradientSubstract.ts';
-import pressureFrag from '../glsl/pressure.ts';
-import splatFrag from '../glsl/splat.ts';
-import advectionFrag from '../glsl/advection.ts';
-import vorticityFrag from '../glsl/vorticity.ts';
+import baseVertex from '../glsl/base';
+import clearFrag from '../glsl/clear';
+import curlFrag from '../glsl/curl';
+import divergenceFrag from '../glsl/divergence';
+import gradientSubstractFrag from '../glsl/gradientSubstract';
+import pressureFrag from '../glsl/pressure';
+import splatFrag from '../glsl/splat';
+import advectionFrag from '../glsl/advection';
+import vorticityFrag from '../glsl/vorticity';
 
 export const useMaterials = (): { [key: string]: ShaderMaterial } => {
     const size = useThree((s) => s.size);

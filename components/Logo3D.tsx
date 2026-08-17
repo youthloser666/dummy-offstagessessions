@@ -41,10 +41,16 @@ function OrbitalRing({
     return pts.map((p) => new THREE.Vector3(p.x, 0, p.y));
   }, [radiusX, radiusY]);
 
-  const geometry = useMemo(() => {
+  const lineObj = useMemo(() => {
     const geo = new THREE.BufferGeometry().setFromPoints(points);
-    return geo;
-  }, [points]);
+    const mat = new THREE.LineBasicMaterial({
+      color,
+      transparent: true,
+      opacity,
+      linewidth: lineWidth,
+    });
+    return new THREE.Line(geo, mat);
+  }, [points, color, opacity, lineWidth]);
 
   useFrame((_, delta) => {
     if (ref.current) {
@@ -54,14 +60,7 @@ function OrbitalRing({
 
   return (
     <group ref={ref} rotation={rotationOffset}>
-      <line geometry={geometry}>
-        <lineBasicMaterial
-          color={color}
-          transparent
-          opacity={opacity}
-          linewidth={lineWidth}
-        />
-      </line>
+      <primitive object={lineObj} />
     </group>
   );
 }
