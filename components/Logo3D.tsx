@@ -204,7 +204,7 @@ export default function Logo3D() {
     <div style={{ width: '100%', height: '70vh', minHeight: '550px', cursor: 'grab' }}>
       {/* Kamera dijauhkan sedikit ke Z=8 agar bagian depan model tidak terpotong (clipping plane) */}
       <Canvas camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 1000 }}>
-        <Environment preset="studio" />
+        <Environment files="/3D/car-showroom-studio-hdri_2K_e8b02ed8-7d1d-4cf9-ad57-1f6d96eeff48.exr" />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
 

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Logo3D from '@/components/Logo3D';
 import { useReveal } from '@/hooks/useReveal';
+import { useSplash } from '@/components/ClientShell';
 import { upcomingShows } from '@/lib/data';
 import styles from './page.module.css';
 
@@ -49,20 +50,17 @@ const instagramPosts = [
 
 export default function Home() {
   useReveal();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { splashState } = useSplash();
 
   return (
     <main>
       <section className={styles.hero}>
-        <video className={styles.heroVideo} autoPlay muted loop playsInline>
+        <video className={styles.heroVideo} autoPlay muted loop playsInline preload="auto">
           <source src="/hero-video.mp4" type="video/mp4" />
         </video>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
-          {mounted && <Logo3D />}
+          {splashState === 'done' && <Logo3D />}
         </div>
       </section>
 

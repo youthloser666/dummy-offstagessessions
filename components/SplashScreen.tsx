@@ -1,242 +1,271 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import styles from './SplashScreen.module.css';
 
-/**
- * SplashScreen — Noise + Wipe + Glitch Logo
- *
- * Sequence:
- * 1. Full-screen vintage TV static noise with grain (canvas)
- * 2. Horizontal wipe reveals the Offstage logo with glitch effect
- * 3. Accent line + tagline fade in
- * 4. Logo glitch intensifies briefly, then zoom-out transition
- */
-export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const wipeMaskRef = useRef<HTMLDivElement>(null);
-    const accentRef = useRef<HTMLDivElement>(null);
-    const taglineRef = useRef<HTMLDivElement>(null);
-    const logoWrapRef = useRef<HTMLDivElement>(null);
-    const animFrameRef = useRef<number>(0);
-    const [isExiting, setIsExiting] = useState(false);
+interface SplashScreenProps {
+  onReveal?: () => void;
+  onComplete: () => void;
+}
 
-    // ---- VINTAGE TV STATIC NOISE RENDERER ----
-    const drawNoise = useCallback(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+// 6 Curated images for smooth cascading (optimized splash assets)
+const LAYER_IMAGES = [
+  '/image/splash/1.webp',
+  '/image/splash/3.webp',
+  '/image/splash/5.webp',
+  '/image/splash/8_web.webp',
+  '/image/splash/9_web.webp',
+  '/image/splash/10_web.webp',
+];
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
+  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const blackCardRef = useRef<HTMLDivElement | null>(null);
+  const counterRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLImageElement>(null);
 
-        const w = canvas.width;
-        const h = canvas.height;
-        const imageData = ctx.createImageData(w, h);
-        const data = imageData.data;
+  const ctxRef = useRef<gsap.Context | null>(null);
+  const timelineStarted = useRef(false);
 
-        // Vintage grain: warmer tones, variable brightness, occasional bright spots
-        const time = Date.now() * 0.001;
-        const flickerBase = 0.85 + Math.sin(time * 8) * 0.08; // Subtle brightness flicker
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
 
-        for (let i = 0; i < data.length; i += 4) {
-            const pixelIndex = i / 4;
-            const y = Math.floor(pixelIndex / w);
-            const x = pixelIndex % w;
+    let isCancelled = false;
 
-            // Base noise
-            let v = Math.random() * 255;
+    // Start animation without React state update to avoid frame drops
+    const triggerAnimation = () => {
+      if (isCancelled || timelineStarted.current) return;
+      timelineStarted.current = true;
+      requestAnimationFrame(() => startCascade());
+    };
 
-            // Vintage grain: add horizontal line artifacts
-            if (Math.random() < 0.003) {
-                v = Math.random() < 0.5 ? 255 : 0; // Occasional hot/dead pixels
+    const preloadImages = async () => {
+      try {
+        const allAssets = [...LAYER_IMAGES, '/logo.svg'];
+        await Promise.all(
+          allAssets.map((src) => {
+            const img = new Image();
+            img.src = src;
+            if (typeof img.decode === 'function') {
+              return img.decode().catch(() => {});
             }
-
-            // Horizontal band interference (VHS tracking lines)
-            const bandPos = (time * 40 + y * 0.5) % h;
-            if (Math.abs(y - bandPos) < 3) {
-                v = Math.min(255, v + 80);
-            }
-
-            // Slight sepia/warm vintage tint
-            const warmth = v * flickerBase;
-            data[i] = Math.min(255, warmth * 1.05);     // R - slightly warmer
-            data[i + 1] = Math.min(255, warmth * 1.0);   // G
-            data[i + 2] = Math.min(255, warmth * 0.92);  // B - slightly cooler
-            data[i + 3] = 210; // A
-
-            // Random horizontal tear/glitch lines
-            if (Math.random() < 0.0008) {
-                const tearLength = Math.floor(Math.random() * 30) + 5;
-                for (let t = 0; t < tearLength && (i + t * 4) < data.length; t++) {
-                    const ti = i + t * 4;
-                    data[ti] = 200;
-                    data[ti + 1] = 200;
-                    data[ti + 2] = 180;
-                    data[ti + 3] = 255;
-                }
-            }
+            return new Promise<void>((res) => {
+              img.onload = () => res();
+              img.onerror = () => res();
+            });
+          })
+        );
+        if (!isCancelled) {
+          triggerAnimation();
         }
+      } catch {
+        if (!isCancelled) triggerAnimation();
+      }
+    };
 
-        ctx.putImageData(imageData, 0, 0);
-        animFrameRef.current = requestAnimationFrame(drawNoise);
-    }, []);
+    preloadImages();
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+    const fallbackTimer = setTimeout(() => {
+      triggerAnimation();
+    }, 1500);
 
-        // Size canvas to a smaller resolution for performance + authentic chunky look
-        canvas.width = 320;
-        canvas.height = 220;
+    return () => {
+      isCancelled = true;
+      clearTimeout(fallbackTimer);
+      ctxRef.current?.revert();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-        // Start noise
-        animFrameRef.current = requestAnimationFrame(drawNoise);
+  const startCascade = () => {
+    ctxRef.current = gsap.context(() => {
+      const tl = gsap.timeline();
+      const durationPerLayer = 0.45; 
+      const staggerDelay = 0.22; 
+      const totalDuration = (LAYER_IMAGES.length - 1) * staggerDelay + durationPerLayer;
 
-        // ---- ANIMATION TIMELINE (extended duration) ----
-        const tl = gsap.timeline({
-            onComplete: () => {
-                setIsExiting(true);
+      // Make stack visible, bypass react state
+      gsap.set(stackRef.current, { opacity: 1 });
+      gsap.set(layerRefs.current, { opacity: 0 });
+      if (logoRef.current) gsap.set(logoRef.current, { opacity: 0, scale: 0.92, y: 15 });
+      
+      let lastVal = -1;
+      const counterObj = { val: 0 };
+      tl.to(counterObj, {
+        val: 100,
+        duration: totalDuration - 0.1,
+        ease: 'none',
+        onUpdate: () => {
+          const rounded = Math.round(counterObj.val);
+          if (rounded !== lastVal && counterRef.current) {
+            lastVal = rounded;
+            counterRef.current.textContent = `[${rounded}]`;
+          }
+        }
+      }, 0);
 
-                setTimeout(() => {
-                    cancelAnimationFrame(animFrameRef.current);
-                    onComplete();
-                }, 800);
-            },
-        });
+      layerRefs.current.forEach((layerEl, i) => {
+        if (!layerEl) return;
+        
+        const isFinalLayer = i === LAYER_IMAGES.length;
 
-        // Phase 0: Smooth CRT TV Power-On (0.4s)
-        tl.fromTo(
-            canvasRef.current,
-            { opacity: 0, filter: 'brightness(0.2)' },
-            { opacity: 1, filter: 'brightness(1)', duration: 0.4, ease: 'power2.out' }
-        );
-
-        // Phase 1: Pure vintage noise hold (0.5s)
-        tl.to({}, { duration: 0.5 });
-
-        // Phase 2: Fade noise down while wipe reveals (0.8s)
-        tl.to(canvasRef.current, {
-            opacity: 0.12,
-            duration: 0.8,
-            ease: 'power2.inOut',
-        });
-
-        // Phase 2b: Horizontal wipe open (clip-path from center)
-        tl.to(
-            wipeMaskRef.current,
+        if (isFinalLayer) {
+          tl.fromTo(
+            layerEl,
+            { opacity: 0, scale: 1 },
             {
-                clipPath: 'inset(0 0% 0 0%)',
-                duration: 0.9,
-                ease: 'power3.inOut',
+              opacity: 1,
+              scale: 1,
+              duration: 0.55,
+              ease: 'power2.inOut',
+              force3D: true,
             },
-            '-=0.6'
-        );
+            LAYER_IMAGES.length * staggerDelay
+          );
+        } else {
+          tl.fromTo(
+            layerEl,
+            { 
+              scale: 1.04, 
+              opacity: 0,
+            },
+            {
+              scale: 1,
+              opacity: 1,
+              duration: durationPerLayer,
+              ease: 'power2.out',
+              force3D: true, 
+            },
+            i * staggerDelay
+          );
+        }
+      });
 
-        // Phase 2c: Start logo glitch animation after wipe begins
-        tl.add(() => {
-            logoWrapRef.current?.classList.add(styles.glitchActive);
-        }, '-=0.5');
+      // Fade out counter when cascade finishes
+      tl.to(counterRef.current, {
+        opacity: 0,
+        duration: 0.25,
+        ease: 'power2.in',
+      }, LAYER_IMAGES.length * staggerDelay);
 
-        // Phase 3: Accent line expands
-        tl.add(() => {
-            accentRef.current?.classList.add(styles.expanded);
-        }, '-=0.1');
+      // Reveal Offstage Logo smoothly at the center
+      tl.fromTo(logoRef.current, {
+        opacity: 0,
+        scale: 0.92,
+        y: 14,
+      }, {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        duration: 0.55,
+        ease: 'power3.out',
+        force3D: true,
+      }, LAYER_IMAGES.length * staggerDelay + 0.05);
 
-        // Phase 3b: Tagline fades in
-        tl.add(() => {
-            taglineRef.current?.classList.add(styles.visible);
-        }, '+=0.2');
+      // Black card expands uniformly from center to immerse full screen
+      tl.to(blackCardRef.current, {
+        scale: 16,
+        duration: 0.8,
+        ease: 'power2.inOut',
+        force3D: true,
+      }, '+=0.05');
 
-        // Phase 4: Hold logo (0.9s)
-        tl.to({}, { duration: 0.9 });
+      tl.add(() => {
+        if (containerRef.current) {
+          containerRef.current.style.background = '#000000';
+        }
+      }, '-=0.6');
 
-        // Phase 5: Flicker effect before exit
-        tl.add(() => {
-            overlayRef.current?.classList.add(styles.flickering);
-        });
+      // Showcase logo before launching upward curtain pull
+      tl.add(() => {
+        if (onReveal) onReveal();
+      }, '+=0.2');
 
-        tl.to({}, { duration: 0.25 });
+      // Parallax upward drift for the logo
+      tl.to(logoRef.current, {
+        y: -70,
+        opacity: 0,
+        duration: 0.7,
+        ease: 'power2.in',
+        force3D: true,
+      }, '<');
 
-        return () => {
-            cancelAnimationFrame(animFrameRef.current);
-            tl.kill();
-        };
-    }, [drawNoise, onComplete]);
+      // Curtain smooth upward pull animation into the landing page
+      tl.to(containerRef.current, {
+        yPercent: -100,
+        duration: 1.0,
+        ease: 'power3.inOut',
+        force3D: true,
+        onComplete: () => {
+          onComplete();
+        },
+      }, '<');
+    });
+  };
 
-    return (
-        <div
-            ref={overlayRef}
-            className={`${styles.splashOverlay} ${isExiting ? styles.exiting : ''}`}
-        >
-            {/* Vintage TV Static Noise */}
-            <canvas ref={canvasRef} className={styles.noiseCanvas} />
+  return (
+    <div
+      ref={containerRef}
+      className={styles.bootLoader}
+      aria-hidden="true"
+    >
+      <div 
+        ref={stackRef}
+        className={styles.bootLoaderStack} 
+        style={{ opacity: 0 }} // Starts hidden, GSAP will show it
+      >
 
-            {/* Film Grain Overlay */}
-            <div className={styles.filmGrain} />
-
-            {/* CRT Scanlines */}
-            <div className={styles.scanlines} />
-
-            {/* Vignette */}
-            <div className={styles.vignette} />
-
-            {/* VHS Glitch Bars */}
-            <div className={styles.glitchBars}>
-                <div className={styles.glitchBar} />
-                <div className={styles.glitchBar} />
-                <div className={styles.glitchBar} />
-                <div className={styles.glitchBar} />
+          {LAYER_IMAGES.map((src, idx) => (
+            <div
+              key={idx}
+              ref={(el) => {
+                layerRefs.current[idx] = el;
+              }}
+              className={styles.bootLoaderLayer}
+              style={{ zIndex: idx + 1 }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt=""
+                className={styles.bootLoaderImg}
+                loading="eager"
+                decoding="async"
+              />
             </div>
+          ))}
 
-            {/* Broadcast Corner Marks */}
-            <div className={`${styles.cornerMark} ${styles.topLeft}`} />
-            <div className={`${styles.cornerMark} ${styles.topRight}`} />
-            <div className={`${styles.cornerMark} ${styles.bottomLeft}`} />
-            <div className={`${styles.cornerMark} ${styles.bottomRight}`} />
+          <div
+            ref={(el) => {
+              blackCardRef.current = el;
+              layerRefs.current[LAYER_IMAGES.length] = el;
+            }}
+            className={`${styles.bootLoaderLayer} ${styles.bootLoaderLayerFinal}`}
+            style={{ zIndex: LAYER_IMAGES.length + 1 }}
+          />
 
-            {/* Wipe-reveal Logo with Glitch Effect */}
-            <div ref={wipeMaskRef} className={styles.wipeMask}>
-                <div ref={logoWrapRef} className={styles.logoGlitchWrap}>
-                    {/* Main Logo */}
-                    <Image
-                        src="/offsatge-logo.svg"
-                        alt="Offstage Sessions"
-                        width={1500}
-                        height={304}
-                        priority
-                        className={styles.splashLogo}
-                    />
-                    {/* Glitch Layer — Red Channel */}
-                    <Image
-                        src="/offsatge-logo.svg"
-                        alt=""
-                        width={1500}
-                        height={304}
-                        aria-hidden
-                        className={`${styles.splashLogo} ${styles.glitchLayerR}`}
-                    />
-                    {/* Glitch Layer — Cyan Channel */}
-                    <Image
-                        src="/offsatge-logo.svg"
-                        alt=""
-                        width={1500}
-                        height={304}
-                        aria-hidden
-                        className={`${styles.splashLogo} ${styles.glitchLayerC}`}
-                    />
-                </div>
-            </div>
+          {/* Offstage Vector Logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            ref={logoRef}
+            src="/logo.svg"
+            alt="Offstage Sessions"
+            className={styles.offstageLogo}
+            style={{ zIndex: LAYER_IMAGES.length + 2 }}
+          />
 
-            {/* Acid Green Accent Line */}
-            <div ref={accentRef} className={styles.accentLine} />
+          <div
+            ref={counterRef}
+            className={styles.counter}
+            style={{ zIndex: LAYER_IMAGES.length + 3 }}
+          >
+            [0]
+          </div>
 
-            {/* Tagline */}
-            <div ref={taglineRef} className={styles.tagline}>
-                Born in Baltimore &middot; Est 2023
-            </div>
         </div>
-    );
+    </div>
+  );
 }
