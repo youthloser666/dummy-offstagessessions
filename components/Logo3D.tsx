@@ -123,7 +123,7 @@ function OrbitalRings() {
    ─────────────────────────────────────────────── */
 function Model({ onHoverChange, ...props }: any) {
   // Load the GLTF model
-  const { scene, animations } = useGLTF('/3d/offstage_logo.glb');
+  const { scene, animations } = useGLTF('/3D/offstage_logo.glb');
   const innerRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const { actions } = useAnimations(animations, innerRef);
@@ -259,5 +259,5 @@ export default function Logo3D() {
 }
 
 // Preload the model so it loads faster
-useGLTF.preload('/3d/offstage_logo.glb');
+useGLTF.preload('/3D/offstage_logo.glb');
 
