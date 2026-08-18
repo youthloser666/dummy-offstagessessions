@@ -1,9 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Logo3D from '@/components/Logo3D';
+import TiltCard from '@/components/TiltCard';
 import { useReveal } from '@/hooks/useReveal';
 import { useSplash } from '@/components/ClientShell';
 import { upcomingShows } from '@/lib/data';
@@ -52,38 +55,110 @@ export default function Home() {
   useReveal();
   const { splashState } = useSplash();
 
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      // Kinetic Masked Typography (Split-Line Reveal)
+      gsap.fromTo(
+        `.${styles.statementLine}`,
+        { yPercent: 120, rotate: 2, opacity: 0 },
+        {
+          yPercent: 0,
+          rotate: 0,
+          opacity: 1,
+          duration: 1.1,
+          ease: 'power4.out',
+          stagger: 0.09,
+          scrollTrigger: {
+            trigger: `.${styles.statement}`,
+            start: 'top 75%',
+          },
+        }
+      );
+
+      gsap.fromTo(
+        `.${styles.statementTagLine}`,
+        { yPercent: 120, rotate: -2, opacity: 0 },
+        {
+          yPercent: 0,
+          rotate: 0,
+          opacity: 1,
+          duration: 1.1,
+          ease: 'power4.out',
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: `.${styles.statement}`,
+            start: 'top 65%',
+          },
+        }
+      );
+    });
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <main>
+    <main className="bg-transparent" style={{ background: 'transparent' }}>
       <section className={styles.hero}>
         <video className={styles.heroVideo} autoPlay muted loop playsInline preload="auto">
           <source src="/hero-video.mp4" type="video/mp4" />
         </video>
         <div className={styles.heroOverlay} />
-        <div className={styles.heroContent}>
+
+        {/* Giant Background Text: Behind 3D Canvas */}
+        <div className={styles.heroBgTextWrap} aria-hidden="true">
+          <span className={styles.heroBgText}>OFFSTAGE</span>
+        </div>
+
+        {/* Interactive 3D Canvas Logo in Center */}
+        <div className={`${styles.heroContent} touch-none`} style={{ touchAction: 'none' }}>
           {splashState === 'done' && <Logo3D />}
+        </div>
+
+        {/* K95 Corner Details: Bottom Left & Right */}
+        <div className={styles.heroCornerDetails}>
+          <div className={styles.heroCornerLeft}>
+            <span className={styles.heroDot} />
+            <span>BALTIMORE / EST. 2023</span>
+          </div>
+
+          <div className={styles.heroCornerRight}>
+            <span>SCROLL TO EXPLORE</span>
+            <div className={styles.heroScrollLine} />
+          </div>
         </div>
       </section>
 
-      {/* Statement section */}
+      {/* Statement section with Kinetic Split-Line Reveal */}
       <section className={styles.statement}>
         <div className={styles.statementBody}>
-          <h2 className={`${styles.statementHeading} reveal`}>
-            HOUSE
-            <br />
-            TECHNO
-            <br />
-            BASS, AND
-            <br />
-            <em>EVERYTHING</em>
-            <br />
-            <em>IN BETWEEN</em>
+          <h2 className={styles.statementHeading}>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>HOUSE</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>TECHNO</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>BASS, AND</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={`${styles.statementLine} ${styles.acidText}`}>EVERYTHING</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={`${styles.statementLine} ${styles.acidText}`}>IN BETWEEN</span>
+            </div>
           </h2>
         </div>
         <div className={styles.statementBottom}>
-          <div className={`${styles.statementTag} reveal`}>
-            BORN IN
-            <br />
-            BALTIMORE
+          <div className={styles.statementTag}>
+            <div className={styles.statementMask}>
+              <span className={styles.statementTagLine}>BORN IN</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementTagLine}>BALTIMORE</span>
+            </div>
           </div>
         </div>
         <div className={styles.checkoutMarquee}>
@@ -118,34 +193,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Upcoming Shows — Instagram Grid */}
-      <section className={styles.showsSection}>
-        <div className={styles.showsHeader}>
+      {/* Upcoming Shows */}
+      <section className={styles.upcomingShowsSection}>
+        <div className={styles.upcomingShowsHeader}>
           <h2 className={styles.upcomingTitle}>
             <span className={styles.titleSolid}>UPCOMING</span>
             <span className={styles.titleOutline}>SHOWS</span>
           </h2>
-          <Link href="/shows" className={styles.showsViewAll}>VIEW ALL SHOWS</Link>
+          <Link href="/shows" className={styles.showsViewAll} data-cursor="EXPLORE" data-cursor-magnetic="true">
+            VIEW ALL SHOWS
+          </Link>
         </div>
 
-        <div className={styles.showsGrid}>
+        <div className={styles.upcomingShowsGrid}>
           {upcomingShows.map((show) => (
-            <Link key={show.id} href={`/shows#show-${show.id}`} className={styles.showsGridCard}>
-              <Image
-                src={show.poster}
-                alt={show.name}
-                width={600}
-                height={600}
-                className={styles.showsGridCardImg}
-              />
-              <div className={styles.showsGridCardOverlay} />
-              <div className={styles.showsGridCardInfo}>
-                <div className={styles.showDate}>{show.dateCode}</div>
-                <h3 className={styles.showName}>{show.name}</h3>
-                {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
-                <div className={styles.showVenue}>{show.venue}</div>
-              </div>
-            </Link>
+            <TiltCard key={show.id} maxTilt={10} scale={1.03}>
+              <Link
+                href={`/shows#show-${show.id}`}
+                className={styles.showsGridCard}
+                data-cursor="VIEW"
+              >
+                <Image
+                  src={show.poster}
+                  alt={show.name}
+                  width={600}
+                  height={800}
+                  className={styles.showsGridCardImg}
+                />
+                <div className={styles.showsGridCardOverlay} />
+                <div className={styles.showsGridCardInfo}>
+                  <div className={styles.showDate}>{show.dateCode}</div>
+                  <h3 className={styles.showName}>{show.name}</h3>
+                  {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
+                  <div className={styles.showVenue}>{show.venue}</div>
+                </div>
+              </Link>
+            </TiltCard>
           ))}
         </div>
       </section>
@@ -168,6 +251,7 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               className={styles.instagramPost}
+              data-cursor="VISIT ↗"
             >
               <Image
                 src={post.image}

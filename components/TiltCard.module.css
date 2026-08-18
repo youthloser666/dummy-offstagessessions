@@ -1,0 +1,16 @@
+.tiltCard {
+    position: relative;
+    transform-style: preserve-3d;
+    will-change: transform;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+    mix-blend-mode: overlay;
+}

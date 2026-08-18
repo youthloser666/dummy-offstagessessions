@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Cursor from '@/components/Cursor';
+import CustomCursor from '@/components/CustomCursor';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import ClientShell from '@/components/ClientShell';
@@ -18,9 +18,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className="cursor-none">
         <ClientShell>
-          <Cursor />
+          <CustomCursor />
           <Nav />
           {children}
           <Footer footerBigText="Offstage Sessions" />
@@ -29,3 +29,4 @@ export default function RootLayout({
     </html>
   );
 }
+

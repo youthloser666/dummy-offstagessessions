@@ -47,8 +47,8 @@ export default function ShopPage() {
     );
 
     return (
-        <main>
-            {/* Full-Width Hero Image Banner */}
+        <main className="bg-transparent" style={{ background: 'transparent' }}>
+            {/* Full-Width Hero Image Banner (Bleeding under transparent navbar) */}
             <div className={`${styles.heroBanner} reveal`}>
                 {products.map((item, idx) => (
                     <div 

@@ -119,11 +119,11 @@ function OrbitalRings() {
 }
 
 /* ───────────────────────────────────────────────
-   Model — GLB logo
+   Model — GLB logo with Draco compression support & disabled shadows
    ─────────────────────────────────────────────── */
 function Model({ onHoverChange, ...props }: any) {
-  // Load the GLTF model
-  const { scene, animations } = useGLTF('/3D/offstage_logo.glb');
+  // Load the GLTF model with Draco compression support enabled
+  const { scene, animations } = useGLTF('/3D/offstage_logo.glb', true);
   const innerRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const { actions } = useAnimations(animations, innerRef);
@@ -136,10 +136,11 @@ function Model({ onHoverChange, ...props }: any) {
       });
     }
 
-    // Jika ingin menyesuaikan material:
+    // Matikan bayangan (shadows) pada semua mesh untuk performa maksimal
     scene.traverse((child: any) => {
       if (child.isMesh) {
-        // child.material.envMapIntensity = 1;
+        child.castShadow = false;
+        child.receiveShadow = false;
       }
     });
   }, [scene, actions]);
@@ -195,18 +196,38 @@ function Model({ onHoverChange, ...props }: any) {
 }
 
 /* ───────────────────────────────────────────────
-   Logo3D — Main component
+   Logo3D — Main component (Optimized R3F Canvas)
    ─────────────────────────────────────────────── */
 export default function Logo3D() {
   const [logoHovered, setLogoHovered] = useState(false);
 
   return (
-    <div style={{ width: '100%', height: '70vh', minHeight: '550px', cursor: 'grab' }}>
-      {/* Kamera dijauhkan sedikit ke Z=8 agar bagian depan model tidak terpotong (clipping plane) */}
-      <Canvas camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 1000 }}>
+    <div 
+      className="touch-none" 
+      style={{ 
+        width: '100%', 
+        height: '70vh', 
+        minHeight: '550px', 
+        cursor: 'grab', 
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+      }}
+    >
+      <Canvas 
+        dpr={[1, 2]}
+        performance={{ min: 0.5 }}
+        gl={{ powerPreference: 'high-performance', antialias: true, alpha: true }}
+        camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 1000 }}
+        className="touch-none"
+        style={{ touchAction: 'none', width: '100%', height: '100%' }}
+        onCreated={({ gl }) => {
+          gl.domElement.style.touchAction = 'none';
+        }}
+      >
         <Environment files="/3D/car-showroom-studio-hdri_2K_e8b02ed8-7d1d-4cf9-ad57-1f6d96eeff48.exr" />
         <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <directionalLight position={[10, 10, 5]} intensity={1} castShadow={false} />
 
         <Suspense fallback={null}>
           {/* Orbital Rings di belakang logo */}
@@ -235,8 +256,6 @@ export default function Logo3D() {
           </PresentationControls>
 
           <EffectComposer>
-            {/* force=0 saat tidak hover → fluid tidak bereaksi terhadap mouse */}
-            {/* Saat hover logo → fluid aktif dengan force 1.5 */}
             <Fluid 
               radius={0.04}
               curl={4}
@@ -258,6 +277,7 @@ export default function Logo3D() {
   );
 }
 
-// Preload the model so it loads faster
-useGLTF.preload('/3D/offstage_logo.glb');
+// Preload the model with Draco compression support enabled
+useGLTF.preload('/3D/offstage_logo.glb', true);
+
 

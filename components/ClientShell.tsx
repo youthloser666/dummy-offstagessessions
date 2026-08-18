@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, createContext, useContext } from 'react';
+import { useState, useCallback, useRef, createContext, useContext } from 'react';
 import SplashScreen from './SplashScreen';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -26,7 +26,19 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             gsap.fromTo(
                 contentRef.current,
                 { y: 80, opacity: 0.9, scale: 0.985 },
-                { y: 0, opacity: 1, scale: 1, duration: 1.0, ease: 'power3.inOut', force3D: true }
+                { 
+                    y: 0, 
+                    opacity: 1, 
+                    scale: 1, 
+                    duration: 1.0, 
+                    ease: 'power3.inOut', 
+                    force3D: true,
+                    onComplete: () => {
+                        if (contentRef.current) {
+                            gsap.set(contentRef.current, { clearProps: 'transform' });
+                        }
+                    }
+                }
             );
         }
     }, []);
@@ -59,3 +71,4 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         </SplashContext.Provider>
     );
 }
+
