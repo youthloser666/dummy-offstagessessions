@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import gsap from 'gsap';
@@ -101,9 +101,19 @@ export default function Home() {
   return (
     <main className="bg-transparent" style={{ background: 'transparent' }}>
       <section className={styles.hero}>
-        <video className={styles.heroVideo} autoPlay muted loop playsInline preload="auto">
+        <video 
+          className={`${styles.heroVideo} md:grayscale md:brightness-[0.3]`} 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          preload="auto"
+        >
           <source src="/hero-video.mp4" type="video/mp4" />
         </video>
+        
+        {/* Universal Dark Overlay: Pelapis gelap ringan untuk mobile & desktop */}
+        <div className="absolute inset-0 bg-black/60 z-[1] pointer-events-none" style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: 1, pointerEvents: 'none' }} />
         <div className={styles.heroOverlay} />
 
         {/* Giant Background Text: Behind 3D Canvas */}
@@ -113,7 +123,9 @@ export default function Home() {
 
         {/* Interactive 3D Canvas Logo in Center */}
         <div className={`${styles.heroContent} touch-none`} style={{ touchAction: 'none' }}>
-          {splashState === 'done' && <Logo3D />}
+          <Suspense fallback={null}>
+            {splashState === 'done' && <Logo3D />}
+          </Suspense>
         </div>
 
         {/* K95 Corner Details: Bottom Left & Right */}

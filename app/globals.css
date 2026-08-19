@@ -35,7 +35,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   max-width: 100vw;
   overflow-x: hidden;
 }
@@ -73,21 +72,16 @@ body::before {
   opacity: 0.04;
   pointer-events: none;
   z-index: 9999;
-  animation: filmGrainShift 7s steps(10) infinite;
-  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  body::before {
+    display: none;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Moderniz', sans-serif;
-}
-
-@keyframes filmGrainShift {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-4%, -8%); }
-  30% { transform: translate(4%, -12%); }
-  50% { transform: translate(8%, 6%); }
-  70% { transform: translate(-6%, 4%); }
-  90% { transform: translate(-8%, 8%); }
 }
 
 /* ---- CURSOR ---- */

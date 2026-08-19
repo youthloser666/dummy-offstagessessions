@@ -127,6 +127,7 @@ function Model({ onHoverChange, ...props }: any) {
   const innerRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const { actions } = useAnimations(animations, innerRef);
+  const targetVec = useMemo(() => new THREE.Vector3(), []);
 
   useEffect(() => {
     // Jalankan semua animasi bawaan dari GLB
@@ -162,7 +163,8 @@ function Model({ onHoverChange, ...props }: any) {
         scaleZ += Math.sin(t * 8) * 0.06;
       }
 
-      innerRef.current.scale.lerp(new THREE.Vector3(scaleX, scaleY, scaleZ), delta * 8);
+      targetVec.set(scaleX, scaleY, scaleZ);
+      innerRef.current.scale.lerp(targetVec, delta * 8);
 
       // 2. Efek mengikuti arah mouse (Parallax)
       const targetRotationX = (state.pointer.y * Math.PI) / 6;
@@ -200,6 +202,16 @@ function Model({ onHoverChange, ...props }: any) {
    ─────────────────────────────────────────────── */
 export default function Logo3D() {
   const [logoHovered, setLogoHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div 
@@ -215,7 +227,7 @@ export default function Logo3D() {
       }}
     >
       <Canvas 
-        dpr={[1, 2]}
+        dpr={isMobile ? 1 : [1, 1.5]}
         performance={{ min: 0.5 }}
         gl={{ powerPreference: 'high-performance', antialias: true, alpha: true }}
         camera={{ position: [0, 0, 8], fov: 45, near: 0.1, far: 1000 }}
@@ -225,7 +237,7 @@ export default function Logo3D() {
           gl.domElement.style.touchAction = 'none';
         }}
       >
-        <Environment files="/3D/car-showroom-studio-hdri_2K_e8b02ed8-7d1d-4cf9-ad57-1f6d96eeff48.exr" />
+        <Environment preset="city" />
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} castShadow={false} />
 
@@ -234,7 +246,7 @@ export default function Logo3D() {
           <OrbitalRings />
 
           <PresentationControls
-            global
+            global={!isMobile}
             rotation={[0, 0, 0]}
             polar={[-0.1, 0.1]}
             azimuth={[-0.3, 0.3]}
@@ -255,22 +267,24 @@ export default function Logo3D() {
             </Float>
           </PresentationControls>
 
-          <EffectComposer>
-            <Fluid 
-              radius={0.04}
-              curl={4}
-              swirl={3}
-              distortion={0.2}
-              force={logoHovered ? 1.5 : 0}
-              showBackground={false}
-              fluidColor="#55ff55"
-              rainbow={false}
-              blend={0.7}
-              densityDissipation={0.96}
-              velocityDissipation={0.97}
-              pressure={0.8}
-            />
-          </EffectComposer>
+          {!isMobile && (
+            <EffectComposer>
+              <Fluid 
+                radius={0.04}
+                curl={4}
+                swirl={3}
+                distortion={0.2}
+                force={logoHovered ? 1.5 : 0}
+                showBackground={false}
+                fluidColor="#55ff55"
+                rainbow={false}
+                blend={0.7}
+                densityDissipation={0.96}
+                velocityDissipation={0.97}
+                pressure={0.8}
+              />
+            </EffectComposer>
+          )}
         </Suspense>
       </Canvas>
     </div>

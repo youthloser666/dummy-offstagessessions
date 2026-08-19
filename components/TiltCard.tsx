@@ -35,6 +35,12 @@ export default function TiltCard({
             return;
         }
 
+        const startAnimation = () => {
+            if (!rafId.current) {
+                rafId.current = requestAnimationFrame(animate);
+            }
+        };
+
         const handleMouseMove = (e: MouseEvent) => {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -51,10 +57,13 @@ export default function TiltCard({
                 y: (y / rect.height) * 100,
                 opacity: 0.25,
             });
+
+            startAnimation();
         };
 
         const handleMouseEnter = () => {
             isHovered.current = true;
+            startAnimation();
         };
 
         const handleMouseLeave = () => {
@@ -62,6 +71,7 @@ export default function TiltCard({
             targetRotX.current = 0;
             targetRotY.current = 0;
             setGlarePos((prev) => ({ ...prev, opacity: 0 }));
+            startAnimation();
         };
 
         const animate = () => {
@@ -74,20 +84,34 @@ export default function TiltCard({
                 card.style.transform = `perspective(1000px) rotateX(${currentRotX.current.toFixed(2)}deg) rotateY(${currentRotY.current.toFixed(2)}deg) scale3d(${currentScale}, ${currentScale}, 1)`;
             }
 
-            rafId.current = requestAnimationFrame(animate);
+            const diffX = Math.abs(targetRotX.current - currentRotX.current);
+            const diffY = Math.abs(targetRotY.current - currentRotY.current);
+
+            // Hanya jalankan loop saat di-hover atau saat belum selesai kembali ke titik netral [0, 0]
+            if (isHovered.current || diffX > 0.01 || diffY > 0.01) {
+                rafId.current = requestAnimationFrame(animate);
+            } else {
+                if (card) {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                }
+                currentRotX.current = 0;
+                currentRotY.current = 0;
+                rafId.current = null;
+            }
         };
 
         card.addEventListener('mousemove', handleMouseMove);
         card.addEventListener('mouseenter', handleMouseEnter);
         card.addEventListener('mouseleave', handleMouseLeave);
 
-        rafId.current = requestAnimationFrame(animate);
-
         return () => {
             card.removeEventListener('mousemove', handleMouseMove);
             card.removeEventListener('mouseenter', handleMouseEnter);
             card.removeEventListener('mouseleave', handleMouseLeave);
-            if (rafId.current) cancelAnimationFrame(rafId.current);
+            if (rafId.current) {
+                cancelAnimationFrame(rafId.current);
+                rafId.current = null;
+            }
         };
     }, [maxTilt, scale]);
 

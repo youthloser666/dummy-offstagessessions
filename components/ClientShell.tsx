@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useRef, createContext, useContext } from 'react';
+import { usePathname } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 import SplashScreen from './SplashScreen';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -17,6 +19,7 @@ export function useSplash() {
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
     const [splashState, setSplashState] = useState<'active' | 'revealing' | 'done'>('active');
+    const pathname = usePathname();
     const contentRef = useRef<HTMLDivElement>(null);
 
     // Triggered exactly when SplashScreen starts pulling up
@@ -66,9 +69,21 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             )}
             
             <div ref={contentRef}>
-                {children}
+                <AnimatePresence 
+                    mode="wait" 
+                    initial={false}
+                    onExitComplete={() => {
+                        window.scrollTo(0, 0);
+                        if (typeof window !== 'undefined') {
+                            ScrollTrigger.refresh();
+                        }
+                    }}
+                >
+                    <div key={pathname}>
+                        {children}
+                    </div>
+                </AnimatePresence>
             </div>
         </SplashContext.Provider>
     );
 }
-

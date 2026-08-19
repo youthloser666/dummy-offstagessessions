@@ -4,36 +4,38 @@ import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
-    const [isVisible, setIsVisible] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [cursorText, setCursorText] = useState('');
 
+    // Gunakan useMotionValue murni untuk koordinat X, Y, dan Opacity (Bypass React state)
     const mouseX = useMotionValue(-100);
     const mouseY = useMotionValue(-100);
+    const cursorOpacity = useMotionValue(0);
 
-    // Spring configuration for ultra-smooth elastic cursor following
-    const springConfig = { damping: 28, stiffness: 350, mass: 0.5 };
+    // Spring configuration untuk gerakan ultra-responsif (stiffness: 500, damping: 28)
+    const springConfig = { damping: 28, stiffness: 500, mass: 0.1 };
     const cursorX = useSpring(mouseX, springConfig);
     const cursorY = useSpring(mouseY, springConfig);
 
     useEffect(() => {
-        // Disable on touch devices without fine pointers
-        if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
+        // Nonaktifkan pada layar sentuh (touch devices)
+        if (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) {
             return;
         }
 
+        // Langsung mutasi MotionValue tanpa memicu re-render React sama sekali
         const handleMouseMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
-            if (!isVisible) setIsVisible(true);
+            cursorOpacity.set(1);
         };
 
         const handleMouseLeave = () => {
-            setIsVisible(false);
+            cursorOpacity.set(0);
         };
 
         const handleMouseEnter = () => {
-            setIsVisible(true);
+            cursorOpacity.set(1);
         };
 
         const handleMouseOver = (e: MouseEvent) => {
@@ -62,25 +64,26 @@ export default function CustomCursor() {
             document.documentElement.removeEventListener('mouseenter', handleMouseEnter);
             document.removeEventListener('mouseover', handleMouseOver);
         };
-    }, [mouseX, mouseY, isVisible]);
-
-    if (!isVisible) return null;
+    }, [mouseX, mouseY, cursorOpacity]);
 
     return (
         <motion.div
+            className="transform-gpu pointer-events-none"
             style={{
                 position: 'fixed',
                 top: 0,
                 left: 0,
                 x: cursorX,
                 y: cursorY,
+                opacity: cursorOpacity,
                 translateX: '-50%',
                 translateY: '-50%',
-                pointerEvents: 'none',
                 zIndex: 100000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                willChange: 'transform',
+                pointerEvents: 'none',
             }}
         >
             {/* 16px Acid Green Dot / Capsule */}
