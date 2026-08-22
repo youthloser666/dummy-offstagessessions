@@ -3,7 +3,43 @@
    Extracted from index.html inline <style>
    ============================================ */
 
-/* ---- HERO ---- */
+/* ---- HERO BRUTALIST ---- */
+.heroBrutalist {
+    height: 100vh;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+    padding: 0 5%;
+    text-align: center;
+}
+
+.heroBrutalistTitle {
+    font-family: 'Moderniz', 'Anton', sans-serif;
+    font-size: 10vw;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.9;
+    color: var(--white, #ffffff);
+    text-align: center;
+    mix-blend-mode: difference;
+    letter-spacing: -0.03em;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+@media (min-width: 768px) {
+    .heroBrutalistTitle {
+        font-size: 7vw;
+    }
+}
+
 .hero {
     height: 100vh;
     display: flex;
@@ -11,6 +47,7 @@
     justify-content: center;
     align-items: center;
     position: relative;
+    z-index: 2;
     overflow: hidden;
     padding: 0 5%;
 }
@@ -166,6 +203,7 @@
 /* ---- STATEMENT SECTION (Kinetic Split-Line Typography) ---- */
 .statement {
     position: relative;
+    z-index: 10;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -313,8 +351,10 @@
 
 /* ---- UPCOMING SHOWS SECTION ---- */
 .upcomingShowsSection {
+    position: relative;
+    z-index: 2;
     padding: 100px 5%;
-    background: var(--bg);
+    background: transparent;
 }
 
 .upcomingShowsHeader {
@@ -593,6 +633,8 @@
 
 /* ---- INSTAGRAM FEED SECTION ---- */
 .instagramSection {
+    position: relative;
+    z-index: 2;
     padding: 100px 0;
     background: transparent;
     overflow: hidden;
@@ -709,6 +751,8 @@
 
 /* ---- ABOUT ---- */
 .about {
+    position: relative;
+    z-index: 2;
     padding: 120px 5%;
     background: transparent;
     color: var(--white);

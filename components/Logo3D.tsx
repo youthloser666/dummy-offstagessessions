@@ -215,7 +215,7 @@ export default function Logo3D() {
 
   return (
     <div 
-      className="touch-none" 
+      className="touch-none max-md:pointer-events-none" 
       style={{ 
         width: '100%', 
         height: '70vh', 

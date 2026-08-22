@@ -31,6 +31,12 @@ export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps
   const timelineStarted = useRef(false);
 
   useEffect(() => {
+    // If already viewed in this session, skip immediately
+    if (typeof window !== 'undefined' && sessionStorage.getItem('splashSeen') === 'true') {
+      onComplete();
+      return;
+    }
+
     document.body.style.overflow = 'hidden';
 
     let isCancelled = false;
@@ -200,6 +206,9 @@ export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps
         ease: 'power3.inOut',
         force3D: true,
         onComplete: () => {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('splashSeen', 'true');
+          }
           onComplete();
         },
       }, '<');

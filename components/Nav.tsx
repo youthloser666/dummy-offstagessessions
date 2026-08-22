@@ -57,13 +57,14 @@ export default function Nav() {
         <>
             <nav 
                 ref={navRef}
-                className="border-none shadow-none bg-transparent"
+                className="border-none shadow-none bg-transparent relative z-50"
                 style={{
                     background: 'transparent',
                     border: 'none',
                     borderBottom: 'none',
                     boxShadow: 'none',
                     outline: 'none',
+                    zIndex: 50,
                 }}
             >
                 {/* Far Left: Brand Logo */}
@@ -76,6 +77,7 @@ export default function Nav() {
                             height={180}
                             priority
                             unoptimized
+                            style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
                         />
                     </Link>
                 </div>
@@ -157,7 +159,7 @@ export default function Nav() {
                                     height={150}
                                     priority
                                     unoptimized
-                                    style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
+                                    style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
                                 />
                             </Link>
 

@@ -49,7 +49,7 @@ export default function ShopPage() {
     return (
         <main className="bg-transparent" style={{ background: 'transparent' }}>
             {/* Full-Width Hero Image Banner (Bleeding under transparent navbar) */}
-            <div className={`${styles.heroBanner} reveal`}>
+            <div className={`${styles.heroBanner} relative reveal`}>
                 {products.map((item, idx) => (
                     <div 
                         key={item.id} 
@@ -70,6 +70,16 @@ export default function ShopPage() {
                         </div>
                     </div>
                 ))}
+
+                {/* Soft Fade Overlays: Atas & Bawah agar gambar Shop melebur mulus ke background hitam */}
+                <div 
+                    className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black to-transparent pointer-events-none z-10" 
+                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '8rem', backgroundImage: 'linear-gradient(to bottom, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
+                />
+                <div 
+                    className="absolute bottom-0 left-0 w-full h-48 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" 
+                    style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '12rem', backgroundImage: 'linear-gradient(to top, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
+                />
             </div>
 
             {/* Collection Title + Sort Toolbar */}

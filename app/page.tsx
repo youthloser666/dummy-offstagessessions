@@ -1,51 +1,49 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Logo3D from '@/components/Logo3D';
 import TiltCard from '@/components/TiltCard';
 import { useReveal } from '@/hooks/useReveal';
-import { useSplash } from '@/components/ClientShell';
 import { upcomingShows } from '@/lib/data';
 import styles from './page.module.css';
 
 const instagramPosts = [
   {
     id: 1,
-    image: '/image/tobehonest.png',
+    image: '/image/tobehonest_web.webp',
     caption: 'TO BE HONEST — Sound Garden',
     url: 'https://instagram.com/offstagesession',
   },
   {
     id: 2,
-    image: '/image/nightswim.png',
+    image: '/image/nightswim_web.webp',
     caption: 'NIGHT SWIM — 3 Year Anniversary',
     url: 'https://instagram.com/offstagesession',
   },
   {
     id: 3,
-    image: '/image/growgarden.png',
+    image: '/image/growgarden_web.webp',
     caption: 'GROW GARDEN — Open Air',
     url: 'https://instagram.com/offstagesession',
   },
   {
     id: 4,
-    image: '/image/latecheckout.png',
+    image: '/image/latecheckout_web.webp',
     caption: 'LATE CHECKOUT — Waterfront',
     url: 'https://instagram.com/offstagesession',
   },
   {
     id: 5,
-    image: '/image/jackie.png',
+    image: '/image/jackie_web.webp',
     caption: 'JACKIE HOLLANDER — Soundstage',
     url: 'https://instagram.com/offstagesession',
   },
   {
     id: 6,
-    image: '/image/shipwreck.png',
+    image: '/image/shipwreck_web.webp',
     caption: 'SHIP WREK — Power Plant',
     url: 'https://instagram.com/offstagesession',
   },
@@ -53,7 +51,6 @@ const instagramPosts = [
 
 export default function Home() {
   useReveal();
-  const { splashState } = useSplash();
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -99,51 +96,18 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="bg-transparent" style={{ background: 'transparent' }}>
-      <section className={styles.hero}>
-        <video 
-          className={`${styles.heroVideo} md:grayscale md:brightness-[0.3]`} 
-          autoPlay 
-          muted 
-          loop 
-          playsInline 
-          preload="auto"
-        >
-          <source src="/hero-video.mp4" type="video/mp4" />
-        </video>
-        
-        {/* Universal Dark Overlay: Pelapis gelap ringan untuk mobile & desktop */}
-        <div className="absolute inset-0 bg-black/60 z-[1] pointer-events-none" style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: 1, pointerEvents: 'none' }} />
-        <div className={styles.heroOverlay} />
-
-        {/* Giant Background Text: Behind 3D Canvas */}
-        <div className={styles.heroBgTextWrap} aria-hidden="true">
-          <span className={styles.heroBgText}>OFFSTAGE</span>
-        </div>
-
-        {/* Interactive 3D Canvas Logo in Center */}
-        <div className={`${styles.heroContent} touch-none`} style={{ touchAction: 'none' }}>
-          <Suspense fallback={null}>
-            {splashState === 'done' && <Logo3D />}
-          </Suspense>
-        </div>
-
-        {/* K95 Corner Details: Bottom Left & Right */}
-        <div className={styles.heroCornerDetails}>
-          <div className={styles.heroCornerLeft}>
-            <span className={styles.heroDot} />
-            <span>BALTIMORE / EST. 2023</span>
-          </div>
-
-          <div className={styles.heroCornerRight}>
-            <span>SCROLL TO EXPLORE</span>
-            <div className={styles.heroScrollLine} />
-          </div>
-        </div>
+    <div className="relative z-10 w-full" style={{ background: 'transparent', position: 'relative', zIndex: 10 }}>
+      {/* Hero Section (Layar Pertama) */}
+      <section className={`relative flex h-screen w-full flex-col items-center justify-center z-10 px-4 ${styles.heroBrutalist}`}>
+        <h1 className={`text-center text-[10vw] md:text-[7vw] font-black uppercase leading-[0.9] text-white mix-blend-difference ${styles.heroBrutalistTitle}`}>
+          THE BEST<br />
+          MOMENTS ARE<br />
+          MADE OFFSTAGE
+        </h1>
       </section>
 
-      {/* Statement section with Kinetic Split-Line Reveal */}
-      <section className={styles.statement}>
+      {/* Statement section with Kinetic Split-Line Reveal (Layar Kedua / Di Bawah Hero) */}
+      <section className={`${styles.statement} relative z-10`} style={{ position: 'relative', zIndex: 10 }}>
         <div className={styles.statementBody}>
           <h2 className={styles.statementHeading}>
             <div className={styles.statementMask}>
@@ -308,18 +272,28 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={`${styles.aboutImageBanner} reveal`}>
+        <div className={`${styles.aboutImageBanner} relative reveal`}>
+          {/* Soft Fade Overlays */}
+          <div
+            className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '6rem', backgroundImage: 'linear-gradient(to bottom, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"
+            style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '6rem', backgroundImage: 'linear-gradient(to top, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
+          />
+
           {[
-            '/image/1.webp',
-            '/image/2.webp',
-            '/image/3.webp',
-            '/image/4.webp',
-            '/image/5.webp',
-            '/image/6_web.webp',
-            '/image/7_web.webp',
-            '/image/8_web.webp',
-            '/image/9_web.webp',
-            '/image/10_web.webp',
+            '/image/1_web.webp',
+            '/image/2_web.webp',
+            '/image/3_web.webp',
+            '/image/4_web.webp',
+            '/image/5_web.webp',
+            '/image/6_web_web.webp',
+            '/image/7_web_web.webp',
+            '/image/8_web_web.webp',
+            '/image/9_web_web.webp',
+            '/image/10_web_web.webp',
           ].map((src, i) => (
             <Image
               key={src}
@@ -335,6 +309,6 @@ export default function Home() {
       </section>
 
       {/* The Footer serves as the contact section correctly per layout */}
-    </main>
+    </div>
   );
 }

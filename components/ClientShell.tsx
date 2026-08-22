@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useCallback, useRef, createContext, useContext } from 'react';
+import { useState, useCallback, useRef, createContext, useContext, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence } from 'framer-motion';
 import SplashScreen from './SplashScreen';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -11,30 +10,47 @@ interface SplashContextType {
     splashState: 'active' | 'revealing' | 'done';
 }
 
-const SplashContext = createContext<SplashContextType>({ splashState: 'active' });
+const SplashContext = createContext<SplashContextType>({ splashState: 'done' });
 
 export function useSplash() {
     return useContext(SplashContext);
 }
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
-    const [splashState, setSplashState] = useState<'active' | 'revealing' | 'done'>('active');
     const pathname = usePathname();
+    const [splashState, setSplashState] = useState<'active' | 'revealing' | 'done'>('done');
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Triggered exactly when SplashScreen starts pulling up
+    // Evaluasi apakah splash screen perlu dijalankan pada initial load
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const isHomePage = pathname === '/';
+        const alreadySeen = sessionStorage.getItem('splashSeen') === 'true';
+
+        // Hanya jalankan splash jika berada di root '/' dan belum pernah dilihat di sesi ini
+        if (isHomePage && !alreadySeen) {
+            setSplashState('active');
+            document.body.style.overflow = 'hidden';
+        } else {
+            setSplashState('done');
+            document.body.style.overflow = '';
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Triggered saat animasi splash mulai menarik tirai ke atas
     const handleSplashReveal = useCallback(() => {
         setSplashState('revealing');
         if (contentRef.current) {
             gsap.fromTo(
                 contentRef.current,
-                { y: 80, opacity: 0.9, scale: 0.985 },
+                { y: 60, opacity: 0.95 },
                 { 
                     y: 0, 
                     opacity: 1, 
-                    scale: 1, 
-                    duration: 1.0, 
-                    ease: 'power3.inOut', 
+                    duration: 0.9, 
+                    ease: 'power3.out', 
                     force3D: true,
                     onComplete: () => {
                         if (contentRef.current) {
@@ -46,8 +62,11 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         }
     }, []);
 
-    // Triggered when SplashScreen has completely faded out and can be unmounted
+    // Triggered saat animasi splash selesai total
     const handleSplashComplete = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('splashSeen', 'true');
+        }
         setSplashState('done');
         document.body.style.overflow = '';
 
@@ -56,7 +75,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
                 gsap.registerPlugin(ScrollTrigger);
                 ScrollTrigger.refresh();
             }
-        }, 100);
+        }, 80);
     }, []);
 
     return (
@@ -67,22 +86,8 @@ export default function ClientShell({ children }: { children: React.ReactNode })
                     onComplete={handleSplashComplete} 
                 />
             )}
-            
-            <div ref={contentRef}>
-                <AnimatePresence 
-                    mode="wait" 
-                    initial={false}
-                    onExitComplete={() => {
-                        window.scrollTo(0, 0);
-                        if (typeof window !== 'undefined') {
-                            ScrollTrigger.refresh();
-                        }
-                    }}
-                >
-                    <div key={pathname}>
-                        {children}
-                    </div>
-                </AnimatePresence>
+            <div ref={contentRef} style={{ width: '100%', minHeight: '100vh' }}>
+                {children}
             </div>
         </SplashContext.Provider>
     );

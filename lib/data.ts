@@ -18,7 +18,7 @@ export type UpcomingShow = Show;
 export const shows: Show[] = [
     {
         id: 1,
-        poster: '/image/tobehonest.png',
+        poster: '/image/tobehonest_web.webp',
         dateCode: '07.25',
         date: 'Fri<br>Jul 25',
         name: 'TO BE HONEST',
@@ -31,7 +31,7 @@ export const shows: Show[] = [
     },
     {
         id: 2,
-        poster: '/image/nightswim.png',
+        poster: '/image/nightswim_web.webp',
         dateCode: '08.14',
         date: 'Fri<br>Aug 14',
         name: 'NIGHT SWIM',
@@ -44,7 +44,7 @@ export const shows: Show[] = [
     },
     {
         id: 3,
-        poster: '/image/growgarden.png',
+        poster: '/image/growgarden_web.webp',
         dateCode: '08.15',
         date: 'Sat<br>Aug 15',
         name: 'GROW GARDEN',
@@ -57,7 +57,7 @@ export const shows: Show[] = [
     },
     {
         id: 4,
-        poster: '/image/latecheckout.png',
+        poster: '/image/latecheckout_web.webp',
         dateCode: '08.21',
         date: 'Thu<br>Aug 21',
         name: 'LATE CHECKOUT',
@@ -69,7 +69,7 @@ export const shows: Show[] = [
     },
     {
         id: 5,
-        poster: '/image/jackie.png',
+        poster: '/image/jackie_web.webp',
         dateCode: '09.12',
         date: 'Sat<br>Sep 12',
         name: 'JACKIE HOLLANDER',
@@ -81,7 +81,7 @@ export const shows: Show[] = [
     },
     {
         id: 6,
-        poster: '/image/shipwreck.png',
+        poster: '/image/shipwreck_web.webp',
         dateCode: '10.03',
         date: 'Sat<br>Oct 03',
         name: 'SHIP WREK',

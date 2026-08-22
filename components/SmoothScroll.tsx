@@ -30,6 +30,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     });
 
     lenisRef.current = lenis;
+    (window as any).__lenis = lenis;
 
     // 3. Update ScrollTrigger setiap kali Lenis melakukan scroll
     lenis.on('scroll', ScrollTrigger.update);
@@ -46,6 +47,9 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
       lenisRef.current = null;
+      if ((window as any).__lenis === lenis) {
+        delete (window as any).__lenis;
+      }
     };
   }, []);
 
