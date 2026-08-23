@@ -47,7 +47,7 @@ export default function MediaPage() {
     useReveal();
 
     return (
-        <main className="bg-transparent" style={{ background: 'transparent' }}>
+        <div className="bg-transparent" style={{ background: 'transparent' }}>
             {/* Header: MEDIA left, ARCHIVES right */}
             <div className={`${styles.mediaHeader} reveal`}>
                 <h1 className={styles.mediaTitle}>MEDIA</h1>
@@ -65,6 +65,6 @@ export default function MediaPage() {
                     </div>
                 ))}
             </div>
-        </main>
+        </div>
     );
 }

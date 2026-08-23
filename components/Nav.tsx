@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
@@ -13,7 +13,7 @@ const NAV_ITEMS = [
     { href: '/shop', label: 'Shop' },
 ];
 
-export default function Nav() {
+function Nav() {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const navRef = useRef<HTMLElement>(null);
@@ -57,7 +57,7 @@ export default function Nav() {
         <>
             <nav 
                 ref={navRef}
-                className="border-none shadow-none bg-transparent relative z-50"
+                className="border-none shadow-none bg-transparent relative z-50 transform-gpu will-change-transform"
                 style={{
                     background: 'transparent',
                     border: 'none',
@@ -67,9 +67,9 @@ export default function Nav() {
                     zIndex: 50,
                 }}
             >
-                {/* Far Left: Brand Logo */}
-                <div className="logo">
-                    <Link href="/" onClick={closeDrawer}>
+                {/* Far Left: Brand Logo (Pure CSS Hover + GPU Accelerated) */}
+                <div className="logo transform-gpu will-change-transform">
+                    <Link href="/" onClick={closeDrawer} className="transform-gpu will-change-transform">
                         <Image
                             src="/image/offstages.gif"
                             alt="Offstage Sessions"
@@ -77,41 +77,47 @@ export default function Nav() {
                             height={180}
                             priority
                             unoptimized
+                            className="transform-gpu will-change-transform"
                             style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
                         />
                     </Link>
                 </div>
 
-                {/* Far Right: Desktop Menu Links & Actions (K95 Minimalist Style) */}
-                <div className="nav-right-cluster">
-                    <ul className="nav-links">
+                {/* Far Right: Desktop Menu Links & Actions (K95 Minimalist Style - 100% Pure CSS Hover) */}
+                <div className="nav-right-cluster transform-gpu will-change-transform">
+                    <ul className="nav-links transform-gpu will-change-transform">
                         {NAV_ITEMS.map((item) => (
-                            <li key={item.href}>
+                            <li key={item.href} className="transform-gpu will-change-transform">
                                 <Link
                                     href={item.href}
-                                    className={`nav-link-item ${isActive(item.href) ? 'active' : ''}`}
+                                    className={`nav-link-item transform-gpu will-change-transform ${isActive(item.href) ? 'active' : ''}`}
                                     data-cursor-magnetic="true"
                                 >
-                                    <span className="nav-dot" aria-hidden="true" />
-                                    <span className="nav-text">{item.label}</span>
+                                    <span className="nav-dot transform-gpu will-change-transform" aria-hidden="true" />
+                                    <span className="nav-text transform-gpu will-change-transform">{item.label}</span>
                                 </Link>
                             </li>
                         ))}
                     </ul>
 
-                    <div className="nav-right">
-                        <a href="#contact" className="btn-contact" data-cursor="CONTACT" data-cursor-magnetic="true">
+                    <div className="nav-right transform-gpu will-change-transform">
+                        <a 
+                            href="#contact" 
+                            className="btn-contact transform-gpu will-change-transform" 
+                            data-cursor="CONTACT" 
+                            data-cursor-magnetic="true"
+                        >
                             Contact ↗
                         </a>
                         <button
-                            className={`nav-hamburger${isOpen ? ' open' : ''}`}
+                            className={`nav-hamburger transform-gpu will-change-transform${isOpen ? ' open' : ''}`}
                             onClick={toggleMenu}
                             aria-label="Toggle Navigation Menu"
                             data-cursor-magnetic="true"
                         >
-                            <span />
-                            <span />
-                            <span />
+                            <span className="transform-gpu will-change-transform" />
+                            <span className="transform-gpu will-change-transform" />
+                            <span className="transform-gpu will-change-transform" />
                         </button>
                     </div>
                 </div>
@@ -121,7 +127,7 @@ export default function Nav() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        className="mobile-fullscreen-overlay"
+                        className="mobile-fullscreen-overlay transform-gpu"
                         initial={{ opacity: 0, y: -15 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -15 }}
@@ -201,6 +207,7 @@ export default function Nav() {
                                     initial={{ opacity: 0, y: 25 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: 0.08 * i + 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                                    className="transform-gpu"
                                 >
                                     <Link
                                         href={item.href}
@@ -276,6 +283,8 @@ export default function Nav() {
         </>
     );
 }
+
+export default memo(Nav);
 
 
 

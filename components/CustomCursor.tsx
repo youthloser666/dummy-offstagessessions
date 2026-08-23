@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
-    const [isHovered, setIsHovered] = useState(false);
-    const [cursorText, setCursorText] = useState('');
+    const dotRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLSpanElement>(null);
+    const currentTargetRef = useRef<Element | null>(null);
 
     // Gunakan useMotionValue murni untuk koordinat X, Y, dan Opacity (Bypass React state)
     const mouseX = useMotionValue(-100);
     const mouseY = useMotionValue(-100);
     const cursorOpacity = useMotionValue(0);
 
-    // Spring configuration untuk gerakan ultra-responsif (stiffness: 500, damping: 28)
+    // Spring configuration untuk gerakan kursor yang ultra-responsif dan halus
     const springConfig = { damping: 28, stiffness: 500, mass: 0.1 };
     const cursorX = useSpring(mouseX, springConfig);
     const cursorY = useSpring(mouseY, springConfig);
@@ -23,7 +24,7 @@ export default function CustomCursor() {
             return;
         }
 
-        // Langsung mutasi MotionValue tanpa memicu re-render React sama sekali
+        // Mutasi MotionValue tanpa memicu re-render React
         const handleMouseMove = (e: MouseEvent) => {
             mouseX.set(e.clientX);
             mouseY.set(e.clientY);
@@ -38,18 +39,36 @@ export default function CustomCursor() {
             cursorOpacity.set(1);
         };
 
+        // ZERO React Re-render: update class list & textContent langsung pada DOM ref
         const handleMouseOver = (e: MouseEvent) => {
             const target = e.target as HTMLElement | null;
             if (!target) return;
 
             const interactive = target.closest('a, button, [data-cursor], [data-cursor-magnetic], input, textarea');
+            
+            // Hindari kalkulasi/mutasi DOM jika target hover masih elemen yang sama
+            if (currentTargetRef.current === interactive) return;
+            currentTargetRef.current = interactive;
+
+            const dot = dotRef.current;
+            const textEl = textRef.current;
+            if (!dot) return;
+
             if (interactive) {
-                setIsHovered(true);
                 const customLabel = interactive.getAttribute('data-cursor');
-                setCursorText(customLabel || '');
+                if (customLabel) {
+                    if (textEl) textEl.textContent = customLabel;
+                    dot.classList.add('has-badge');
+                    dot.classList.remove('is-hovered');
+                } else {
+                    if (textEl) textEl.textContent = '';
+                    dot.classList.add('is-hovered');
+                    dot.classList.remove('has-badge');
+                }
             } else {
-                setIsHovered(false);
-                setCursorText('');
+                if (textEl) textEl.textContent = '';
+                dot.classList.remove('is-hovered');
+                dot.classList.remove('has-badge');
             }
         };
 
@@ -68,7 +87,7 @@ export default function CustomCursor() {
 
     return (
         <motion.div
-            className="transform-gpu pointer-events-none"
+            className="custom-cursor-root transform-gpu pointer-events-none"
             style={{
                 position: 'fixed',
                 top: 0,
@@ -86,50 +105,15 @@ export default function CustomCursor() {
                 pointerEvents: 'none',
             }}
         >
-            {/* 16px Acid Green Dot / Capsule */}
-            <motion.div
-                animate={{
-                    width: cursorText ? 'auto' : isHovered ? 38 : 16,
-                    height: cursorText ? 28 : isHovered ? 38 : 16,
-                    borderRadius: cursorText ? 14 : 9999,
-                    backgroundColor: cursorText
-                        ? 'rgba(5, 5, 5, 0.92)'
-                        : isHovered
-                        ? 'rgba(0, 255, 0, 0.15)'
-                        : 'var(--acid, #00FF00)',
-                    border: cursorText
-                        ? '1px solid var(--acid, #00FF00)'
-                        : isHovered
-                        ? '1.5px solid var(--acid, #00FF00)'
-                        : 'none',
-                    boxShadow: isHovered
-                        ? '0 0 20px rgba(0, 255, 0, 0.55), inset 0 0 10px rgba(0, 255, 0, 0.2)'
-                        : '0 0 14px rgba(0, 255, 0, 0.85)',
-                    padding: cursorText ? '0 12px' : '0px',
-                }}
-                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
+            <div
+                ref={dotRef}
+                className="custom-cursor-dot transform-gpu will-change-transform"
             >
-                {cursorText && (
-                    <span
-                        style={{
-                            color: 'var(--acid, #00FF00)',
-                            fontFamily: "'Space Mono', monospace",
-                            fontSize: '9px',
-                            fontWeight: 700,
-                            letterSpacing: '0.12em',
-                            textTransform: 'uppercase',
-                            whiteSpace: 'nowrap',
-                        }}
-                    >
-                        {cursorText}
-                    </span>
-                )}
-            </motion.div>
+                <span
+                    ref={textRef}
+                    className="custom-cursor-text transform-gpu"
+                />
+            </div>
         </motion.div>
     );
 }

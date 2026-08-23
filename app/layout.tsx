@@ -5,7 +5,8 @@ import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import ClientShell from '@/components/ClientShell';
 import SmoothScroll from '@/components/SmoothScroll';
-import CollageBackground from '@/components/CollageBackground';
+import GlobalBackgroundCanvas from '@/components/GlobalBackgroundCanvas';
+import LevaProvider from '@/components/LevaProvider';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -21,19 +22,21 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
       <body className="bg-black text-white cursor-none overflow-x-hidden">
-        {/* LAYER 1: Fixed Background Root (3D Cylinder Tunnel + Grid Overlay + Radial Mask) */}
+        {/* LEVA GUI ROOT CONTROLLER — Clickable anywhere on screen */}
+        <LevaProvider />
+
+        {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
           id="fixed-background-root"
           className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-          style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}
+          style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', backgroundColor: '#000000' }}
         >
-          <CollageBackground />
-          <div
-            className="grid-overlay absolute inset-0 z-[1] pointer-events-none"
-            style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }}
-          />
+          {/* LAYER 1A: 3D Canvas (Photo Grid + Grid Lines + 3D Hero Typography + 3D Glass OFFSTAGE) */}
+          <div className="absolute inset-0 z-0 pointer-events-none" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+            <GlobalBackgroundCanvas />
+          </div>
 
-          {/* Radial Gradient Vignette: Darkens outer cylinder edges seamlessly */}
+          {/* LAYER 1B: Radial Gradient Vignette: Darkens outer edges seamlessly */}
           <div
             className="absolute inset-0 z-[2] pointer-events-none"
             style={{

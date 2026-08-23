@@ -52,7 +52,7 @@ export default function ShowsPage() {
     });
 
     return (
-        <main className="bg-transparent" style={{ background: 'transparent' }}>
+        <div className="bg-transparent" style={{ background: 'transparent' }}>
             <div className={`${styles.filterBar} reveal`}>
                 <div className={styles.filterGroup}>
                     {FILTERS.map((filter) => (
@@ -234,7 +234,7 @@ export default function ShowsPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </main>
+        </div>
     );
 }
 

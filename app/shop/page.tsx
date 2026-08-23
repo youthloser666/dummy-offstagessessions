@@ -47,7 +47,7 @@ export default function ShopPage() {
     );
 
     return (
-        <main className="bg-transparent" style={{ background: 'transparent' }}>
+        <div className="bg-transparent" style={{ background: 'transparent' }}>
             {/* Full-Width Hero Image Banner (Bleeding under transparent navbar) */}
             <div className={`${styles.heroBanner} relative reveal`}>
                 {products.map((item, idx) => (
@@ -203,6 +203,6 @@ export default function ShopPage() {
                     </div>
                 )}
             </div>
-        </main>
+        </div>
     );
 }
