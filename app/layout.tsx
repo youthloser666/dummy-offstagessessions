@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import ClientShell from '@/components/ClientShell';
 import SmoothScroll from '@/components/SmoothScroll';
 import GlobalBackgroundCanvas from '@/components/GlobalBackgroundCanvas';
-import LevaProvider from '@/components/LevaProvider';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -22,9 +21,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
       <body className="bg-black text-white cursor-none overflow-x-hidden">
-        {/* LEVA GUI ROOT CONTROLLER — Clickable anywhere on screen */}
-        <LevaProvider />
-
         {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
           id="fixed-background-root"

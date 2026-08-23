@@ -3,92 +3,89 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Text, useGLTF, MeshTransmissionMaterial, Center, Float } from '@react-three/drei';
-import { useControls } from 'leva';
 import * as THREE from 'three';
+
+// ─── EXACT MATERIAL & POSITION CONSTANTS FROM USER CONFIGURATION ──
+const GLASS_CONFIG = {
+    transmission: 1.0,
+    thickness: 0.15,
+    roughness: 0.0,
+    ior: 1.06,
+    chromaticAberration: 0.07,
+    anisotropy: 0.26,
+    distortion: 0.05,
+    distortionScale: 1.2,
+    temporalDistortion: 0.01,
+    color: '#f5f5f5',
+    attenuationColor: '#ffffff',
+    attenuationDistance: 2.2,
+    samples: 9,
+    resolution: 256,
+    backside: true,
+};
+
+const MOTION_CONFIG = {
+    scaleMultiplier: 1.18,
+    offsetX: 1.42,
+    offsetY: 0.0,
+    floatSpeed: 3.0,
+    floatIntensity: 0.08,
+    parallaxStrength: 3.0,
+};
 
 function GlassOffstageModel({ isHovered, fontSize }: { isHovered: boolean; fontSize: number }) {
     const { nodes } = useGLTF('/3D/offstage_text.glb') as any;
     const groupRef = useRef<THREE.Group>(null);
     const targetScaleVec = useMemo(() => new THREE.Vector3(), []);
 
-    // ─── LEVA CONTROLS ────────────────────────────────────────────
-    const glassConfig = useControls('3D Glass Material', {
-        transmission: { value: 1.0, min: 0.0, max: 1.0, step: 0.01 },
-        thickness: { value: 1.4, min: 0.0, max: 5.0, step: 0.05 },
-        roughness: { value: 0.04, min: 0.0, max: 1.0, step: 0.01 },
-        ior: { value: 1.48, min: 1.0, max: 2.5, step: 0.01 },
-        chromaticAberration: { value: 0.08, min: 0.0, max: 1.0, step: 0.01 },
-        anisotropy: { value: 0.15, min: 0.0, max: 1.0, step: 0.01 },
-        distortion: { value: 0.25, min: 0.0, max: 2.0, step: 0.05 },
-        distortionScale: { value: 0.3, min: 0.0, max: 2.0, step: 0.05 },
-        temporalDistortion: { value: 0.06, min: 0.0, max: 1.0, step: 0.01 },
-        color: '#ffffff',
-        attenuationColor: '#ffffff',
-        attenuationDistance: { value: 1.5, min: 0.0, max: 10.0, step: 0.1 },
-        samples: { value: 6, min: 1, max: 16, step: 1 },
-        resolution: { value: 256, options: [128, 256, 512, 1024] },
-        backside: true,
-    });
-
-    const animConfig = useControls('3D Position & Motion', {
-        scaleMultiplier: { value: 1.0, min: 0.5, max: 2.0, step: 0.02 },
-        offsetX: { value: 0.0, min: -2.0, max: 2.0, step: 0.02 },
-        offsetY: { value: 0.0, min: -2.0, max: 2.0, step: 0.02 },
-        floatSpeed: { value: 2.0, min: 0.0, max: 5.0, step: 0.1 },
-        floatIntensity: { value: 0.08, min: 0.0, max: 1.0, step: 0.01 },
-        parallaxStrength: { value: 0.8, min: 0.0, max: 3.0, step: 0.1 },
-    });
-
     // Base model width ~ 0.127 units
-    const baseScale = (fontSize * 4.6 / 0.127) * animConfig.scaleMultiplier;
+    const baseScale = (fontSize * 4.6 / 0.127) * MOTION_CONFIG.scaleMultiplier;
 
     useFrame((state, delta) => {
         if (groupRef.current) {
-            // Hover reaction: scale up slightly and follow mouse
+            // Hover reaction: scale up slightly and smoothly follow mouse
             const hoverScale = isHovered ? 1.08 : 1.0;
             const currentScale = baseScale * hoverScale;
             targetScaleVec.set(currentScale, currentScale, currentScale);
             groupRef.current.scale.lerp(targetScaleVec, delta * 6);
 
-            // Parallax tilt
-            if (animConfig.parallaxStrength > 0) {
-                const mult = animConfig.parallaxStrength;
-                const targetRotY = (state.pointer.x * Math.PI * mult) / 8;
-                const targetRotX = (-state.pointer.y * Math.PI * mult) / 10;
+            // Parallax tilt (strength 3.0)
+            const mult = MOTION_CONFIG.parallaxStrength;
+            const targetRotY = (state.pointer.x * Math.PI * mult) / 8;
+            const targetRotX = (-state.pointer.y * Math.PI * mult) / 10;
 
-                groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, delta * 4);
-                groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, delta * 4);
-            }
+            groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, delta * 4);
+            groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, delta * 4);
         }
     });
 
     if (!nodes || !nodes.Curve) return null;
 
     return (
-        <group ref={groupRef} position={[animConfig.offsetX, animConfig.offsetY, 0.25]}>
+        <group ref={groupRef} position={[MOTION_CONFIG.offsetX, MOTION_CONFIG.offsetY, 0.25]}>
             <Float
-                speed={animConfig.floatSpeed}
-                rotationIntensity={animConfig.floatIntensity * 0.8}
-                floatIntensity={animConfig.floatIntensity}
+                speed={MOTION_CONFIG.floatSpeed}
+                rotationIntensity={MOTION_CONFIG.floatIntensity * 0.8}
+                floatIntensity={MOTION_CONFIG.floatIntensity}
             >
                 <Center rotation={[Math.PI / 2, 0, 0]}>
                     <mesh geometry={nodes.Curve.geometry}>
                         <MeshTransmissionMaterial
-                            backside={glassConfig.backside}
-                            samples={glassConfig.samples}
-                            resolution={glassConfig.resolution}
-                            transmission={glassConfig.transmission}
-                            roughness={glassConfig.roughness}
-                            thickness={glassConfig.thickness}
-                            ior={glassConfig.ior}
-                            chromaticAberration={glassConfig.chromaticAberration}
-                            anisotropy={glassConfig.anisotropy}
-                            distortion={glassConfig.distortion}
-                            distortionScale={glassConfig.distortionScale}
-                            temporalDistortion={glassConfig.temporalDistortion}
-                            color={glassConfig.color}
-                            attenuationColor={glassConfig.attenuationColor}
-                            attenuationDistance={glassConfig.attenuationDistance}
+                            backside={GLASS_CONFIG.backside}
+                            samples={GLASS_CONFIG.samples}
+                            resolution={GLASS_CONFIG.resolution}
+                            transmission={GLASS_CONFIG.transmission}
+                            roughness={GLASS_CONFIG.roughness}
+                            thickness={GLASS_CONFIG.thickness}
+                            ior={GLASS_CONFIG.ior}
+                            chromaticAberration={GLASS_CONFIG.chromaticAberration}
+                            anisotropy={GLASS_CONFIG.anisotropy}
+                            distortion={GLASS_CONFIG.distortion}
+                            distortionScale={GLASS_CONFIG.distortionScale}
+                            temporalDistortion={GLASS_CONFIG.temporalDistortion}
+                            color={GLASS_CONFIG.color}
+                            attenuationColor={GLASS_CONFIG.attenuationColor}
+                            attenuationDistance={GLASS_CONFIG.attenuationDistance}
                         />
                     </mesh>
                 </Center>
@@ -99,7 +96,7 @@ function GlassOffstageModel({ isHovered, fontSize }: { isHovered: boolean; fontS
 
 export default function HeroScene3D() {
     const heroGroupRef = useRef<THREE.Group>(null);
-    const { viewport, size } = useThree();
+    const { viewport } = useThree();
     const [isHovered, setIsHovered] = useState(false);
 
     // Responsive font sizing based on viewport width
@@ -111,7 +108,6 @@ export default function HeroScene3D() {
 
     // Track vertical scroll to smoothly move hero text upward
     useEffect(() => {
-        let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
         const handleScroll = () => {
             if (heroGroupRef.current) {
                 const scrollY = window.scrollY;
