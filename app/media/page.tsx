@@ -10,36 +10,42 @@ const galleries: MediaItem[] = [
         name: 'JACKIE HOLLANDER 6.13',
         image: '/image/jackie_web.webp',
         date: 'JUNE 13, 2026 · SOUNDSTAGE',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
     {
         id: 2,
         name: 'HONEYLUV 5.02',
         image: '/image/honey_web.webp',
         date: 'MAY 2, 2026 · WAREHOUSE 8',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
     {
         id: 3,
         name: 'SHIP WREK 4.10',
         image: '/image/shipwreck_web.webp',
         date: 'APRIL 10, 2026 · POWER PLANT',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
     {
         id: 4,
         name: 'TO BE HONEST 5.09',
         image: '/image/tobehonest_web.webp',
         date: 'MAY 9, 2026 · SOUND GARDEN',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
     {
         id: 5,
         name: 'NIGHT SWIM 3.28',
         image: '/image/nightswim_web.webp',
         date: 'MARCH 28, 2026 · THE WATERFRONT',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
     {
         id: 6,
         name: 'GROW GARDEN 4.25',
         image: '/image/growgarden_web.webp',
         date: 'APRIL 25, 2026 · OPEN AIR DC',
+        facebookUrl: 'https://www.facebook.com/offstagesessions',
     },
 ];
 

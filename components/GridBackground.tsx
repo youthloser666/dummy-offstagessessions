@@ -3,22 +3,28 @@
 import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
-import { MEDIA_PHOTOS } from '@/lib/mediaPhotos';
+import { BG_PHOTOS } from '@/lib/mediaPhotos';
 
 const BASE_SPEED = 0.12; // Default idle speed (calm, slow ambient diagonal drift)
 const BOOST_FACTOR = 0.004; // Multiplier when user scrolls
 const BOOST_DECAY = 0.92; // Friction decay back to idle speed
 const MAX_BOOST = 3.5; // Cap on scroll velocity boost
 
-// Preload 50 distinct photos from /media/*.webp
-const PHOTO_URLS = MEDIA_PHOTOS.slice(0, 50);
+// Preload 30 distinct high-DPI crisp photos from /bg/*.webp (instant load, ~1.1MB total payload)
+const PHOTO_URLS = BG_PHOTOS.slice(0, 30);
 
 export default function GridBackground() {
     const groupRef = useRef<THREE.Group>(null);
     const { viewport } = useThree();
 
-    // 1. Grid Dimensions: 8 columns visible across desktop screen
-    const visibleCols = 8;
+    // 1. Responsive Grid Dimensions: 3 cols on mobile, 4-6 on tablet, 7 on desktop
+    const visibleCols = useMemo(() => {
+        if (viewport.width < 3.8) return 3; // Mobile portrait (e.g. iPhone / Android: 3 large clear columns)
+        if (viewport.width < 6.5) return 4; // Tablet portrait / Large phone
+        if (viewport.width < 9.5) return 6; // Tablet landscape / Small laptop
+        return 7; // Desktop
+    }, [viewport.width]);
+
     const TILE_SIZE = viewport.width / visibleCols;
 
     const cols = Math.ceil(viewport.width / TILE_SIZE) + 2;
@@ -166,8 +172,8 @@ export default function GridBackground() {
                                         vec4 sampledDiffuseColor = texture2D( map, vMapUv );
                                         // Perceptual Grayscale (Black & White conversion)
                                         float gray = dot(sampledDiffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-                                        // Rich High-Contrast B&W Tone
-                                        gray = clamp(pow(gray, 1.15) * 0.95, 0.0, 1.0);
+                                        // Darkened Ambient Tone (Subtle, non-distracting background for maximum content contrast)
+                                        gray = clamp(pow(gray, 1.35) * 0.38, 0.0, 0.42);
                                         diffuseColor = vec4(vec3(gray), sampledDiffuseColor.a);
                                     #endif
                                     `

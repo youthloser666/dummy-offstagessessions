@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ClientShell from '@/components/ClientShell';
 import SmoothScroll from '@/components/SmoothScroll';
 import GlobalBackgroundCanvas from '@/components/GlobalBackgroundCanvas';
+import SocialDock from '@/components/SocialDock';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -20,6 +21,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
+      <head>
+        {/* Synchronous 0ms Splash Screen Mask (Mencegah bocor landing page sebelum splash muncul) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var isHome = window.location.pathname === '/';
+                  var seen = sessionStorage.getItem('splashSeen') === 'true';
+                  if (isHome && !seen) {
+                    document.documentElement.classList.add('splash-pending');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="bg-black text-white cursor-none overflow-x-hidden">
         {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
@@ -41,7 +60,7 @@ export default function RootLayout({
               zIndex: 2,
               pointerEvents: 'none',
               backgroundImage:
-                'radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.65) 75%, #000000 100%)',
+                'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.25) 20%, rgba(0, 0, 0, 0.72) 70%, #000000 100%)',
             }}
           />
         </div>
@@ -70,6 +89,9 @@ export default function RootLayout({
             </div>
           </SmoothScroll>
         </ClientShell>
+
+        {/* Desktop Fixed Floating Social Media Dock */}
+        <SocialDock />
 
         {/* Custom Cursor Overlay */}
         <CustomCursor />

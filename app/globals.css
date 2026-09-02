@@ -41,6 +41,21 @@ html {
   color: #ffffff;
 }
 
+/* ---- SPLASH PRE-HYDRATION MASK (Mencegah landing page bocor sebelum splash screen aktif) ---- */
+html.splash-pending #fixed-background-root,
+html.splash-pending #app-viewport,
+html.splash-pending .custom-cursor-root,
+html.splash-pending aside {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+html.splash-pending {
+  overflow: hidden !important;
+  background-color: #000000 !important;
+}
+
 /* ============================================
    RAW UNDERGROUND STACKED BACKGROUND:
    Layer stack (bottom → top):

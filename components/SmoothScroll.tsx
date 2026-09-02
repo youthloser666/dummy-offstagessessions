@@ -19,13 +19,15 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     // 1. Registrasi plugin ScrollTrigger
     gsap.registerPlugin(ScrollTrigger);
 
-    // 2. Inisialisasi Lenis instance
+    // 2. Inisialisasi Lenis instance dengan inertia & smooth damping mewah
     const lenis = new Lenis({
-      lerp: 0.1,
-      duration: 1.2,
+      lerp: 0.065,
+      duration: 1.6,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.2,
+      wheelMultiplier: 0.88,
+      touchMultiplier: 1.5,
+      syncTouch: true,
       infinite: false,
     });
 
@@ -53,26 +55,25 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     };
   }, []);
 
-  // Penanganan transisi rute: stop saat animasi transisi halaman, lalu reset & start kembali
+  // Penanganan transisi rute: reset scroll ke atas secara instan tanpa mengunci UI
   useEffect(() => {
+    // 1. Reset posisi scroll native browser dan Lenis ke paling atas secara instan
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+
     const lenis = lenisRef.current;
-    if (!lenis) return;
-
-    // 1. Hentikan kalkulasi scroll saat transisi rute dimulai
-    lenis.stop();
-
-    // 2. Tunggu transisi keluar (exit) selesai (250ms)
-    const timeout = setTimeout(() => {
-      // 3. Reset scroll ke paling atas tanpa animasi
+    if (lenis) {
       lenis.scrollTo(0, { immediate: true });
-      
-      // 4. Nyalakan kembali Lenis dan refresh ScrollTrigger untuk DOM halaman baru
-      lenis.start();
+    }
+
+    // 2. Refresh ScrollTrigger setelah frame berikutnya agar layout DOM baru sudah siap
+    const rafId = requestAnimationFrame(() => {
       ScrollTrigger.refresh();
-    }, 300);
+    });
 
     return () => {
-      clearTimeout(timeout);
+      cancelAnimationFrame(rafId);
     };
   }, [pathname]);
 

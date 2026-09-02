@@ -3,8 +3,8 @@
    Extracted from index.html inline <style>
    ============================================ */
 
-/* ---- HERO SECTION ---- */
-.heroBrutalist {
+/* ---- HERO SECTION (Transparent Viewport for 3D Scene + Video Background) ---- */
+.hero {
     height: 100vh;
     min-height: 100vh;
     width: 100%;
@@ -18,29 +18,7 @@
     padding: 0 5%;
     text-align: center;
     background: transparent;
-}
-
-.heroBrutalistTitle {
-    font-family: 'Moderniz', 'Anton', sans-serif;
-    font-size: 10vw;
-    font-weight: 900;
-    text-transform: uppercase;
-    line-height: 0.9;
-    color: var(--white, #ffffff);
-    text-align: center;
-    mix-blend-difference: difference;
-    letter-spacing: -0.03em;
-    user-select: none;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    z-index: 10;
-}
-
-@media (min-width: 768px) {
-    .heroBrutalistTitle {
-        font-size: 7vw;
-    }
+    pointer-events: none;
 }
 
 /* ---- STATEMENT SECTION (Kinetic Split-Line Typography) ---- */

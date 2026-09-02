@@ -1,0 +1,79 @@
+.socialDockDesktop {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  background: rgba(12, 12, 12, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.socialDockDesktop:hover {
+  border-color: rgba(0, 255, 0, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 0, 0.15);
+}
+
+.socialBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1), color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+}
+
+.socialBtn:hover {
+  color: var(--acid, #00FF00);
+  background: rgba(0, 255, 0, 0.08);
+  border-color: rgba(0, 255, 0, 0.3);
+  transform: scale(1.12);
+}
+
+.socialBtn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+.divider {
+  width: 16px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Responsive Floating Dock on Mobile & Tablet */
+@media (max-width: 900px) {
+  .socialDockDesktop {
+    right: 12px;
+    gap: 8px;
+    padding: 8px 6px;
+    background: rgba(10, 10, 10, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .socialBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .socialBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+

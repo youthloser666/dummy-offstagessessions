@@ -97,8 +97,8 @@ export default function Home() {
 
   return (
     <div className="relative w-full flex flex-col z-10" style={{ background: 'transparent' }}>
-      {/* HERO SECTION (Rendered inside 3D Canvas Scene with live hover interaction) */}
-      <section className={`relative flex h-screen w-full flex-col items-center justify-center z-10 px-4 pointer-events-none ${styles.heroBrutalist}`} />
+      {/* HERO SECTION (Rendered inside 3D Canvas with 3D Video Plane & Interactive Glass Typography) */}
+      <section className={`relative flex h-screen w-full flex-col items-center justify-center z-10 px-4 pointer-events-none ${styles.hero}`} />
 
       {/* Statement section with Kinetic Split-Line Reveal (Layar Kedua / Di Bawah Hero) */}
       <section className={`${styles.statement} relative z-10`} style={{ position: 'relative', zIndex: 10 }}>

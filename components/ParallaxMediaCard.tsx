@@ -11,6 +11,7 @@ export interface MediaItem {
     image: string;
     date: string;
     venue?: string;
+    facebookUrl?: string;
 }
 
 export default function ParallaxMediaCard({
@@ -20,7 +21,7 @@ export default function ParallaxMediaCard({
     item: MediaItem;
     priority?: boolean;
 }) {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLAnchorElement>(null);
 
     // Track scroll progress of this specific image container across viewport
     const { scrollYProgress } = useScroll({
@@ -32,10 +33,13 @@ export default function ParallaxMediaCard({
     const y = useTransform(scrollYProgress, [0, 1], ['-14%', '14%']);
 
     return (
-        <div
+        <a
             ref={containerRef}
+            href={item.facebookUrl || 'https://www.facebook.com/offstagesessions'}
+            target="_blank"
+            rel="noopener noreferrer"
             className={styles.parallaxCard}
-            data-cursor="VIEW GALLERY ↗"
+            data-cursor="VIEW ON FACEBOOK"
             data-cursor-magnetic="true"
         >
             {/* Parallax Image Container (height: 135% for smooth drift) */}
@@ -60,13 +64,13 @@ export default function ParallaxMediaCard({
             <div className={styles.parallaxContent}>
                 <div className={styles.parallaxMetaTop}>
                     <span className={styles.parallaxDate}>{item.date}</span>
-                    <span className={styles.parallaxBadge}>OFFSTAGE ARCHIVE</span>
+                    <span className={styles.parallaxBadge}>VIEW ON FACEBOOK ↗</span>
                 </div>
 
                 <div className={styles.parallaxMetaBottom}>
                     <h2 className={styles.parallaxTitle}>{item.name}</h2>
                 </div>
             </div>
-        </div>
+        </a>
     );
 }

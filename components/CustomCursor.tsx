@@ -1,12 +1,27 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CustomCursor() {
+    const pathname = usePathname();
     const dotRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLSpanElement>(null);
     const currentTargetRef = useRef<Element | null>(null);
+
+    // Auto-reset kursor setiap kali terjadi perubahan halaman (mencegah badge kursor tertinggal)
+    useEffect(() => {
+        currentTargetRef.current = null;
+        const dot = dotRef.current;
+        const textEl = textRef.current;
+        if (dot) {
+            dot.classList.remove('is-hovered', 'has-badge');
+        }
+        if (textEl) {
+            textEl.textContent = '';
+        }
+    }, [pathname]);
 
     // Gunakan useMotionValue murni untuk koordinat X, Y, dan Opacity (Bypass React state)
     const mouseX = useMotionValue(-100);

@@ -8,7 +8,7 @@ import { useReveal } from '@/hooks/useReveal';
 import { shows, Show } from '@/lib/data';
 import styles from './shows.module.css';
 
-const FILTERS = ['All', 'House', 'Techno', 'Bass', 'Free Events'];
+const FILTERS = ['All', 'House', 'Techno', 'Bass'];
 
 export default function ShowsPage() {
     const [activeFilter, setActiveFilter] = useState('All');
@@ -47,7 +47,6 @@ export default function ShowsPage() {
     // Filter shows based on activeFilter
     const filteredShows = shows.filter((show) => {
         if (activeFilter === 'All') return true;
-        if (activeFilter === 'Free Events') return show.tags.includes('Free');
         return show.tags.includes(activeFilter);
     });
 
@@ -119,9 +118,7 @@ export default function ShowsPage() {
                                                         ? styles.tagHouse
                                                         : tag === 'Techno'
                                                             ? styles.tagTechno
-                                                            : tag === 'Bass'
-                                                                ? styles.tagBass
-                                                                : styles.tagFree
+                                                            : styles.tagBass
                                                     }`}
                                             >
                                                 {tag}
@@ -134,10 +131,10 @@ export default function ShowsPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={styles.ticketBtn}
-                                            data-cursor="TICKETS"
+                                            data-cursor="MORE INFO"
                                             data-cursor-magnetic="true"
                                         >
-                                            GET TICKETS ↗
+                                            MORE INFORMATION
                                         </a>
                                     )}
                                 </div>
@@ -170,9 +167,7 @@ export default function ShowsPage() {
                                                     ? styles.tagHouse
                                                     : tag === 'Techno'
                                                         ? styles.tagTechno
-                                                        : tag === 'Bass'
-                                                            ? styles.tagBass
-                                                            : styles.tagFree
+                                                        : styles.tagBass
                                                 }`}
                                         >
                                             {tag}
@@ -185,11 +180,11 @@ export default function ShowsPage() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={styles.ticketBtn}
-                                        data-cursor="TICKETS"
+                                        data-cursor="MORE INFO"
                                         data-cursor-magnetic="true"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        GET TICKETS ↗
+                                        MORE INFORMATION
                                     </a>
                                 ) : (
                                     <span className={styles.ticketBtn} style={{ opacity: 0.4 }}>
