@@ -95,6 +95,20 @@ export default function RootLayout({
 
         {/* Custom Cursor Overlay */}
         <CustomCursor />
+
+        {/* SVG Optical Displacement Filter for Liquid Glass Pill Buttons (ala Jhey Tompkins) */}
+        <svg
+          style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, pointerEvents: 'none', zIndex: -1 }}
+          aria-hidden="true"
+        >
+          <defs>
+            <filter id="liquid-glass-lens" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+              <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves="1" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+              <feGaussianBlur in="displaced" stdDeviation="0.4" result="smooth" />
+            </filter>
+          </defs>
+        </svg>
       </body>
     </html>
   );

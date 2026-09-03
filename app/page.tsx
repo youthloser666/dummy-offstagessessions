@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import TiltCard from '@/components/TiltCard';
 import { useReveal } from '@/hooks/useReveal';
 import { upcomingShows } from '@/lib/data';
+import GlitchBanner from '@/components/GlitchBanner';
 import styles from './page.module.css';
 
 const instagramPosts = [
@@ -266,40 +267,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className={`${styles.aboutImageBanner} relative reveal`}>
-          {/* Soft Fade Overlays */}
-          <div
-            className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '6rem', backgroundImage: 'linear-gradient(to bottom, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
-          />
-          <div
-            className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"
-            style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '6rem', backgroundImage: 'linear-gradient(to top, #000000, transparent)', pointerEvents: 'none', zIndex: 10 }}
-          />
-
-          {[
-            '/image/1_web.webp',
-            '/image/2_web.webp',
-            '/image/3_web.webp',
-            '/image/4_web.webp',
-            '/image/5_web.webp',
-            '/image/6_web_web.webp',
-            '/image/7_web_web.webp',
-            '/image/8_web_web.webp',
-            '/image/9_web_web.webp',
-            '/image/10_web_web.webp',
-          ].map((src, i) => (
-            <Image
-              key={src}
-              src={src}
-              alt={`Offstage moment ${i + 1}`}
-              width={1200}
-              height={500}
-              className={`${styles.bannerImg} ${styles[`bannerSlide${i}`]}`}
-            />
-          ))}
-          <div className={styles.aboutBadge}>BORN IN BALTIMORE · EST 2023</div>
-        </div>
+        <GlitchBanner />
       </section>
 
       {/* The Footer serves as the contact section correctly per layout */}

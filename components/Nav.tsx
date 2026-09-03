@@ -262,16 +262,19 @@ function Nav() {
                                     maxWidth: '360px',
                                     textAlign: 'center',
                                     padding: '16px 24px',
-                                    background: 'transparent',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '2px',
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '9999px',
+                                    backdropFilter: 'url(#liquid-glass-lens) blur(20px) saturate(190%) contrast(105%)',
+                                    WebkitBackdropFilter: 'url(#liquid-glass-lens) blur(20px) saturate(190%) contrast(105%)',
+                                    boxShadow: '0 0 2px 1px rgba(255, 255, 255, 0.35), inset 0 0 12px 4px rgba(255, 255, 255, 0.18), 0 8px 32px rgba(0, 0, 0, 0.6)',
                                     color: '#ffffff',
                                     textDecoration: 'none',
                                     fontFamily: "'Moderniz', sans-serif",
                                     fontSize: '0.72rem',
                                     letterSpacing: '0.14em',
                                     textTransform: 'uppercase',
-                                    transition: 'background 0.25s ease, color 0.25s ease, border-color 0.25s ease',
+                                    transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
                                 }}
                             >
                                 Contact ↗

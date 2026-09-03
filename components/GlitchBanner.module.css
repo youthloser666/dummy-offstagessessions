@@ -1,0 +1,292 @@
+/* ============================================
+   GLITCH BANNER — CYBERPUNK / RAVE ANALOG GLITCH
+   Dynamic RGB Splitting, Slice Displacements & CRT Scanlines
+   ============================================ */
+
+.bannerContainer {
+    width: 100%;
+    height: 480px;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: #050505;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.bannerContainer:hover {
+    border-color: rgba(200, 255, 0, 0.5);
+    box-shadow: 0 0 35px rgba(200, 255, 0, 0.12), inset 0 0 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Image Stage */
+.stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: transform;
+}
+
+.stageGlitching {
+    animation: glitchShake 0.36s steps(2) forwards;
+}
+
+/* Main Base Image */
+.mainImage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) brightness(0.72) contrast(1.15);
+    transition: filter 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: scale(1.01);
+}
+
+.bannerContainer:hover .mainImage {
+    filter: grayscale(0) brightness(0.85) contrast(1.05);
+    transform: scale(1.03);
+}
+
+/* Glitch Slice Layer 1 (Red / Cyan Displace Slices) */
+.sliceA {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+    mix-blend-mode: screen;
+}
+
+.sliceB {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 4;
+    mix-blend-mode: screen;
+}
+
+/* Active Glitch Animations */
+.stageGlitching .sliceA {
+    opacity: 0.95;
+    animation: glitchSliceA 0.36s steps(2) forwards;
+}
+
+.stageGlitching .sliceB {
+    opacity: 0.95;
+    animation: glitchSliceB 0.36s steps(2) forwards;
+}
+
+/* Hover-activated subtle continuous chromatic jitter */
+.hoverJitter .sliceA {
+    opacity: 0.45;
+    clip-path: polygon(0 20%, 100% 20%, 100% 28%, 0 28%);
+    transform: translate3d(-4px, 1px, 0);
+    filter: drop-shadow(-3px 0 0 rgba(255, 0, 70, 0.7));
+    transition: opacity 0.2s ease;
+}
+
+.hoverJitter .sliceB {
+    opacity: 0.45;
+    clip-path: polygon(0 68%, 100% 68%, 100% 75%, 0 75%);
+    transform: translate3d(4px, -1px, 0);
+    filter: drop-shadow(3px 0 0 rgba(0, 255, 255, 0.7));
+    transition: opacity 0.2s ease;
+}
+
+/* Acid Flash Overlay during glitch climax */
+.flashOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(200, 255, 0, 0.22);
+    mix-blend-mode: color-dodge;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+}
+
+.stageGlitching .flashOverlay {
+    animation: flashPulse 0.32s ease-out forwards;
+}
+
+/* Subtle CRT Scanlines */
+.scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.25) 2px,
+        rgba(0, 0, 0, 0.25) 4px
+    );
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0.55;
+}
+
+/* Moving VHS Glitch Tracking Bar */
+.trackingBar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 12px rgba(200, 255, 0, 0.4);
+    pointer-events: none;
+    z-index: 7;
+    opacity: 0;
+}
+
+.stageGlitching .trackingBar {
+    opacity: 0.8;
+    animation: trackingSweep 0.36s linear forwards;
+}
+
+/* ---- KEYFRAMES ---- */
+@keyframes glitchShake {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    15% { transform: translate3d(-5px, 2px, 0) scale(1.02); }
+    35% { transform: translate3d(6px, -3px, 0) scale(1.01); }
+    55% { transform: translate3d(-4px, -1px, 0) scale(1.025); }
+    75% { transform: translate3d(4px, 2px, 0) scale(1.008); }
+    90% { transform: translate3d(-1px, 1px, 0) scale(1.004); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes glitchSliceA {
+    0% {
+        clip-path: polygon(0 8%, 100% 8%, 100% 22%, 0 22%);
+        transform: translate3d(-18px, 1px, 0);
+        filter: drop-shadow(-5px 0 0 rgba(255, 0, 70, 0.9));
+    }
+    20% {
+        clip-path: polygon(0 60%, 100% 60%, 100% 74%, 0 74%);
+        transform: translate3d(20px, -2px, 0);
+        filter: drop-shadow(6px 0 0 rgba(0, 255, 255, 0.9));
+    }
+    40% {
+        clip-path: polygon(0 30%, 100% 30%, 100% 44%, 0 44%);
+        transform: translate3d(-24px, 2px, 0);
+        filter: drop-shadow(-6px 0 0 rgba(200, 255, 0, 0.9));
+    }
+    65% {
+        clip-path: polygon(0 82%, 100% 82%, 100% 95%, 0 95%);
+        transform: translate3d(14px, -1px, 0);
+        filter: drop-shadow(4px 0 0 rgba(255, 0, 70, 0.9));
+    }
+    85% {
+        clip-path: polygon(0 4%, 100% 4%, 100% 16%, 0 16%);
+        transform: translate3d(-8px, 1px, 0);
+        filter: drop-shadow(-3px 0 0 rgba(0, 255, 255, 0.9));
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes glitchSliceB {
+    0% {
+        clip-path: polygon(0 38%, 100% 38%, 100% 54%, 0 54%);
+        transform: translate3d(18px, -1px, 0);
+        filter: drop-shadow(5px 0 0 rgba(0, 255, 255, 0.85));
+    }
+    22% {
+        clip-path: polygon(0 14%, 100% 14%, 100% 26%, 0 26%);
+        transform: translate3d(-18px, 2px, 0);
+        filter: drop-shadow(-5px 0 0 rgba(255, 0, 60, 0.85));
+    }
+    45% {
+        clip-path: polygon(0 76%, 100% 76%, 100% 90%, 0 90%);
+        transform: translate3d(24px, 0, 0);
+        filter: drop-shadow(6px 0 0 rgba(200, 255, 0, 0.85));
+    }
+    70% {
+        clip-path: polygon(0 48%, 100% 48%, 100% 62%, 0 62%);
+        transform: translate3d(-14px, -2px, 0);
+        filter: drop-shadow(-4px 0 0 rgba(0, 255, 255, 0.85));
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes flashPulse {
+    0% { opacity: 0; }
+    30% { opacity: 0.45; }
+    60% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+@keyframes trackingSweep {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+/* Badge */
+.aboutBadge {
+    position: absolute;
+    bottom: 20px;
+    right: 24px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    color: var(--acid, #c8ff00);
+    border: 1px solid var(--acid, #c8ff00);
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 10px 18px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    z-index: 10;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.bannerContainer:hover .aboutBadge {
+    background: var(--acid, #c8ff00);
+    color: #000;
+    box-shadow: 0 0 16px rgba(200, 255, 0, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .bannerContainer {
+        height: 360px;
+    }
+    .aboutBadge {
+        padding: 8px 14px;
+        font-size: 0.68rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .bannerContainer {
+        height: 260px;
+        margin-top: 24px;
+    }
+    .aboutBadge {
+        bottom: 14px;
+        right: 14px;
+        font-size: 0.62rem;
+        padding: 6px 12px;
+    }
+}

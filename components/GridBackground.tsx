@@ -10,8 +10,8 @@ const BOOST_FACTOR = 0.004; // Multiplier when user scrolls
 const BOOST_DECAY = 0.92; // Friction decay back to idle speed
 const MAX_BOOST = 3.5; // Cap on scroll velocity boost
 
-// Preload 30 distinct high-DPI crisp photos from /bg/*.webp (instant load, ~1.1MB total payload)
-const PHOTO_URLS = BG_PHOTOS.slice(0, 30);
+// Preload all 134 optimized 500x500 WebP photos from /bg/*.webp (~4.5MB total payload)
+const PHOTO_URLS = BG_PHOTOS;
 
 export default function GridBackground() {
     const groupRef = useRef<THREE.Group>(null);
