@@ -76,7 +76,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
                     opacity: 1, 
                     duration: 0.7, 
                     ease: 'power2.out',
-                    force3D: true,
+                    clearProps: 'transform',
                 }
             );
         }

@@ -30,7 +30,9 @@ const MOTION_CONFIG = {
     floatIntensity: 0.09,
 };
 
-const GLITCH_GLYPHS = '!X0_#%?/<>';
+// ─── NEON GLOW CONFIGURATION ──
+const NEON_ACID_COLOR = '#c8ff00';
+const NEON_AURA_COLOR = '#a6ff00';
 
 function InteractiveWord({
     id,
@@ -53,92 +55,69 @@ function InteractiveWord({
     registerHitbox?: (id: string, mesh: THREE.Mesh | null) => void;
     visible?: boolean;
 }) {
-    const [displayText, setDisplayText] = useState(text);
     const groupRef = useRef<THREE.Group>(null);
     const mainTextRef = useRef<any>(null);
-    const cyanGhostRef = useRef<any>(null);
-    const redGhostRef = useRef<any>(null);
-    const frameCounter = useRef(0);
+    const haloTextRef = useRef<any>(null);
+    const auraTextRef = useRef<any>(null);
+    const lightRef = useRef<THREE.PointLight>(null);
 
-    const whiteColor = useMemo(() => new THREE.Color('#ffffff'), []);
-    const acidColor = useMemo(() => new THREE.Color('#c8ff00'), []);
-    const cyanColor = useMemo(() => new THREE.Color('#00e5ff'), []);
-    const currentColor = useRef(new THREE.Color('#ffffff'));
+    const glowFactorRef = useRef(0);
     const opacityRef = useRef(visible ? 1 : 0);
 
-    useFrame((_, delta) => {
+    const whiteColor = useMemo(() => new THREE.Color('#ffffff'), []);
+    const neonHotCoreColor = useMemo(() => new THREE.Color('#f4ffc0'), []);
+    const currentColor = useRef(new THREE.Color('#ffffff'));
+
+    useFrame((state, delta) => {
         const targetOpacity = visible ? 1 : 0;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, targetOpacity, 9, delta);
 
-        if (!groupRef.current) return;
+        // Smooth glow transition when hovered or touched
+        const targetGlow = isHovered ? 1.0 : 0.0;
+        glowFactorRef.current = THREE.MathUtils.damp(glowFactorRef.current, targetGlow, 7.5, delta);
 
-        if (isHovered) {
-            frameCounter.current++;
+        const g = glowFactorRef.current;
+        const time = state.clock.elapsedTime;
 
-            // 1. Cyberpunk letter scramble
-            if (frameCounter.current % 3 === 0) {
-                if (Math.random() > 0.35) {
-                    const idx = Math.floor(Math.random() * text.length);
-                    const randomChar = GLITCH_GLYPHS[Math.floor(Math.random() * GLITCH_GLYPHS.length)];
-                    setDisplayText(text.slice(0, idx) + randomChar + text.slice(idx + 1));
-                } else {
-                    setDisplayText(text);
-                }
-            }
+        // Subtle organic neon gas oscillation (analog high-voltage tube breathing)
+        const gasHum = Math.sin(time * 5.8 + id.charCodeAt(0)) * 0.035;
+        const effectiveGlow = Math.max(0, Math.min(1, g + (g > 0.05 ? gasHum : 0)));
 
-            // 2. High-speed 3D micro-jitter
-            const jitterX = (Math.random() - 0.5) * 0.08 * fontSize;
-            const jitterY = (Math.random() - 0.5) * 0.06 * fontSize;
-            const jitterZ = (Math.random() - 0.5) * 0.04 * fontSize;
-            groupRef.current.position.set(
-                position[0] + jitterX,
-                position[1] + jitterY,
-                position[2] + jitterZ
-            );
-
-            // 3. Erratic micro tilt
-            groupRef.current.rotation.z = (Math.random() - 0.5) * 0.09;
-
-            // 4. Color strobe between acid neon, cyan, and white
-            const r = Math.random();
-            const targetCol = r > 0.5 ? acidColor : r > 0.25 ? cyanColor : whiteColor;
-            currentColor.current.lerp(targetCol, delta * 30);
-
-            // 5. 3D Ghost RGB Chromatic Aberration splits
-            if (cyanGhostRef.current) {
-                cyanGhostRef.current.position.set(
-                    (Math.random() * -0.06 - 0.02) * fontSize,
-                    (Math.random() - 0.5) * 0.035 * fontSize,
-                    -0.015
-                );
-                cyanGhostRef.current.fillOpacity = (0.7 + Math.random() * 0.3) * opacityRef.current;
-            }
-            if (redGhostRef.current) {
-                redGhostRef.current.position.set(
-                    (Math.random() * 0.06 + 0.02) * fontSize,
-                    (Math.random() - 0.5) * 0.035 * fontSize,
-                    -0.015
-                );
-                redGhostRef.current.fillOpacity = (0.7 + Math.random() * 0.3) * opacityRef.current;
-            }
-        } else {
-            // Calm state: restore clean typography
-            if (displayText !== text) setDisplayText(text);
-            groupRef.current.position.set(position[0], position[1], position[2]);
-            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, 0, 10, delta);
-            currentColor.current.lerp(whiteColor, delta * 12);
-
-            if (cyanGhostRef.current) {
-                cyanGhostRef.current.fillOpacity = 0;
-            }
-            if (redGhostRef.current) {
-                redGhostRef.current.fillOpacity = 0;
-            }
+        // 1. Tactile 3D lift & smooth scale-up (clean, serene depth instead of violent glitch jitter)
+        if (groupRef.current) {
+            const targetZ = position[2] + effectiveGlow * (0.055 * fontSize);
+            groupRef.current.position.set(position[0], position[1], targetZ);
+            const targetScale = 1.0 + effectiveGlow * 0.035;
+            groupRef.current.scale.set(targetScale, targetScale, 1.0);
         }
 
+        // 2. Core Neon Tube (Sharp white-hot core with tight saturated neon rim)
         if (mainTextRef.current) {
-            mainTextRef.current.color = currentColor.current;
             mainTextRef.current.fillOpacity = opacityRef.current;
+            mainTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.35, 1.0, effectiveGlow) * opacityRef.current;
+            mainTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.035, fontSize * 0.08, effectiveGlow);
+            mainTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.024, fontSize * 0.04, effectiveGlow);
+            currentColor.current.lerpColors(whiteColor, neonHotCoreColor, effectiveGlow * 0.45);
+            mainTextRef.current.color = currentColor.current;
+        }
+
+        // 3. Medium Radiant Halo Bloom
+        if (haloTextRef.current) {
+            haloTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.2, 0.95, effectiveGlow) * opacityRef.current;
+            haloTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.1, fontSize * 0.24, effectiveGlow);
+            haloTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.06, fontSize * 0.12, effectiveGlow);
+        }
+
+        // 4. Deep Atmospheric Neon Wash (Wide Ambient Aura)
+        if (auraTextRef.current) {
+            auraTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.08, 0.72, effectiveGlow) * opacityRef.current;
+            auraTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.22, fontSize * 0.5, effectiveGlow);
+            auraTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.14, fontSize * 0.24, effectiveGlow);
+        }
+
+        // 5. Dynamic 3D Neon Point Light (illuminates surrounding scene and refractive glass)
+        if (lightRef.current) {
+            lightRef.current.intensity = THREE.MathUtils.lerp(0.25, 2.8, effectiveGlow) * opacityRef.current;
         }
     });
 
@@ -147,41 +126,51 @@ function InteractiveWord({
             {/* Invisible Hitbox for 100% raycast coverage */}
             <mesh
                 ref={(el) => registerHitbox?.(id, el)}
-                position={[0, 0, 0.01]}
+                position={[0, 0, 0.02]}
             >
                 <planeGeometry args={[wordWidth, fontSize * 1.35]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
 
-            {/* Cyan Glitch Channel */}
+            {/* Layer 1: Deep Atmospheric Neon Wash (Wide Bloom Aura) */}
             <Text
-                ref={cyanGhostRef}
+                ref={auraTextRef}
                 font="/font/Moderniz.otf"
                 fontSize={fontSize}
                 anchorX="center"
                 anchorY="middle"
-                color="#00ffff"
+                color={NEON_ACID_COLOR}
                 letterSpacing={letterSpacing}
                 fillOpacity={0}
+                outlineWidth={fontSize * 0.14}
+                outlineBlur={fontSize * 0.22}
+                outlineColor={NEON_AURA_COLOR}
+                outlineOpacity={0.08}
+                position={[0, 0, -0.012]}
             >
                 {text}
             </Text>
 
-            {/* Red / Acid Glitch Channel */}
+            {/* Layer 2: Radiant Neon Halo (Medium Bloom) */}
             <Text
-                ref={redGhostRef}
+                ref={haloTextRef}
                 font="/font/Moderniz.otf"
                 fontSize={fontSize}
                 anchorX="center"
                 anchorY="middle"
-                color="#ff0055"
+                color={NEON_ACID_COLOR}
                 letterSpacing={letterSpacing}
                 fillOpacity={0}
+                outlineWidth={fontSize * 0.06}
+                outlineBlur={fontSize * 0.1}
+                outlineColor={NEON_ACID_COLOR}
+                outlineOpacity={0.2}
+                position={[0, 0, -0.006]}
             >
                 {text}
             </Text>
 
-            {/* Main Crisp Text */}
+            {/* Layer 3: Core Neon Tube (Crisp Moderniz Typography with Inner Neon Rim) */}
             <Text
                 ref={mainTextRef}
                 font="/font/Moderniz.otf"
@@ -190,9 +179,24 @@ function InteractiveWord({
                 anchorY="middle"
                 color="#ffffff"
                 letterSpacing={letterSpacing}
+                outlineWidth={fontSize * 0.024}
+                outlineBlur={fontSize * 0.035}
+                outlineColor={NEON_ACID_COLOR}
+                outlineOpacity={0.35}
+                position={[0, 0, 0]}
             >
-                {displayText}
+                {text}
             </Text>
+
+            {/* Dynamic Localized 3D Neon Point Light */}
+            <pointLight
+                ref={lightRef}
+                position={[0, 0, 0.45]}
+                color={NEON_ACID_COLOR}
+                intensity={0.25}
+                distance={fontSize * 13}
+                decay={2}
+            />
         </group>
     );
 }
@@ -306,11 +310,11 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         };
 
         const onTouchEnd = () => {
-            // Keep active glitch state for 600ms on tap before calm down
+            // Keep active neon glow state for 650ms on tap before gentle cool down
             if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
             touchTimeoutRef.current = setTimeout(() => {
                 setHoveredWord(null);
-            }, 600);
+            }, 650);
         };
 
         const onOrientation = (e: DeviceOrientationEvent) => {

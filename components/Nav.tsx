@@ -57,19 +57,18 @@ function Nav() {
         <>
             <nav 
                 ref={navRef}
-                className="border-none shadow-none bg-transparent relative z-50 transform-gpu will-change-transform"
+                className="fixed top-0 left-0 right-0 w-full z-50 pointer-events-none"
                 style={{
                     background: 'transparent',
                     border: 'none',
-                    borderBottom: 'none',
                     boxShadow: 'none',
-                    outline: 'none',
-                    zIndex: 50,
+                    backdropFilter: 'none',
+                    WebkitBackdropFilter: 'none',
                 }}
             >
-                {/* Far Left: Brand Logo (Pure CSS Hover + GPU Accelerated) */}
-                <div className="logo transform-gpu will-change-transform">
-                    <Link href="/" onClick={closeDrawer} className="transform-gpu will-change-transform">
+                {/* Far Left: Brand Logo */}
+                <div className="logo pointer-events-auto">
+                    <Link href="/" onClick={closeDrawer}>
                         <Image
                             src="/image/offstages.gif"
                             alt="Offstage Sessions"
@@ -77,47 +76,59 @@ function Nav() {
                             height={180}
                             priority
                             unoptimized
-                            className="transform-gpu will-change-transform"
                             style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
                         />
                     </Link>
                 </div>
 
-                {/* Far Right: Desktop Menu Links & Actions (K95 Minimalist Style - 100% Pure CSS Hover) */}
-                <div className="nav-right-cluster transform-gpu will-change-transform">
-                    <ul className="nav-links transform-gpu will-change-transform">
-                        {NAV_ITEMS.map((item) => (
-                            <li key={item.href} className="transform-gpu will-change-transform">
-                                <Link
-                                    href={item.href}
-                                    className={`nav-link-item transform-gpu will-change-transform ${isActive(item.href) ? 'active' : ''}`}
-                                    data-cursor-magnetic="true"
-                                >
-                                    <span className="nav-dot transform-gpu will-change-transform" aria-hidden="true" />
-                                    <span className="nav-text transform-gpu will-change-transform">{item.label}</span>
-                                </Link>
-                            </li>
-                        ))}
+                {/* Far Right: Desktop Menu Links & Actions (K95 Kinetic Character Roll with Blend Mode) */}
+                <div className="nav-right-cluster pointer-events-auto">
+                    <ul className="nav-links">
+                        {NAV_ITEMS.map((item) => {
+                            const active = isActive(item.href);
+                            return (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        className={`nav-link-item ${active ? 'is-active' : ''}`}
+                                        data-hover
+                                    >
+                                        <span className="nav-link-text">
+                                            {item.label.toUpperCase().split('').map((char, i) => (
+                                                <span
+                                                    key={i}
+                                                    className="nav-link-char"
+                                                    style={{ '--i': i } as React.CSSProperties}
+                                                >
+                                                    <span className="char-top">{char}</span>
+                                                    <span className="char-bot">{char}</span>
+                                                </span>
+                                            ))}
+                                        </span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
                     </ul>
 
-                    <div className="nav-right transform-gpu will-change-transform">
+                    <div className="nav-right">
                         <a 
                             href="#contact" 
-                            className="btn-contact transform-gpu will-change-transform" 
+                            className="btn-contact" 
                             data-cursor="CONTACT" 
-                            data-cursor-magnetic="true"
+                            data-hover
                         >
-                            Contact ↗
+                            CONTACT
                         </a>
                         <button
-                            className={`nav-hamburger transform-gpu will-change-transform${isOpen ? ' open' : ''}`}
+                            className={`nav-hamburger${isOpen ? ' open' : ''}`}
                             onClick={toggleMenu}
                             aria-label="Toggle Navigation Menu"
-                            data-cursor-magnetic="true"
+                            data-hover
                         >
-                            <span className="transform-gpu will-change-transform" />
-                            <span className="transform-gpu will-change-transform" />
-                            <span className="transform-gpu will-change-transform" />
+                            <span />
+                            <span />
+                            <span />
                         </button>
                     </div>
                 </div>
@@ -226,20 +237,6 @@ function Nav() {
                                             transition: 'opacity 0.25s ease, color 0.25s ease',
                                         }}
                                     >
-                                        {isActive(item.href) && (
-                                            <span
-                                                style={{
-                                                    width: '10px',
-                                                    height: '10px',
-                                                    borderRadius: '50%',
-                                                    backgroundColor: 'var(--acid, #00FF00)',
-                                                    boxShadow: '0 0 16px var(--acid, #00FF00), 0 0 24px var(--acid, #00FF00)',
-                                                    display: 'inline-block',
-                                                    flexShrink: 0,
-                                                }}
-                                                aria-hidden="true"
-                                            />
-                                        )}
                                         <span>{item.label}</span>
                                     </Link>
                                 </motion.div>
@@ -257,27 +254,10 @@ function Nav() {
                             <a
                                 href="#contact"
                                 onClick={closeDrawer}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '360px',
-                                    textAlign: 'center',
-                                    padding: '16px 24px',
-                                    background: 'rgba(255, 255, 255, 0.08)',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '9999px',
-                                    backdropFilter: 'url(#liquid-glass-lens) blur(20px) saturate(190%) contrast(105%)',
-                                    WebkitBackdropFilter: 'url(#liquid-glass-lens) blur(20px) saturate(190%) contrast(105%)',
-                                    boxShadow: '0 0 2px 1px rgba(255, 255, 255, 0.35), inset 0 0 12px 4px rgba(255, 255, 255, 0.18), 0 8px 32px rgba(0, 0, 0, 0.6)',
-                                    color: '#ffffff',
-                                    textDecoration: 'none',
-                                    fontFamily: "'Moderniz', sans-serif",
-                                    fontSize: '0.72rem',
-                                    letterSpacing: '0.14em',
-                                    textTransform: 'uppercase',
-                                    transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
-                                }}
+                                className="btn-contact btn-contact-mobile"
+                                data-hover
                             >
-                                Contact ↗
+                                CONTACT
                             </a>
                         </div>
                     </motion.div>
