@@ -3,7 +3,7 @@
 import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
-import { BG_PHOTOS } from '@/lib/mediaPhotos';
+import { getShuffledPhotos } from '@/lib/mediaPhotos';
 
 const BASE_SPEED = 0.12; // Default idle speed (calm, slow ambient diagonal drift)
 const BOOST_FACTOR = 0.004; // Multiplier when user scrolls
@@ -11,7 +11,8 @@ const BOOST_DECAY = 0.92; // Friction decay back to idle speed
 const MAX_BOOST = 3.5; // Cap on scroll velocity boost
 
 // Preload all 134 optimized 500x500 WebP photos from /bg/*.webp (~4.5MB total payload)
-const PHOTO_URLS = BG_PHOTOS;
+// Shuffled once at module load so every refresh shows a different mix of photos
+const PHOTO_URLS = getShuffledPhotos();
 
 export default function GridBackground() {
     const groupRef = useRef<THREE.Group>(null);
@@ -27,8 +28,17 @@ export default function GridBackground() {
 
     const TILE_SIZE = viewport.width / visibleCols;
 
-    const cols = Math.ceil(viewport.width / TILE_SIZE) + 2;
-    const rows = Math.ceil(viewport.height / TILE_SIZE) + 2;
+    // Start with minimum grid to fill viewport + buffer
+    let cols = Math.ceil(viewport.width / TILE_SIZE) + 2;
+    let rows = Math.ceil(viewport.height / TILE_SIZE) + 2;
+
+    // Expand grid so all 134 photos each get a unique tile slot
+    // The diagonal scroll naturally reveals every image as it wraps around
+    while (cols * rows < PHOTO_URLS.length) {
+        if (cols <= rows) cols++;
+        else rows++;
+    }
+
     const totalTiles = cols * rows;
 
     const totalWidth = cols * TILE_SIZE;
