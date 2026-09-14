@@ -23,16 +23,29 @@ const fragmentShader = `
     vec2 vidUv = vUv * repeat + offset;
     vec4 sampled = texture2D(map, vidUv);
     
-    // Perceptual Grayscale
-    float g = dot(sampled.rgb, vec3(0.299, 0.587, 0.114));
-    // Darkened Ambient Tone matching grid photo background
-    g = clamp(pow(g, 1.35) * 0.38, 0.0, 0.42);
+    // Perceptual Grayscale (Clean B&W conversion)
+    float lum = dot(sampled.rgb, vec3(0.299, 0.587, 0.114));
     
-    // Smooth bottom fading edge (gradasi lembut di bagian bawah video)
-    float bottomFade = smoothstep(0.0, 0.45, vUv.y);
-    float edgeFade = bottomFade;
+    // High-Contrast Clarity Curve (Opsi A: Clean B&W)
+    // 1. Deepen deep blacks slightly so background and text remain crisp
+    // 2. Punch up midtones & stage highlights so crowd & DJ action are sharp and vivid
+    float g = smoothstep(0.04, 0.94, lum);
+    // Raise peak brightness to ~0.80 (previously clamped at 0.42)
+    g = pow(g, 0.92) * 0.80;
+
+    // Subtle center protection for hero typography contrast
+    vec2 center = vec2(0.5, 0.52);
+    float dist = distance(vUv, center);
+    float textProtection = smoothstep(0.08, 0.65, dist) * 0.15 + 0.85;
+    g *= textProtection;
+
+    // Smooth bottom fading edge (bottom 25% fades smoothly into the dark section below)
+    float bottomFade = smoothstep(0.0, 0.25, vUv.y);
+    // Subtle top fade so it blends seamlessly with navbar
+    float topFade = smoothstep(1.0, 0.92, vUv.y);
+    float edgeFade = bottomFade * topFade;
     
-    gl_FragColor = vec4(vec3(g * edgeFade), sampled.a * opacity * edgeFade);
+    gl_FragColor = vec4(vec3(g), sampled.a * opacity * edgeFade);
   }
 `;
 

@@ -14,9 +14,11 @@ const MAX_BOOST = 3.5; // Cap on scroll velocity boost
 // Shuffled once at module load so every refresh shows a different mix of photos
 const PHOTO_URLS = getShuffledPhotos();
 
-export default function GridBackground() {
+export default function GridBackground({ isHome = true }: { isHome?: boolean }) {
     const groupRef = useRef<THREE.Group>(null);
     const { viewport } = useThree();
+    const heroDimUniform = useMemo(() => ({ value: 1.0 }), []);
+    const dimRef = useRef(1.0);
 
     // 1. Responsive Grid Dimensions: 3 cols on mobile, 4-6 on tablet, 7 on desktop
     const visibleCols = useMemo(() => {
@@ -145,6 +147,21 @@ export default function GridBackground() {
                 index++;
             }
         }
+
+        // Smoothly adjust collage brightness: dimmed at hero on landing page, full everywhere else
+        const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+        const vh = typeof window !== 'undefined' ? (window.innerHeight || 800) : 800;
+
+        if (isHome) {
+            // At top (Hero): 0.22 (subtle dark collage texture behind hero video)
+            // As user scrolls past hero: smoothly transitions to 1.0 (normal ambient tone)
+            const progress = Math.min(1.0, scrollY / (vh * 0.75));
+            const targetDim = THREE.MathUtils.lerp(0.22, 1.0, progress);
+            dimRef.current = THREE.MathUtils.damp(dimRef.current, targetDim, 6, delta);
+        } else {
+            dimRef.current = THREE.MathUtils.damp(dimRef.current, 1.0, 6, delta);
+        }
+        heroDimUniform.value = dimRef.current;
     });
 
     // Create grid tiles array
@@ -174,7 +191,10 @@ export default function GridBackground() {
                         <meshBasicMaterial
                             map={tex}
                             toneMapped={false}
+                            customProgramCacheKey={() => 'grid_bg_tile_shader'}
                             onBeforeCompile={(shader) => {
+                                shader.uniforms.uHeroDim = heroDimUniform;
+                                shader.fragmentShader = `uniform float uHeroDim;\n` + shader.fragmentShader;
                                 shader.fragmentShader = shader.fragmentShader.replace(
                                     '#include <map_fragment>',
                                     `
@@ -184,6 +204,8 @@ export default function GridBackground() {
                                         float gray = dot(sampledDiffuseColor.rgb, vec3(0.299, 0.587, 0.114));
                                         // Darkened Ambient Tone (Subtle, non-distracting background for maximum content contrast)
                                         gray = clamp(pow(gray, 1.35) * 0.38, 0.0, 0.42);
+                                        // Hero dimming factor (keeps hero video clear & unobstructed)
+                                        gray *= uHeroDim;
                                         diffuseColor = vec4(vec3(gray), sampledDiffuseColor.a);
                                     #endif
                                     `

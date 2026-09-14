@@ -37,7 +37,7 @@ export default function GlobalBackgroundCanvas() {
                     <Environment preset="studio" />
 
                     {/* Layer 0: Infinite 3D Photo Grid Collage */}
-                    <GridBackground />
+                    <GridBackground isHome={isHome} />
 
                     {/* Layer 1: 40px Square Grid Lines Overlay */}
                     <GridLines3D />
