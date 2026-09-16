@@ -131,10 +131,11 @@ export default function ShowsPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={styles.ticketBtn}
-                                            data-cursor="MORE INFO"
+                                            data-cursor="TICKETS"
                                             data-cursor-magnetic="true"
                                         >
-                                            MORE INFORMATION
+                                            <span>TICKETS</span>
+                                            <span className={styles.ticketArrow}>↗</span>
                                         </a>
                                     )}
                                 </div>
@@ -180,11 +181,12 @@ export default function ShowsPage() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={styles.ticketBtn}
-                                        data-cursor="MORE INFO"
+                                        data-cursor="TICKETS"
                                         data-cursor-magnetic="true"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        MORE INFORMATION
+                                        <span>TICKETS</span>
+                                        <span className={styles.ticketArrow}>↗</span>
                                     </a>
                                 ) : (
                                     <span className={styles.ticketBtn} style={{ opacity: 0.4 }}>

@@ -1,4 +1,4 @@
-import NewsletterForm from './NewsletterForm';
+import ContactEmailForm from './ContactEmailForm';
 
 interface FooterProps {
     footerBigText?: string;
@@ -9,18 +9,29 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
         <footer id="contact">
             <div className="footer-top">
                 <div className="footer-headline reveal">
-                    Stay
+                    Get
                     <br />
-                    <span>Up To</span>
+                    <span>In</span>
                     <br />
-                    Date
+                    Touch
                 </div>
                 <div className="reveal">
                     <p className="footer-desc">
-                        Be the first to know about upcoming events, exclusive drops, and
-                        everything happening in the Baltimore and DMV dance music scene.
+                        Have a question, booking inquiry, or want to collaborate with Offstage Sessions?
+                        Send us a message directly.
                     </p>
-                    <NewsletterForm />
+                    <ContactEmailForm />
+                    <div className="footer-contact-block">
+                        <span className="footer-contact-label">DIRECT EMAIL</span>
+                        <a
+                            href="mailto:offstage@offstagesessions.com"
+                            className="footer-contact-mail"
+                            data-cursor="EMAIL"
+                            data-hover
+                        >
+                            offstage@offstagesessions.com ↗
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -29,6 +40,13 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
                     OFFSTAGE SESSIONS LLC. EST. 2023
                 </div>
                 <div className="footer-socials">
+                    <a
+                        href="mailto:offstage@offstagesessions.com"
+                        data-cursor="EMAIL"
+                        data-hover
+                    >
+                        Email
+                    </a>
                     <a
                         href="https://www.facebook.com/offstagesessions"
                         target="_blank"

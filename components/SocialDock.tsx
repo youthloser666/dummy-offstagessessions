@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import styles from './SocialDock.module.css';
 
 export const SOCIAL_LINKS = [
@@ -39,8 +40,87 @@ export const SOCIAL_LINKS = [
 ];
 
 export default function SocialDock() {
+  const pathname = usePathname();
+  const isLanding = pathname === '/';
+
+  // Landing page starts hidden until scrolling past hero; subpages are enabled immediately
+  const [isPastHero, setIsPastHero] = useState(!isLanding);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+  // 1. Monitor scroll position on landing page (hide at hero / page 1 fold)
+  useEffect(() => {
+    if (!isLanding) {
+      setIsPastHero(true);
+      return;
+    }
+
+    const checkHeroThreshold = () => {
+      // Hero section on landing page occupies 100vh
+      // Floating dock appears once scrolled past 40% of viewport
+      const threshold = window.innerHeight * 0.4;
+      const currentScroll = window.scrollY || document.documentElement.scrollTop || 0;
+      setIsPastHero(currentScroll > threshold);
+    };
+
+    checkHeroThreshold();
+    window.addEventListener('scroll', checkHeroThreshold, { passive: true });
+
+    // Also attach to Lenis scroll instance if active
+    const lenis = (window as any).__lenis;
+    if (lenis && typeof lenis.on === 'function') {
+      lenis.on('scroll', checkHeroThreshold);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', checkHeroThreshold);
+      if (lenis && typeof lenis.off === 'function') {
+        lenis.off('scroll', checkHeroThreshold);
+      }
+    };
+  }, [isLanding, pathname]);
+
+  // 2. Monitor footer intersection to hide floating dock when reaching footer
+  useEffect(() => {
+    setIsFooterVisible(false);
+
+    let observer: IntersectionObserver | null = null;
+    const setupObserver = () => {
+      const footerEl = document.getElementById('contact') || document.querySelector('footer');
+      if (!footerEl) return;
+
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsFooterVisible(entry.isIntersecting);
+        },
+        {
+          root: null,
+          rootMargin: '0px',
+          threshold: 0.05,
+        }
+      );
+
+      observer.observe(footerEl);
+    };
+
+    // Small delay to let page layout recalculate on route navigation
+    const timer = setTimeout(setupObserver, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (observer) observer.disconnect();
+    };
+  }, [pathname]);
+
+  // Visible when:
+  // - On landing: must be past hero AND footer not visible
+  // - On other pages (/shows, /media, /shop): always enabled from top, hides only when reaching footer
+  const isVisible = (!isLanding || isPastHero) && !isFooterVisible;
+
   return (
-    <aside className={styles.socialDockDesktop} aria-label="Social Media Links">
+    <aside
+      className={`${styles.socialDockDesktop} ${!isVisible ? styles.isHidden : ''}`}
+      aria-label="Social Media Links"
+    >
       {SOCIAL_LINKS.map((link) => (
         <a
           key={link.name}

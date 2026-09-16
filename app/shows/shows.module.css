@@ -404,6 +404,20 @@
     transform: translate3d(0, 0, 0) scale(0.97);
 }
 
+.ticketArrow {
+    font-size: 0.9em;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ticketBtn:hover .ticketArrow,
+.showsGridCard:hover .ticketArrow,
+.showsListItem:hover .ticketArrow {
+    transform: translate(2px, -2px);
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 960px) {
     .filterBar {
