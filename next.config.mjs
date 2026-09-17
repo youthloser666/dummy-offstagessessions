@@ -8,6 +8,18 @@ const nextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'behold.pictures',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: '*.cdninstagram.com',
+                port: '',
+                pathname: '/**',
+            },
         ],
     },
 };

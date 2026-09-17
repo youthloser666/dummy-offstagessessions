@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import gsap from 'gsap';
@@ -11,7 +11,7 @@ import { upcomingShows } from '@/lib/data';
 import GlitchBanner from '@/components/GlitchBanner';
 import styles from './page.module.css';
 
-const instagramPosts = [
+const defaultInstagramPosts = [
   {
     id: 1,
     image: '/image/tobehonest_web.webp',
@@ -52,6 +52,38 @@ const instagramPosts = [
 
 export default function Home() {
   useReveal();
+  const [feedPosts, setFeedPosts] = useState(defaultInstagramPosts);
+
+  useEffect(() => {
+    fetch('https://feeds.behold.so/sRkAEKqjRO8V5cW8pZDt')
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const posts = Array.isArray(data) ? data : data?.posts;
+        if (Array.isArray(posts) && posts.length > 0) {
+          // Filter out Reels & Videos (only keep Photos and Carousels)
+          const photoPosts = posts.filter((item: any) => {
+            const isReel = item.permalink?.includes('/reel/') || item.mediaType === 'VIDEO';
+            return !isReel;
+          });
+
+          const targetPosts = photoPosts.length > 0 ? photoPosts : posts;
+
+          const formatted = targetPosts.map((item: any, idx: number) => ({
+            id: item.id || idx,
+            image: item.sizes?.medium?.mediaUrl || item.thumbnailUrl || item.mediaUrl || '/image/tobehonest_web.webp',
+            caption: item.prunedCaption || item.caption || '@offstagesession',
+            url: item.permalink || 'https://instagram.com/offstagesession',
+          }));
+          setFeedPosts(formatted);
+        }
+      })
+      .catch((err) => {
+        console.warn('Behold Instagram Feed: using default fallback', err);
+      });
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -215,7 +247,7 @@ export default function Home() {
 
         <div className={styles.instagramMarquee}>
           {/* Double the posts for seamless loop */}
-          {[...instagramPosts, ...instagramPosts].map((post, i) => (
+          {[...feedPosts, ...feedPosts].map((post, i) => (
             <a
               key={`${post.id}-${i}`}
               href={post.url}
@@ -229,6 +261,7 @@ export default function Home() {
                 alt={post.caption}
                 width={300}
                 height={300}
+                unoptimized
                 className={styles.instagramPostImg}
               />
               <div className={styles.instagramPostOverlay}>
