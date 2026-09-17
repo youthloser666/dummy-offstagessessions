@@ -131,11 +131,27 @@ export default function ShowsPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className={styles.ticketBtn}
-                                            data-cursor="TICKETS"
+                                            data-cursor="MORE INFO"
                                             data-cursor-magnetic="true"
                                         >
-                                            <span>TICKETS</span>
-                                            <span className={styles.ticketArrow}>↗</span>
+                                            <span>MORE INFO</span>
+                                            <svg
+                                                className={styles.ticketArrow}
+                                                width="11"
+                                                height="11"
+                                                viewBox="0 0 12 12"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                aria-hidden="true"
+                                            >
+                                                <path
+                                                    d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2.4"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
                                         </a>
                                     )}
                                 </div>
@@ -181,12 +197,28 @@ export default function ShowsPage() {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className={styles.ticketBtn}
-                                        data-cursor="TICKETS"
+                                        data-cursor="MORE INFO"
                                         data-cursor-magnetic="true"
                                         onClick={(e) => e.stopPropagation()}
                                     >
-                                        <span>TICKETS</span>
-                                        <span className={styles.ticketArrow}>↗</span>
+                                        <span>MORE INFO</span>
+                                        <svg
+                                            className={styles.ticketArrow}
+                                            width="11"
+                                            height="11"
+                                            viewBox="0 0 12 12"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"
+                                                stroke="currentColor"
+                                                strokeWidth="2.4"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
                                     </a>
                                 ) : (
                                     <span className={styles.ticketBtn} style={{ opacity: 0.4 }}>

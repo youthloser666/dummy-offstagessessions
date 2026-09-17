@@ -372,14 +372,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 7px;
     background: rgba(255, 255, 255, 0.09);
     border: 1px solid rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     color: #ffffff;
     border-radius: 9999px;
-    padding: 8px 20px;
+    padding: 8px 18px;
     font-size: 0.62rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -405,10 +405,12 @@
 }
 
 .ticketArrow {
-    font-size: 0.9em;
-    font-weight: 900;
-    line-height: 1;
-    display: inline-block;
+    width: 11px;
+    height: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
