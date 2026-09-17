@@ -60,7 +60,7 @@ export default function RootLayout({
               zIndex: 2,
               pointerEvents: 'none',
               backgroundImage:
-                'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.25) 20%, rgba(0, 0, 0, 0.72) 70%, #000000 100%)',
+                'radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.45) 75%, #000000 100%)',
             }}
           />
         </div>

@@ -65,7 +65,10 @@ function InteractiveWord({
     const opacityRef = useRef(visible ? 1 : 0);
 
     const whiteColor = useMemo(() => new THREE.Color('#ffffff'), []);
-    const neonHotCoreColor = useMemo(() => new THREE.Color('#f4ffc0'), []);
+    const neonHotCoreColor = useMemo(() => new THREE.Color('#f6ffe0'), []);
+    const blackShadowColor = useMemo(() => new THREE.Color('#000000'), []);
+    const neonAcidColor = useMemo(() => new THREE.Color(NEON_ACID_COLOR), []);
+    const currentOutlineColor = useRef(new THREE.Color('#000000'));
     const currentColor = useRef(new THREE.Color('#ffffff'));
 
     useFrame((state, delta) => {
@@ -79,45 +82,60 @@ function InteractiveWord({
         const g = glowFactorRef.current;
         const time = state.clock.elapsedTime;
 
-        // Subtle organic neon gas oscillation (analog high-voltage tube breathing)
+        // Subtle organic neon gas oscillation when active
         const gasHum = Math.sin(time * 5.8 + id.charCodeAt(0)) * 0.035;
         const effectiveGlow = Math.max(0, Math.min(1, g + (g > 0.05 ? gasHum : 0)));
 
-        // 1. Tactile 3D lift & smooth scale-up (clean, serene depth instead of violent glitch jitter)
+        // 1. Tactile 3D lift & smooth scale-up
         if (groupRef.current) {
             const targetZ = position[2] + effectiveGlow * (0.055 * fontSize);
             groupRef.current.position.set(position[0], position[1], targetZ);
-            const targetScale = 1.0 + effectiveGlow * 0.035;
+            const targetScale = 1.0 + effectiveGlow * 0.04;
             groupRef.current.scale.set(targetScale, targetScale, 1.0);
         }
 
-        // 2. Core Neon Tube (Sharp white-hot core with tight saturated neon rim)
+        // 2. Core Text - Pure, brilliant, solid white
         if (mainTextRef.current) {
             mainTextRef.current.fillOpacity = opacityRef.current;
-            mainTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.35, 1.0, effectiveGlow) * opacityRef.current;
-            mainTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.035, fontSize * 0.08, effectiveGlow);
-            mainTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.024, fontSize * 0.04, effectiveGlow);
-            currentColor.current.lerpColors(whiteColor, neonHotCoreColor, effectiveGlow * 0.45);
-            mainTextRef.current.color = currentColor.current;
+            if (effectiveGlow > 0.005) {
+                mainTextRef.current.outlineColor = neonAcidColor;
+                mainTextRef.current.outlineOpacity = effectiveGlow * opacityRef.current;
+                mainTextRef.current.outlineBlur = effectiveGlow * fontSize * 0.04;
+                mainTextRef.current.outlineWidth = effectiveGlow * fontSize * 0.024;
+                currentColor.current.lerpColors(whiteColor, neonHotCoreColor, effectiveGlow * 0.25);
+                mainTextRef.current.color = currentColor.current;
+            } else {
+                if (mainTextRef.current.outlineOpacity !== 0) {
+                    mainTextRef.current.outlineOpacity = 0;
+                    mainTextRef.current.outlineWidth = 0;
+                    mainTextRef.current.color = '#ffffff';
+                }
+            }
         }
 
-        // 3. Medium Radiant Halo Bloom
+        // 3. Medium Radiant Halo Bloom (Rendered only on hover/tap)
         if (haloTextRef.current) {
-            haloTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.2, 0.95, effectiveGlow) * opacityRef.current;
-            haloTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.1, fontSize * 0.24, effectiveGlow);
-            haloTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.06, fontSize * 0.12, effectiveGlow);
+            haloTextRef.current.visible = effectiveGlow > 0.01;
+            if (effectiveGlow > 0.01) {
+                haloTextRef.current.outlineOpacity = effectiveGlow * 0.95 * opacityRef.current;
+                haloTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.08, fontSize * 0.24, effectiveGlow);
+                haloTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.04, fontSize * 0.12, effectiveGlow);
+            }
         }
 
-        // 4. Deep Atmospheric Neon Wash (Wide Ambient Aura)
+        // 4. Deep Atmospheric Neon Wash (Rendered only on hover/tap)
         if (auraTextRef.current) {
-            auraTextRef.current.outlineOpacity = THREE.MathUtils.lerp(0.08, 0.72, effectiveGlow) * opacityRef.current;
-            auraTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.22, fontSize * 0.5, effectiveGlow);
-            auraTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.14, fontSize * 0.24, effectiveGlow);
+            auraTextRef.current.visible = effectiveGlow > 0.01;
+            if (effectiveGlow > 0.01) {
+                auraTextRef.current.outlineOpacity = effectiveGlow * 0.75 * opacityRef.current;
+                auraTextRef.current.outlineBlur = THREE.MathUtils.lerp(fontSize * 0.18, fontSize * 0.5, effectiveGlow);
+                auraTextRef.current.outlineWidth = THREE.MathUtils.lerp(fontSize * 0.1, fontSize * 0.24, effectiveGlow);
+            }
         }
 
-        // 5. Dynamic 3D Neon Point Light (illuminates surrounding scene and refractive glass)
+        // 5. Dynamic 3D Neon Point Light (0 when idle, flares up to 2.8 on hover)
         if (lightRef.current) {
-            lightRef.current.intensity = THREE.MathUtils.lerp(0.25, 2.8, effectiveGlow) * opacityRef.current;
+            lightRef.current.intensity = THREE.MathUtils.lerp(0.0, 2.8, effectiveGlow) * opacityRef.current;
         }
     });
 
@@ -128,7 +146,7 @@ function InteractiveWord({
                 ref={(el) => registerHitbox?.(id, el)}
                 position={[0, 0, 0.02]}
             >
-                <planeGeometry args={[wordWidth, fontSize * 1.35]} />
+                <planeGeometry args={[Math.max(wordWidth, 3.2 * fontSize), fontSize * 1.35]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
 
@@ -145,7 +163,7 @@ function InteractiveWord({
                 outlineWidth={fontSize * 0.14}
                 outlineBlur={fontSize * 0.22}
                 outlineColor={NEON_AURA_COLOR}
-                outlineOpacity={0.08}
+                outlineOpacity={0}
                 position={[0, 0, -0.012]}
             >
                 {text}
@@ -164,13 +182,13 @@ function InteractiveWord({
                 outlineWidth={fontSize * 0.06}
                 outlineBlur={fontSize * 0.1}
                 outlineColor={NEON_ACID_COLOR}
-                outlineOpacity={0.2}
+                outlineOpacity={0}
                 position={[0, 0, -0.006]}
             >
                 {text}
             </Text>
 
-            {/* Layer 3: Core Neon Tube (Crisp Moderniz Typography with Inner Neon Rim) */}
+            {/* Layer 3: Core Ultra-Bright White Text */}
             <Text
                 ref={mainTextRef}
                 font="/font/Moderniz.otf"
@@ -179,10 +197,10 @@ function InteractiveWord({
                 anchorY="middle"
                 color="#ffffff"
                 letterSpacing={letterSpacing}
-                outlineWidth={fontSize * 0.024}
-                outlineBlur={fontSize * 0.035}
+                outlineWidth={0}
+                outlineBlur={0}
                 outlineColor={NEON_ACID_COLOR}
-                outlineOpacity={0.35}
+                outlineOpacity={0}
                 position={[0, 0, 0]}
             >
                 {text}
@@ -193,7 +211,7 @@ function InteractiveWord({
                 ref={lightRef}
                 position={[0, 0, 0.45]}
                 color={NEON_ACID_COLOR}
-                intensity={0.25}
+                intensity={0.0}
                 distance={fontSize * 13}
                 decay={2}
             />
@@ -201,18 +219,21 @@ function InteractiveWord({
     );
 }
 
-// 3D Glass Model: Clean, serene, luxurious refractive glass without glitching (per user request)
+// 3D Glass Model: Clean, serene, luxurious refractive glass without glitching
 function GlassOffstageModel({ 
     fontSize,
+    isMobile = false,
     visible = true,
 }: { 
     fontSize: number;
+    isMobile?: boolean;
     visible?: boolean;
 }) {
     const { nodes } = useGLTF('/3D/offstage_text.glb') as any;
     const groupRef = useRef<THREE.Group>(null);
     const opacityRef = useRef(visible ? 1 : 0);
-    const baseScale = (fontSize * 7.0 / 0.127) * MOTION_CONFIG.scaleMultiplier;
+    const scaleFactor = isMobile ? 5.4 : 7.0;
+    const baseScale = (fontSize * scaleFactor / 0.127) * MOTION_CONFIG.scaleMultiplier;
 
     useFrame((_, delta) => {
         const targetOpacity = visible ? 1 : 0;
@@ -268,13 +289,43 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     const { viewport, camera } = useThree();
     const transitionRef = useRef(visible ? 1 : 0);
 
-    // Reduced font size slightly (~12-15%) per user request for balanced composition
-    const fontSize = useMemo(() => {
-        const responsiveSize = (viewport.width * 0.74) / 15.2;
-        return Math.min(Math.max(responsiveSize, 0.12), 0.42);
-    }, [viewport.width]);
+    const [isMobile, setIsMobile] = useState(false);
 
-    const lineHeight = fontSize * 1.25;
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const isMobileMode = isMobile || viewport.width < 5.6;
+
+    // Responsive font sizing based on viewport mode
+    const fontSize = useMemo(() => {
+        if (isMobileMode) {
+            // Mobile: larger, impactful font size for vertically stacked words
+            // Longest word "MOMENTS" (~6.5 * fontSize) takes ~76% of mobile width
+            return Math.min(Math.max((viewport.width * 0.78) / 6.5, 0.22), 0.38);
+        }
+        // Desktop: sized so "THE BEST MOMENTS" (span ~15.2 * fontSize) fits comfortably
+        const responsiveSize = (viewport.width * 0.74) / 15.2;
+        return Math.min(Math.max(responsiveSize, 0.16), 0.42);
+    }, [viewport.width, isMobileMode]);
+
+    const lineHeight = useMemo(() => {
+        return isMobileMode ? fontSize * 1.34 : fontSize * 1.25;
+    }, [fontSize, isMobileMode]);
+
+    // Stacked layout for mobile
+    const mobileWords = useMemo(() => [
+        { id: 'THE', text: 'THE', wordWidth: 2.5 * fontSize, y: 2.5 * lineHeight },
+        { id: 'BEST', text: 'BEST', wordWidth: 3.6 * fontSize, y: 1.5 * lineHeight },
+        { id: 'MOMENTS', text: 'MOMENTS', wordWidth: 6.6 * fontSize, y: 0.5 * lineHeight },
+        { id: 'ARE', text: 'ARE', wordWidth: 2.9 * fontSize, y: -0.5 * lineHeight },
+        { id: 'MADE', text: 'MADE', wordWidth: 3.9 * fontSize, y: -1.5 * lineHeight },
+    ], [fontSize, lineHeight]);
 
     // Registry of word hitbox meshes for direct mathematical raycasting
     const hitboxesRef = useRef<Map<string, THREE.Mesh>>(new Map());
@@ -366,7 +417,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
             heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 5, delta);
             heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
 
-            // Independent Direct Mathematical Raycasting (Bypasses all DOM stacking/z-index issues)
+            // Independent Direct Mathematical Raycasting
             pointerVec.set(cursor.current.x, cursor.current.y);
             raycaster.setFromCamera(pointerVec, camera);
 
@@ -395,68 +446,94 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     return (
         // Position z = 0.8 ensures full clearance in front of video plane at z = 0.05
         <group ref={heroGroupRef} position={[0, 0, 0.8]}>
-            {/* LINE 1: THE BEST MOMENTS */}
-            <group position={[0, lineHeight, 0]}>
-                <InteractiveWord
-                    id="THE"
-                    text="THE"
-                    fontSize={fontSize}
-                    wordWidth={2.4 * fontSize}
-                    position={[-6.155 * fontSize, 0, 0]}
-                    isHovered={hoveredWord === 'THE'}
-                    registerHitbox={registerHitbox}
-                    visible={visible}
-                />
-                <InteractiveWord
-                    id="BEST"
-                    text="BEST"
-                    fontSize={fontSize}
-                    wordWidth={3.5 * fontSize}
-                    position={[-2.294 * fontSize, 0, 0]}
-                    isHovered={hoveredWord === 'BEST'}
-                    registerHitbox={registerHitbox}
-                    visible={visible}
-                />
-                <InteractiveWord
-                    id="MOMENTS"
-                    text="MOMENTS"
-                    fontSize={fontSize}
-                    wordWidth={6.5 * fontSize}
-                    position={[3.862 * fontSize, 0, 0]}
-                    isHovered={hoveredWord === 'MOMENTS'}
-                    registerHitbox={registerHitbox}
-                    visible={visible}
-                />
-            </group>
+            {isMobileMode ? (
+                /* MOBILE MODE: VERTICAL STACK (THE / BEST / MOMENTS / ARE / MADE / OFFSTAGE) */
+                <group position={[0, 0, 0]}>
+                    {mobileWords.map((word) => (
+                        <InteractiveWord
+                            key={word.id}
+                            id={word.id}
+                            text={word.text}
+                            fontSize={fontSize}
+                            wordWidth={word.wordWidth}
+                            position={[0, word.y, 0]}
+                            isHovered={hoveredWord === word.id}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    ))}
+                    {/* 3D Glass OFFSTAGE Model centered right under MADE */}
+                    <group position={[0, -2.55 * lineHeight, 0.2]}>
+                        <GlassOffstageModel fontSize={fontSize} isMobile={true} visible={visible} />
+                    </group>
+                </group>
+            ) : (
+                /* DESKTOP MODE: CLASSIC 3-LINE CINEMATIC COMPOSITION */
+                <>
+                    {/* LINE 1: THE BEST MOMENTS */}
+                    <group position={[0, lineHeight, 0]}>
+                        <InteractiveWord
+                            id="THE"
+                            text="THE"
+                            fontSize={fontSize}
+                            wordWidth={2.4 * fontSize}
+                            position={[-6.155 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'THE'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                        <InteractiveWord
+                            id="BEST"
+                            text="BEST"
+                            fontSize={fontSize}
+                            wordWidth={3.5 * fontSize}
+                            position={[-2.294 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'BEST'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                        <InteractiveWord
+                            id="MOMENTS"
+                            text="MOMENTS"
+                            fontSize={fontSize}
+                            wordWidth={6.5 * fontSize}
+                            position={[3.862 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'MOMENTS'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    </group>
 
-            {/* LINE 2: ARE MADE */}
-            <group position={[0, 0, 0.08]}>
-                <InteractiveWord
-                    id="ARE"
-                    text="ARE"
-                    fontSize={fontSize}
-                    wordWidth={2.8 * fontSize}
-                    position={[-2.414 * fontSize, 0, 0]}
-                    isHovered={hoveredWord === 'ARE'}
-                    registerHitbox={registerHitbox}
-                    visible={visible}
-                />
-                <InteractiveWord
-                    id="MADE"
-                    text="MADE"
-                    fontSize={fontSize}
-                    wordWidth={3.8 * fontSize}
-                    position={[1.777 * fontSize, 0, 0]}
-                    isHovered={hoveredWord === 'MADE'}
-                    registerHitbox={registerHitbox}
-                    visible={visible}
-                />
-            </group>
+                    {/* LINE 2: ARE MADE */}
+                    <group position={[0, 0, 0.08]}>
+                        <InteractiveWord
+                            id="ARE"
+                            text="ARE"
+                            fontSize={fontSize}
+                            wordWidth={2.8 * fontSize}
+                            position={[-2.414 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'ARE'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                        <InteractiveWord
+                            id="MADE"
+                            text="MADE"
+                            fontSize={fontSize}
+                            wordWidth={3.8 * fontSize}
+                            position={[1.777 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'MADE'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    </group>
 
-            {/* LINE 3: OFFSTAGE (3D Glass Model: Calm & Pure Glass) */}
-            <group position={[0, -lineHeight, 0.2]}>
-                <GlassOffstageModel fontSize={fontSize} visible={visible} />
-            </group>
+                    {/* LINE 3: OFFSTAGE (3D Glass Model) */}
+                    <group position={[0, -lineHeight, 0.2]}>
+                        <GlassOffstageModel fontSize={fontSize} isMobile={false} visible={visible} />
+                    </group>
+                </>
+            )}
         </group>
     );
 }
