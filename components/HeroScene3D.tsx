@@ -146,7 +146,7 @@ function InteractiveWord({
                 ref={(el) => registerHitbox?.(id, el)}
                 position={[0, 0, 0.02]}
             >
-                <planeGeometry args={[Math.max(wordWidth, 3.2 * fontSize), fontSize * 1.35]} />
+                <planeGeometry args={[wordWidth, fontSize * 1.3]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
             </mesh>
 
@@ -232,7 +232,7 @@ function GlassOffstageModel({
     const { nodes } = useGLTF('/3D/offstage_text.glb') as any;
     const groupRef = useRef<THREE.Group>(null);
     const opacityRef = useRef(visible ? 1 : 0);
-    const scaleFactor = isMobile ? 5.4 : 7.0;
+    const scaleFactor = isMobile ? 5.6 : 7.0;
     const baseScale = (fontSize * scaleFactor / 0.127) * MOTION_CONFIG.scaleMultiplier;
 
     useFrame((_, delta) => {
@@ -305,9 +305,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     // Responsive font sizing based on viewport mode
     const fontSize = useMemo(() => {
         if (isMobileMode) {
-            // Mobile: larger, impactful font size for vertically stacked words
-            // Longest word "MOMENTS" (~6.5 * fontSize) takes ~76% of mobile width
-            return Math.min(Math.max((viewport.width * 0.78) / 6.5, 0.22), 0.38);
+            // Mobile: sized so widest line "ARE MADE" (~7.5 * fontSize) takes ~80% of mobile width
+            return Math.min(Math.max((viewport.width * 0.80) / 7.5, 0.22), 0.44);
         }
         // Desktop: sized so "THE BEST MOMENTS" (span ~15.2 * fontSize) fits comfortably
         const responsiveSize = (viewport.width * 0.74) / 15.2;
@@ -315,17 +314,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     }, [viewport.width, isMobileMode]);
 
     const lineHeight = useMemo(() => {
-        return isMobileMode ? fontSize * 1.34 : fontSize * 1.25;
+        return isMobileMode ? fontSize * 1.32 : fontSize * 1.25;
     }, [fontSize, isMobileMode]);
-
-    // Stacked layout for mobile
-    const mobileWords = useMemo(() => [
-        { id: 'THE', text: 'THE', wordWidth: 2.5 * fontSize, y: 2.5 * lineHeight },
-        { id: 'BEST', text: 'BEST', wordWidth: 3.6 * fontSize, y: 1.5 * lineHeight },
-        { id: 'MOMENTS', text: 'MOMENTS', wordWidth: 6.6 * fontSize, y: 0.5 * lineHeight },
-        { id: 'ARE', text: 'ARE', wordWidth: 2.9 * fontSize, y: -0.5 * lineHeight },
-        { id: 'MADE', text: 'MADE', wordWidth: 3.9 * fontSize, y: -1.5 * lineHeight },
-    ], [fontSize, lineHeight]);
 
     // Registry of word hitbox meshes for direct mathematical raycasting
     const hitboxesRef = useRef<Map<string, THREE.Mesh>>(new Map());
@@ -447,28 +437,77 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         // Position z = 0.8 ensures full clearance in front of video plane at z = 0.05
         <group ref={heroGroupRef} position={[0, 0, 0.8]}>
             {isMobileMode ? (
-                /* MOBILE MODE: VERTICAL STACK (THE / BEST / MOMENTS / ARE / MADE / OFFSTAGE) */
-                <group position={[0, 0, 0]}>
-                    {mobileWords.map((word) => (
+                /* MOBILE MODE: 3-LINE POSTER COMPOSITION (THE BEST / MOMENTS / ARE MADE / OFFSTAGE) */
+                <>
+                    {/* LINE 1: THE BEST */}
+                    <group position={[0, 1.5 * lineHeight, 0]}>
                         <InteractiveWord
-                            key={word.id}
-                            id={word.id}
-                            text={word.text}
+                            id="THE"
+                            text="THE"
                             fontSize={fontSize}
-                            wordWidth={word.wordWidth}
-                            position={[0, word.y, 0]}
-                            isHovered={hoveredWord === word.id}
+                            wordWidth={2.45 * fontSize}
+                            position={[-2.15 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'THE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
                         />
-                    ))}
-                    {/* 3D Glass OFFSTAGE Model centered right under MADE */}
-                    <group position={[0, -2.55 * lineHeight, 0.2]}>
+                        <InteractiveWord
+                            id="BEST"
+                            text="BEST"
+                            fontSize={fontSize}
+                            wordWidth={3.5 * fontSize}
+                            position={[1.60 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'BEST'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    </group>
+
+                    {/* LINE 2: MOMENTS */}
+                    <group position={[0, 0.5 * lineHeight, 0]}>
+                        <InteractiveWord
+                            id="MOMENTS"
+                            text="MOMENTS"
+                            fontSize={fontSize}
+                            wordWidth={6.5 * fontSize}
+                            position={[0, 0, 0]}
+                            isHovered={hoveredWord === 'MOMENTS'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    </group>
+
+                    {/* LINE 3: ARE MADE */}
+                    <group position={[0, -0.5 * lineHeight, 0.08]}>
+                        <InteractiveWord
+                            id="ARE"
+                            text="ARE"
+                            fontSize={fontSize}
+                            wordWidth={2.8 * fontSize}
+                            position={[-2.414 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'ARE'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                        <InteractiveWord
+                            id="MADE"
+                            text="MADE"
+                            fontSize={fontSize}
+                            wordWidth={3.8 * fontSize}
+                            position={[1.777 * fontSize, 0, 0]}
+                            isHovered={hoveredWord === 'MADE'}
+                            registerHitbox={registerHitbox}
+                            visible={visible}
+                        />
+                    </group>
+
+                    {/* LINE 4: OFFSTAGE (3D Glass Model) */}
+                    <group position={[0, -1.65 * lineHeight, 0.2]}>
                         <GlassOffstageModel fontSize={fontSize} isMobile={true} visible={visible} />
                     </group>
-                </group>
+                </>
             ) : (
-                /* DESKTOP MODE: CLASSIC 3-LINE CINEMATIC COMPOSITION */
+                /* DESKTOP MODE: ORIGINAL CLASSIC 3-LINE CINEMATIC COMPOSITION */
                 <>
                     {/* LINE 1: THE BEST MOMENTS */}
                     <group position={[0, lineHeight, 0]}>

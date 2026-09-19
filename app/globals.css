@@ -11,6 +11,33 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'HelveticaCustom';
+  src: url('/font/Helvetica%20Bold.ttf') format('truetype'),
+       url('/font/Helvetica Bold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica Bold';
+  src: url('/font/Helvetica%20Bold.ttf') format('truetype'),
+       url('/font/Helvetica Bold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  src: url('/font/Helvetica%20Bold.ttf') format('truetype'),
+       url('/font/Helvetica Bold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
@@ -26,6 +53,7 @@
   --grid-line: #151515;
   --grid-size: 40px;
   --nav-bg: transparent;
+  --font-helvetica: 'HelveticaCustom', 'Helvetica Bold', 'Helvetica', Arial, sans-serif;
 }
 
 * {
@@ -76,6 +104,8 @@ body {
   width: 100%;
   position: relative;
   cursor: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Grid pattern overlay — positioned directly inside #fixed-background-root */
@@ -624,10 +654,13 @@ footer {
 }
 
 .footer-desc {
-  font-size: 1.05rem;
-  line-height: 1.9;
-  opacity: 0.7;
-  margin-bottom: 40px;
+  font-family: var(--font-helvetica);
+  font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: -0.01em;
+  margin-bottom: 34px;
+  max-width: 520px;
 }
 
 .newsletter-form {
@@ -694,22 +727,22 @@ footer {
 .contact-email-form {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 26px;
   width: 100%;
 }
 
 .contact-form-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   position: relative;
 }
 
 .contact-field-label {
   font-family: 'Moderniz', sans-serif;
-  font-size: 0.65rem;
-  letter-spacing: 0.22em;
-  color: #555555;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
   transition: color 0.25s ease;
 }
@@ -722,12 +755,13 @@ footer {
 .contact-field-textarea {
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 0;
-  padding: 8px 0 12px;
+  padding: 10px 0 14px;
   color: #ffffff;
-  font-size: 0.95rem;
-  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  font-family: var(--font-helvetica);
   outline: none;
   width: 100%;
   box-sizing: border-box;
@@ -741,15 +775,16 @@ footer {
 
 .contact-field-input::placeholder,
 .contact-field-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.42);
+  font-family: var(--font-helvetica);
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
 }
 
 .contact-field-textarea {
   resize: vertical;
-  min-height: 50px;
-  line-height: 1.6;
+  min-height: 52px;
+  line-height: 1.5;
 }
 
 .contact-form-actions {
@@ -794,20 +829,21 @@ footer {
   margin-top: 36px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .footer-contact-label {
   font-family: 'Moderniz', sans-serif;
-  font-size: 0.65rem;
-  letter-spacing: 0.16em;
-  color: var(--dim, #666666);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.45);
   text-transform: uppercase;
 }
 
 .footer-contact-mail {
-  font-family: 'Space Mono', monospace;
-  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-family: var(--font-helvetica);
+  font-size: clamp(0.95rem, 1.6vw, 1.25rem);
+  letter-spacing: -0.015em;
   color: #ffffff;
   text-decoration: none;
   display: inline-flex;
@@ -826,31 +862,34 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 40px;
+  padding-top: 36px;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
+  font-family: var(--font-helvetica);
 }
 
 .footer-logo-text {
-  font-family: 'Anton';
-  font-size: 0.9rem;
-  letter-spacing: 0.2em;
-  opacity: 0.4;
+  font-family: var(--font-helvetica);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
 }
 
 .footer-socials {
   display: flex;
-  gap: 20px;
+  gap: 24px;
+  font-family: var(--font-helvetica);
 }
 
 .footer-socials a {
-  color: var(--white);
+  font-family: var(--font-helvetica);
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 0.65rem;
-  letter-spacing: 0.15em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  opacity: 0.6;
-  transition: opacity 0.3s, color 0.3s;
+  transition: color 0.25s ease;
 }
 
 .footer-socials a:hover {
@@ -859,9 +898,10 @@ footer {
 }
 
 .footer-copy {
-  font-size: 0.65rem;
-  opacity: 0.5;
-  letter-spacing: 0.08em;
+  font-family: var(--font-helvetica);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
 }
 
 .footer-big-text {
@@ -954,6 +994,7 @@ footer {
   .footer-bottom {
     flex-direction: column;
     align-items: flex-start;
+    gap: 18px;
   }
 
   .footer-big-text {
