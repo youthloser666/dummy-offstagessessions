@@ -453,7 +453,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
             const unitPerPixel = viewport.height / (typeof window !== 'undefined' ? (window.innerHeight || 1) : 1);
 
             if (isMobileMode) {
-                // ── MOBILE MODE: GYRO-DRIVEN MOTION (REPLACES CLICK MOTION) ──
+                // ── MOBILE MODE: GYRO STRICTLY FOR MOTION (TILT & PARALLAX) ──
                 // If physical gyro is active, use smoothGyro; otherwise provide organic ambient float
                 const time = state.clock.elapsedTime;
                 const gx = gyro.current.active ? smoothGyro.current.x : Math.sin(time * 1.5) * 0.28;
@@ -469,27 +469,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                 heroGroupRef.current.rotation.x = THREE.MathUtils.damp(heroGroupRef.current.rotation.x, targetRotX, 6, delta);
                 heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 6, delta);
                 heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
-
-                // Gyroscope dynamic word highlight: tilting phone sweeps focal neon glow
-                let activeWord: string | null = null;
-                if (Math.abs(gx) > 0.08 || Math.abs(gy) > 0.08) {
-                    if (gy < -0.16) {
-                        // Tilted backward/up: Highlight top line (THE / BEST)
-                        activeWord = gx < 0 ? 'THE' : 'BEST';
-                    } else if (gy <= 0.16) {
-                        // Neutral tilt: Highlight middle line (MOMENTS)
-                        activeWord = 'MOMENTS';
-                    } else if (gy <= 0.55) {
-                        // Tilted forward/down: Highlight bottom line (ARE / MADE)
-                        activeWord = gx < 0 ? 'ARE' : 'MADE';
-                    } else {
-                        // Tilted deeply down: Spotlight moves to 3D OFFSTAGE glass model
-                        activeWord = null;
-                    }
-                }
-                setHoveredWord(activeWord);
             } else {
-                // ── DESKTOP MODE: MOUSE CURSOR PARALLAX & RAYCASTING ──
+                // ── DESKTOP MODE: MOUSE CURSOR PARALLAX & TILT ──
                 const targetRotY = smoothCursor.current.x * 0.11;
                 const targetRotX = -smoothCursor.current.y * 0.09;
                 const targetPosX = smoothCursor.current.x * 0.15;
@@ -499,29 +480,29 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                 heroGroupRef.current.rotation.x = THREE.MathUtils.damp(heroGroupRef.current.rotation.x, targetRotX, 5, delta);
                 heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 5, delta);
                 heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
+            }
 
-                // Independent Direct Mathematical Raycasting on Desktop
-                pointerVec.set(cursor.current.x, cursor.current.y);
-                raycaster.setFromCamera(pointerVec, camera);
+            // ── NEON GLOW INTERACTION: TRIGGERED BY CLICK / TAP / CURSOR HOVER ──
+            pointerVec.set(cursor.current.x, cursor.current.y);
+            raycaster.setFromCamera(pointerVec, camera);
 
-                const meshes: THREE.Mesh[] = [];
-                const ids: string[] = [];
-                hitboxesRef.current.forEach((mesh, id) => {
-                    meshes.push(mesh);
-                    ids.push(id);
-                });
+            const meshes: THREE.Mesh[] = [];
+            const ids: string[] = [];
+            hitboxesRef.current.forEach((mesh, id) => {
+                meshes.push(mesh);
+                ids.push(id);
+            });
 
-                if (meshes.length > 0) {
-                    const intersects = raycaster.intersectObjects(meshes, false);
-                    if (intersects.length > 0) {
-                        const hitMesh = intersects[0].object as THREE.Mesh;
-                        const hitIdx = meshes.indexOf(hitMesh);
-                        if (hitIdx !== -1) {
-                            setHoveredWord(ids[hitIdx]);
-                        }
-                    } else {
-                        setHoveredWord((prev) => (prev ? null : prev));
+            if (meshes.length > 0) {
+                const intersects = raycaster.intersectObjects(meshes, false);
+                if (intersects.length > 0) {
+                    const hitMesh = intersects[0].object as THREE.Mesh;
+                    const hitIdx = meshes.indexOf(hitMesh);
+                    if (hitIdx !== -1) {
+                        setHoveredWord(ids[hitIdx]);
                     }
+                } else if (!isMobileMode) {
+                    setHoveredWord((prev) => (prev ? null : prev));
                 }
             }
         }
