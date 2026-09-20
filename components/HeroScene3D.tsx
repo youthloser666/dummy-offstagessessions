@@ -224,15 +224,19 @@ function GlassOffstageModel({
     fontSize,
     isMobile = false,
     visible = true,
+    gyroX = 0,
+    gyroY = 0,
 }: { 
     fontSize: number;
     isMobile?: boolean;
     visible?: boolean;
+    gyroX?: number;
+    gyroY?: number;
 }) {
     const { nodes } = useGLTF('/3D/offstage_text.glb') as any;
     const groupRef = useRef<THREE.Group>(null);
     const opacityRef = useRef(visible ? 1 : 0);
-    const scaleFactor = isMobile ? 5.6 : 7.0;
+    const scaleFactor = isMobile ? 5.2 : 7.0;
     const baseScale = (fontSize * scaleFactor / 0.127) * MOTION_CONFIG.scaleMultiplier;
 
     useFrame((_, delta) => {
@@ -244,6 +248,16 @@ function GlassOffstageModel({
 
         const currentScale = baseScale * THREE.MathUtils.lerp(0.85, 1.0, opacityRef.current);
         groupRef.current.scale.lerp(new THREE.Vector3(currentScale, currentScale, currentScale), delta * 8);
+
+        // Mobile gyro reaction: dynamic specular refraction & tilt as phone rotates
+        if (isMobile) {
+            const targetRotY = gyroX * 0.35;
+            const targetRotX = -gyroY * 0.25;
+            const targetRotZ = -gyroX * 0.10;
+            groupRef.current.rotation.y = THREE.MathUtils.damp(groupRef.current.rotation.y, targetRotY, 6, delta);
+            groupRef.current.rotation.x = THREE.MathUtils.damp(groupRef.current.rotation.x, targetRotX, 6, delta);
+            groupRef.current.rotation.z = THREE.MathUtils.damp(groupRef.current.rotation.z, targetRotZ, 6, delta);
+        }
     });
 
     if (!nodes || !nodes.Curve) return null;
@@ -305,8 +319,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     // Responsive font sizing based on viewport mode
     const fontSize = useMemo(() => {
         if (isMobileMode) {
-            // Mobile: sized so widest line "ARE MADE" (~7.5 * fontSize) takes ~80% of mobile width
-            return Math.min(Math.max((viewport.width * 0.80) / 7.5, 0.22), 0.44);
+            // Mobile: slightly reduced (~68% of mobile width) for elegant poster margins
+            return Math.min(Math.max((viewport.width * 0.68) / 7.5, 0.18), 0.38);
         }
         // Desktop: sized so "THE BEST MOMENTS" (span ~15.2 * fontSize) fits comfortably
         const responsiveSize = (viewport.width * 0.74) / 15.2;
@@ -330,9 +344,11 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     const [hoveredWord, setHoveredWord] = useState<string | null>(null);
     const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Unified cursor and touch tracking on window
+    // Unified cursor, smooth cursor (desktop) & gyroscope tracking (mobile)
     const cursor = useRef({ x: 0, y: 0 });
     const smoothCursor = useRef({ x: 0, y: 0 });
+    const gyro = useRef({ x: 0, y: 0, active: false });
+    const smoothGyro = useRef({ x: 0, y: 0 });
     const raycaster = useMemo(() => new THREE.Raycaster(), []);
     const pointerVec = useMemo(() => new THREE.Vector2(0, 0), []);
 
@@ -351,27 +367,63 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         };
 
         const onTouchEnd = () => {
-            // Keep active neon glow state for 650ms on tap before gentle cool down
             if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
             touchTimeoutRef.current = setTimeout(() => {
-                setHoveredWord(null);
+                if (!isMobileMode) {
+                    setHoveredWord(null);
+                }
             }, 650);
         };
 
         const onOrientation = (e: DeviceOrientationEvent) => {
             if (e.gamma !== null && e.beta !== null) {
-                cursor.current.x = THREE.MathUtils.clamp(e.gamma / 28, -1, 1);
-                cursor.current.y = THREE.MathUtils.clamp(-(e.beta - 45) / 28, -1, 1);
+                gyro.current.active = true;
+                // e.gamma: [-90, 90] left/right tilt. Normalized within ±25 deg range
+                gyro.current.x = THREE.MathUtils.clamp(e.gamma / 25, -1, 1);
+                // e.beta: [-180, 180] forward/backward tilt. Typical portrait holding is ~45 deg
+                gyro.current.y = THREE.MathUtils.clamp((e.beta - 45) / 25, -1, 1);
             }
         };
+
+        // iOS 13+ DeviceOrientation permission handler
+        const requestGyroPermission = async () => {
+            if (
+                typeof window !== 'undefined' &&
+                typeof (DeviceOrientationEvent as any)?.requestPermission === 'function'
+            ) {
+                try {
+                    const permission = await (DeviceOrientationEvent as any).requestPermission();
+                    if (permission === 'granted') {
+                        window.addEventListener('deviceorientation', onOrientation, { passive: true });
+                    }
+                } catch (err) {
+                    console.warn('Gyroscope permission error:', err);
+                }
+            }
+        };
+
+        // For Android & non-iOS browsers, attach listener immediately
+        if (
+            typeof window !== 'undefined' &&
+            'DeviceOrientationEvent' in window &&
+            typeof (DeviceOrientationEvent as any)?.requestPermission !== 'function'
+        ) {
+            window.addEventListener('deviceorientation', onOrientation, { passive: true });
+        }
+
+        // On first tap/touch on window, trigger iOS permission request if required
+        const onFirstInteraction = () => {
+            requestGyroPermission();
+            window.removeEventListener('touchstart', onFirstInteraction);
+            window.removeEventListener('click', onFirstInteraction);
+        };
+        window.addEventListener('touchstart', onFirstInteraction, { passive: true, once: true });
+        window.addEventListener('click', onFirstInteraction, { passive: true, once: true });
 
         window.addEventListener('mousemove', onPointerMove, { passive: true });
         window.addEventListener('touchmove', onPointerMove, { passive: true });
         window.addEventListener('touchstart', onPointerMove, { passive: true });
         window.addEventListener('touchend', onTouchEnd, { passive: true });
-        if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-            window.addEventListener('deviceorientation', onOrientation, { passive: true });
-        }
 
         return () => {
             window.removeEventListener('mousemove', onPointerMove);
@@ -379,55 +431,97 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
             window.removeEventListener('touchstart', onPointerMove);
             window.removeEventListener('touchend', onTouchEnd);
             window.removeEventListener('deviceorientation', onOrientation);
+            window.removeEventListener('touchstart', onFirstInteraction);
+            window.removeEventListener('click', onFirstInteraction);
         };
-    }, []);
+    }, [isMobileMode]);
 
-    useFrame((_, delta) => {
+    useFrame((state, delta) => {
         const target = visible ? 1 : 0;
         transitionRef.current = THREE.MathUtils.damp(transitionRef.current, target, 9, delta);
 
         if (heroGroupRef.current) {
             heroGroupRef.current.visible = transitionRef.current > 0.005;
 
-            // Smooth cursor interpolation for tilt
+            // Interpolate smooth cursor and smooth gyro
             smoothCursor.current.x = THREE.MathUtils.damp(smoothCursor.current.x, cursor.current.x, 5, delta);
             smoothCursor.current.y = THREE.MathUtils.damp(smoothCursor.current.y, cursor.current.y, 5, delta);
-
-            // 3D Parallax Tilt with safe angles (never penetrates background planes)
-            const targetRotY = smoothCursor.current.x * 0.11;
-            const targetRotX = -smoothCursor.current.y * 0.09;
-            const targetPosX = smoothCursor.current.x * 0.15;
+            smoothGyro.current.x = THREE.MathUtils.damp(smoothGyro.current.x, gyro.current.x, 6, delta);
+            smoothGyro.current.y = THREE.MathUtils.damp(smoothGyro.current.y, gyro.current.y, 6, delta);
 
             const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
             const unitPerPixel = viewport.height / (typeof window !== 'undefined' ? (window.innerHeight || 1) : 1);
-            const targetPosY = (scrollY * unitPerPixel) + (smoothCursor.current.y * 0.12);
 
-            heroGroupRef.current.rotation.y = THREE.MathUtils.damp(heroGroupRef.current.rotation.y, targetRotY, 5, delta);
-            heroGroupRef.current.rotation.x = THREE.MathUtils.damp(heroGroupRef.current.rotation.x, targetRotX, 5, delta);
-            heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 5, delta);
-            heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
+            if (isMobileMode) {
+                // ── MOBILE MODE: GYRO-DRIVEN MOTION (REPLACES CLICK MOTION) ──
+                // If physical gyro is active, use smoothGyro; otherwise provide organic ambient float
+                const time = state.clock.elapsedTime;
+                const gx = gyro.current.active ? smoothGyro.current.x : Math.sin(time * 1.5) * 0.28;
+                const gy = gyro.current.active ? smoothGyro.current.y : Math.cos(time * 1.2) * 0.22;
 
-            // Independent Direct Mathematical Raycasting
-            pointerVec.set(cursor.current.x, cursor.current.y);
-            raycaster.setFromCamera(pointerVec, camera);
+                // Generous tactile tilt angles for mobile screens
+                const targetRotY = gx * 0.30;
+                const targetRotX = -gy * 0.24;
+                const targetPosX = gx * 0.26;
+                const targetPosY = (scrollY * unitPerPixel) + (-gy * 0.20);
 
-            const meshes: THREE.Mesh[] = [];
-            const ids: string[] = [];
-            hitboxesRef.current.forEach((mesh, id) => {
-                meshes.push(mesh);
-                ids.push(id);
-            });
+                heroGroupRef.current.rotation.y = THREE.MathUtils.damp(heroGroupRef.current.rotation.y, targetRotY, 6, delta);
+                heroGroupRef.current.rotation.x = THREE.MathUtils.damp(heroGroupRef.current.rotation.x, targetRotX, 6, delta);
+                heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 6, delta);
+                heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
 
-            if (meshes.length > 0) {
-                const intersects = raycaster.intersectObjects(meshes, false);
-                if (intersects.length > 0) {
-                    const hitMesh = intersects[0].object as THREE.Mesh;
-                    const hitIdx = meshes.indexOf(hitMesh);
-                    if (hitIdx !== -1) {
-                        setHoveredWord(ids[hitIdx]);
+                // Gyroscope dynamic word highlight: tilting phone sweeps focal neon glow
+                let activeWord: string | null = null;
+                if (Math.abs(gx) > 0.08 || Math.abs(gy) > 0.08) {
+                    if (gy < -0.16) {
+                        // Tilted backward/up: Highlight top line (THE / BEST)
+                        activeWord = gx < 0 ? 'THE' : 'BEST';
+                    } else if (gy <= 0.16) {
+                        // Neutral tilt: Highlight middle line (MOMENTS)
+                        activeWord = 'MOMENTS';
+                    } else if (gy <= 0.55) {
+                        // Tilted forward/down: Highlight bottom line (ARE / MADE)
+                        activeWord = gx < 0 ? 'ARE' : 'MADE';
+                    } else {
+                        // Tilted deeply down: Spotlight moves to 3D OFFSTAGE glass model
+                        activeWord = null;
                     }
-                } else {
-                    setHoveredWord((prev) => (prev ? null : prev));
+                }
+                setHoveredWord(activeWord);
+            } else {
+                // ── DESKTOP MODE: MOUSE CURSOR PARALLAX & RAYCASTING ──
+                const targetRotY = smoothCursor.current.x * 0.11;
+                const targetRotX = -smoothCursor.current.y * 0.09;
+                const targetPosX = smoothCursor.current.x * 0.15;
+                const targetPosY = (scrollY * unitPerPixel) + (smoothCursor.current.y * 0.12);
+
+                heroGroupRef.current.rotation.y = THREE.MathUtils.damp(heroGroupRef.current.rotation.y, targetRotY, 5, delta);
+                heroGroupRef.current.rotation.x = THREE.MathUtils.damp(heroGroupRef.current.rotation.x, targetRotX, 5, delta);
+                heroGroupRef.current.position.x = THREE.MathUtils.damp(heroGroupRef.current.position.x, targetPosX, 5, delta);
+                heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
+
+                // Independent Direct Mathematical Raycasting on Desktop
+                pointerVec.set(cursor.current.x, cursor.current.y);
+                raycaster.setFromCamera(pointerVec, camera);
+
+                const meshes: THREE.Mesh[] = [];
+                const ids: string[] = [];
+                hitboxesRef.current.forEach((mesh, id) => {
+                    meshes.push(mesh);
+                    ids.push(id);
+                });
+
+                if (meshes.length > 0) {
+                    const intersects = raycaster.intersectObjects(meshes, false);
+                    if (intersects.length > 0) {
+                        const hitMesh = intersects[0].object as THREE.Mesh;
+                        const hitIdx = meshes.indexOf(hitMesh);
+                        if (hitIdx !== -1) {
+                            setHoveredWord(ids[hitIdx]);
+                        }
+                    } else {
+                        setHoveredWord((prev) => (prev ? null : prev));
+                    }
                 }
             }
         }
@@ -501,9 +595,15 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                         />
                     </group>
 
-                    {/* LINE 4: OFFSTAGE (3D Glass Model) */}
-                    <group position={[0, -1.65 * lineHeight, 0.2]}>
-                        <GlassOffstageModel fontSize={fontSize} isMobile={true} visible={visible} />
+                    {/* LINE 4: OFFSTAGE (3D Glass Model - Raised closer to ARE MADE) */}
+                    <group position={[0, -1.30 * lineHeight, 0.2]}>
+                        <GlassOffstageModel 
+                            fontSize={fontSize} 
+                            isMobile={true} 
+                            visible={visible} 
+                            gyroX={smoothGyro.current.x} 
+                            gyroY={smoothGyro.current.y} 
+                        />
                     </group>
                 </>
             ) : (
