@@ -43,17 +43,15 @@ export default function RootLayout({
         {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
           id="fixed-background-root"
-          className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
           style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', backgroundColor: '#000000' }}
         >
-          {/* LAYER 1A: 3D Canvas (Photo Grid + Grid Lines + 3D Hero Typography + 3D Glass OFFSTAGE) */}
-          <div className="absolute inset-0 z-0 pointer-events-none" style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+          {/* LAYER 1A: 3D Canvas */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
             <GlobalBackgroundCanvas />
           </div>
 
-          {/* LAYER 1B: Radial Gradient Vignette: Darkens outer edges seamlessly */}
+          {/* LAYER 1B: Radial Gradient Vignette */}
           <div
-            className="absolute inset-0 z-[2] pointer-events-none"
             style={{
               position: 'absolute',
               inset: 0,
@@ -65,16 +63,15 @@ export default function RootLayout({
           />
         </div>
 
-        {/* Fixed Navigation pinned to top of viewport with difference blend mode */}
+        {/* Fixed Navigation */}
         <Nav />
 
-        {/* LAYER 2: Client Shell (Splash Screen State) & Smooth Scroll (Lenis) */}
+        {/* LAYER 2: Client Shell (Splash Screen) & Smooth Scroll (Lenis) */}
         <ClientShell>
           <SmoothScroll>
             {/* LAYER 3: App Viewport & Page Content */}
             <div
               id="app-viewport"
-              className="relative z-10 flex flex-col min-h-screen w-full"
               style={{
                 position: 'relative',
                 zIndex: 10,
@@ -84,7 +81,7 @@ export default function RootLayout({
                 width: '100%',
               }}
             >
-              <main className="flex-1 w-full relative z-10" style={{ flex: 1, width: '100%', position: 'relative', zIndex: 10 }}>
+              <main style={{ flex: 1, width: '100%', position: 'relative', zIndex: 10 }}>
                 {children}
               </main>
               <Footer footerBigText="Offstage Sessions" />

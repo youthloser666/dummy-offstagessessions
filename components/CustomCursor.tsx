@@ -10,6 +10,10 @@ export default function CustomCursor() {
     const pillTitleRef = useRef<HTMLSpanElement>(null);
     const pillMetaRef = useRef<HTMLSpanElement>(null);
 
+    if (pathname?.startsWith('/offstageadminv')) {
+        return null;
+    }
+
     // Reset when pathname changes
     useEffect(() => {
         if (dotRef.current) dotRef.current.classList.remove('is-hovering');

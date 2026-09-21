@@ -16,10 +16,10 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // 1. Registrasi plugin ScrollTrigger
+    // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    // 2. Inisialisasi Lenis instance dengan inertia & smooth damping mewah
+    // Initialize Lenis with premium inertia & smooth damping
     const lenis = new Lenis({
       lerp: 0.065,
       duration: 1.6,
@@ -34,10 +34,10 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     lenisRef.current = lenis;
     (window as any).__lenis = lenis;
 
-    // 3. Update ScrollTrigger setiap kali Lenis melakukan scroll
+    // Sync ScrollTrigger on every Lenis scroll event
     lenis.on('scroll', ScrollTrigger.update);
 
-    // 4. Sinkronkan requestAnimationFrame Lenis ke GSAP Ticker
+    // Synchronize Lenis RAF to GSAP Ticker
     const tickerCallback = (time: number) => {
       lenis.raf(time * 1000);
     };
@@ -55,9 +55,8 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
     };
   }, []);
 
-  // Penanganan transisi rute: reset scroll ke atas secara instan tanpa mengunci UI
+  // Route transition: instantly reset scroll position without blocking UI
   useEffect(() => {
-    // 1. Reset posisi scroll native browser dan Lenis ke paling atas secara instan
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
@@ -67,7 +66,7 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
       lenis.scrollTo(0, { immediate: true });
     }
 
-    // 2. Refresh ScrollTrigger setelah frame berikutnya agar layout DOM baru sudah siap
+    // Refresh ScrollTrigger after next frame to ensure new DOM layout is ready
     const rafId = requestAnimationFrame(() => {
       ScrollTrigger.refresh();
     });

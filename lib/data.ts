@@ -11,6 +11,7 @@ export type Show = {
     featured?: boolean;
     month: string;
     ticketUrl?: string;
+    poshUrl?: string;
 };
 
 export type UpcomingShow = Show;
@@ -27,7 +28,8 @@ export const shows: Show[] = [
         tags: ['House', 'Techno'],
         featured: true,
         month: 'July 2026',
-        ticketUrl: 'https://shotgun.live/events/to-be-honest-baltimore',
+        ticketUrl: 'https://posh.vip/e/to-be-honest-baltimore',
+        poshUrl: 'https://posh.vip/e/to-be-honest-baltimore',
     },
     {
         id: 2,
@@ -40,7 +42,8 @@ export const shows: Show[] = [
         time: '6:00 PM — 12:00 AM',
         tags: ['House', 'Techno'],
         month: 'August 2026',
-        ticketUrl: 'https://shotgun.live/events/night-swim-3-years',
+        ticketUrl: 'https://posh.vip/e/night-swim-3-years',
+        poshUrl: 'https://posh.vip/e/night-swim-3-years',
     },
     {
         id: 3,
@@ -53,7 +56,8 @@ export const shows: Show[] = [
         time: '4:00 PM — 9:00 PM',
         tags: ['House'],
         month: 'August 2026',
-        ticketUrl: 'https://shotgun.live/events/grow-garden-open-air',
+        ticketUrl: 'https://posh.vip/e/grow-garden-open-air',
+        poshUrl: 'https://posh.vip/e/grow-garden-open-air',
     },
     {
         id: 4,
@@ -65,7 +69,8 @@ export const shows: Show[] = [
         time: '7:00 PM — 2:00 AM',
         tags: ['House', 'Bass'],
         month: 'August 2026',
-        ticketUrl: 'https://shotgun.live/events/late-checkout-baltimore',
+        ticketUrl: 'https://posh.vip/e/late-checkout-baltimore',
+        poshUrl: 'https://posh.vip/e/late-checkout-baltimore',
     },
     {
         id: 5,
@@ -77,7 +82,8 @@ export const shows: Show[] = [
         time: '9:00 PM — 2:00 AM',
         tags: ['House', 'Techno'],
         month: 'September 2026',
-        ticketUrl: 'https://shotgun.live/events/jackie-hollander',
+        ticketUrl: 'https://posh.vip/e/jackie-hollander',
+        poshUrl: 'https://posh.vip/e/jackie-hollander',
     },
     {
         id: 6,
@@ -89,7 +95,8 @@ export const shows: Show[] = [
         time: '8:00 PM — 2:00 AM',
         tags: ['Bass', 'House'],
         month: 'October 2026',
-        ticketUrl: 'https://shotgun.live/events/ship-wrek-live',
+        ticketUrl: 'https://posh.vip/e/ship-wrek-live',
+        poshUrl: 'https://posh.vip/e/ship-wrek-live',
     },
 ];
 

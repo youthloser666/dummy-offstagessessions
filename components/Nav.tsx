@@ -53,6 +53,10 @@ function Nav() {
         return pathname.startsWith(href);
     };
 
+    if (pathname?.startsWith('/offstageadminv')) {
+        return null;
+    }
+
     return (
         <>
             <nav 
@@ -268,7 +272,3 @@ function Nav() {
 }
 
 export default memo(Nav);
-
-
-
-

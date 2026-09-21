@@ -12,8 +12,19 @@ export default function ContactEmailForm() {
 
         const emailSubject = subject.trim() || 'Offstage Inquiry';
         const emailBody = message.trim();
+
+        // Asynchronously record to backend database
+        try {
+            fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject: emailSubject, message: emailBody }),
+            }).catch(() => {});
+        } catch {
+            // Ignore failure, proceed with mailto
+        }
+
         const mailtoUrl = `mailto:offstage@offstagesessions.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-        
         window.location.href = mailtoUrl;
     };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import styles from './GlitchBanner.module.css';
 
@@ -22,6 +22,12 @@ export default function GlitchBanner() {
     const [isGlitching, setIsGlitching] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const isGlitchingRef = useRef(false);
+
+    // Skip expensive glitch slice layers on touch/mobile devices
+    const isDesktop = useMemo(() => {
+        if (typeof window === 'undefined') return true;
+        return !window.matchMedia('(pointer: coarse)').matches;
+    }, []);
 
     // Trigger glitch transition and swap to next photo
     const advanceSlide = () => {
@@ -75,25 +81,27 @@ export default function GlitchBanner() {
                     className={styles.mainImage}
                 />
 
-                {/* Glitch Slice Layer 1 (Red/Cyan channel shift) */}
-                <Image
-                    src={currentSrc}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1200px) 100vw, 1200px"
-                    aria-hidden="true"
-                    className={styles.sliceA}
-                />
-
-                {/* Glitch Slice Layer 2 (Cyan/Acid horizontal tear) */}
-                <Image
-                    src={currentSrc}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1200px) 100vw, 1200px"
-                    aria-hidden="true"
-                    className={styles.sliceB}
-                />
+                {/* Glitch Slice Layers (desktop only — saves GPU on mobile) */}
+                {isDesktop && (
+                    <>
+                        <Image
+                            src={currentSrc}
+                            alt=""
+                            fill
+                            sizes="(max-width: 1200px) 100vw, 1200px"
+                            aria-hidden="true"
+                            className={styles.sliceA}
+                        />
+                        <Image
+                            src={currentSrc}
+                            alt=""
+                            fill
+                            sizes="(max-width: 1200px) 100vw, 1200px"
+                            aria-hidden="true"
+                            className={styles.sliceB}
+                        />
+                    </>
+                )}
 
                 {/* Acid Neon Flash Burst */}
                 <div className={styles.flashOverlay} />

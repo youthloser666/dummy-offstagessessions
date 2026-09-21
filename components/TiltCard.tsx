@@ -87,7 +87,7 @@ export default function TiltCard({
             const diffX = Math.abs(targetRotX.current - currentRotX.current);
             const diffY = Math.abs(targetRotY.current - currentRotY.current);
 
-            // Hanya jalankan loop saat di-hover atau saat belum selesai kembali ke titik netral [0, 0]
+            // Only run loop while hovered or still returning to neutral [0, 0]
             if (isHovered.current || diffX > 0.01 || diffY > 0.01) {
                 rafId.current = requestAnimationFrame(animate);
             } else {

@@ -111,9 +111,10 @@ export default function SocialDock() {
     };
   }, [pathname]);
 
-  // Visible when:
-  // - On landing: must be past hero AND footer not visible
-  // - On other pages (/shows, /media, /shop): always enabled from top, hides only when reaching footer
+  if (pathname?.startsWith('/offstageadminv')) {
+    return null;
+  }
+
   const isVisible = (!isLanding || isPastHero) && !isFooterVisible;
 
   return (

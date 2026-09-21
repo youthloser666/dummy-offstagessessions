@@ -55,7 +55,8 @@ export default function Home() {
   const [feedPosts, setFeedPosts] = useState(defaultInstagramPosts);
 
   useEffect(() => {
-    fetch('https://feeds.behold.so/sRkAEKqjRO8V5cW8pZDt')
+    const beholdUrl = process.env.NEXT_PUBLIC_BEHOLD_FEED_URL || 'https://feeds.behold.so/sRkAEKqjRO8V5cW8pZDt';
+    fetch(beholdUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();

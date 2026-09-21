@@ -108,18 +108,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Grid pattern overlay — positioned directly inside #fixed-background-root */
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
-  background-position: center top;
-  pointer-events: none;
-  mix-blend-mode: normal;
-}
 
 /* Grain overlay — Raw 35mm Analog Film Grain (3.5% - 4.5% Opacity) */
 body::before {
@@ -260,7 +248,7 @@ img {
    NAVIGATION — K95 MINIMALIST STUDIO STYLE
    100% Pure CSS Hover · Hardware Accelerated
    ============================================ */
-nav {
+nav:not([class*="navGroup"]):not([class*="sidebar"]) {
   position: fixed;
   top: 0;
   left: 0;
@@ -497,44 +485,6 @@ nav {
   -webkit-transform: translate3d(0, -7px, 0) rotate(-45deg);
 }
 
-/* ============================================
-   MARQUEE
-   ============================================ */
-.marquee-wrap {
-  overflow: hidden;
-  background: var(--white);
-  padding: 13px 0;
-}
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 22s linear infinite;
-}
-
-.marquee-item {
-  font-family: 'Anton';
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: #000;
-  padding: 0 40px;
-  white-space: nowrap;
-}
-
-.marquee-dot {
-  color: rgba(0, 0, 0, 0.2);
-  margin-right: 40px;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-50%);
-  }
-}
 
 /* ============================================
    SECTION LABEL
@@ -663,65 +613,6 @@ footer {
   max-width: 520px;
 }
 
-.newsletter-form {
-  display: flex;
-  border-bottom: 1px solid var(--muted);
-  padding-bottom: 16px;
-  gap: 10px;
-}
-
-.newsletter-form input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--white);
-  font-size: 0.9rem;
-  flex: 1;
-  font-family: 'Space Mono';
-}
-
-.newsletter-form input::placeholder {
-  opacity: 0.25;
-}
-
-.newsletter-form button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #ffffff;
-  padding: 10px 24px;
-  font-family: 'Moderniz', sans-serif;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 999px;
-  white-space: nowrap;
-  box-shadow: none;
-  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-}
-
-.newsletter-form button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--acid, #c8ff00);
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-1px);
-  box-shadow: none;
-}
-
-.newsletter-form button:active {
-  transform: translateY(0) scale(0.97);
-}
-
-.form-note {
-  font-size: 0.65rem;
-  opacity: 0.4;
-  margin-top: 14px;
-}
 
 /* ---- FOOTER CONTACT EMAIL FORM (MINIMALIST UNDERLINE STYLE) ---- */
 .contact-email-form {
@@ -956,7 +847,7 @@ footer {
 
 /* ---- Tablet 900px ---- */
 @media (max-width: 900px) {
-  nav {
+  nav:not([class*="navGroup"]):not([class*="sidebar"]) {
     height: 68px;
     padding: 0 5%;
   }
@@ -1025,22 +916,6 @@ footer {
     padding-bottom: 50px;
   }
 
-  .newsletter-form {
-    flex-direction: column;
-    gap: 12px;
-    border-bottom: none;
-  }
-
-  .newsletter-form input {
-    border-bottom: 1px solid var(--muted);
-    padding-bottom: 12px;
-  }
-
-  .newsletter-form button {
-    width: 100%;
-    padding: 14px;
-  }
-
   .footer-socials {
     gap: 16px;
     flex-wrap: wrap;
@@ -1054,10 +929,6 @@ footer {
     font-size: clamp(1.4rem, 7.5vw, 3.8rem);
   }
 
-  .marquee-item {
-    font-size: 0.85rem;
-    padding: 0 24px;
-  }
 }
 
 /* ============================================

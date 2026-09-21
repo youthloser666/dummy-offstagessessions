@@ -1,3 +1,6 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 import ContactEmailForm from './ContactEmailForm';
 
 interface FooterProps {
@@ -5,6 +8,9 @@ interface FooterProps {
 }
 
 export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterProps) {
+    const pathname = usePathname();
+    if (pathname?.startsWith('/offstageadminv')) return null;
+
     return (
         <footer id="contact">
             <div className="footer-top">

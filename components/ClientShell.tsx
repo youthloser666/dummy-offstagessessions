@@ -24,7 +24,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     const [shouldRenderSplash, setShouldRenderSplash] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Evaluasi sinkron sebelum paint browser untuk menentukan apakah splash screen aktif
+    // Synchronous evaluation before browser paint to determine splash screen state
     useIsomorphicLayoutEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -36,13 +36,13 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             setShouldRenderSplash(true);
             document.body.style.overflow = 'hidden';
 
-            // Kunci scroll Lenis selama splash screen aktif
+            // Lock Lenis scroll while splash screen is active
             const lenis = (window as any).__lenis;
             if (lenis) {
                 lenis.stop();
             }
         } else {
-            // Jika bukan di homepage atau sudah pernah dilihat, pastikan class splash-pending dibersihkan
+            // Not on homepage or already seen — clear splash-pending class
             document.documentElement.classList.remove('splash-pending');
             setSplashState('done');
             setShouldRenderSplash(false);
@@ -51,23 +51,23 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Triggered saat animasi splash mulai menarik tirai ke atas
+    // Triggered when splash animation begins pulling the curtain upward
     const handleSplashReveal = useCallback(() => {
         setSplashState('revealing');
 
-        // Buka mask pre-hydration agar landing page terlihat persis di balik tirai yang terangkat
+        // Remove pre-hydration mask so the landing page is visible behind the rising curtain
         if (typeof document !== 'undefined') {
             document.documentElement.classList.remove('splash-pending');
         }
 
-        // Buka kembali Lenis scroll dan pastikan posisi di 0
+        // Resume Lenis scroll and reset position to top
         const lenis = (window as any).__lenis;
         if (lenis) {
             lenis.start();
             lenis.scrollTo(0, { immediate: true });
         }
 
-        // Transisi fade lembut pada content tanpa CSS transform agar position:fixed pada Nav tidak rusak
+        // Smooth opacity fade on content (no CSS transform to preserve fixed Nav positioning)
         if (contentRef.current) {
             gsap.fromTo(
                 contentRef.current,
@@ -82,7 +82,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         }
     }, []);
 
-    // Triggered saat animasi splash selesai total
+    // Triggered when splash animation is fully complete
     const handleSplashComplete = useCallback(() => {
         if (typeof window !== 'undefined') {
             sessionStorage.setItem('splashSeen', 'true');
@@ -119,5 +119,3 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         </SplashContext.Provider>
     );
 }
-
-
