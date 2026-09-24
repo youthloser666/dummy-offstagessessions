@@ -1,0 +1,325 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import TiltCard from '@/components/TiltCard';
+import { useReveal } from '@/hooks/useReveal';
+import GlitchBanner from '@/components/GlitchBanner';
+import styles from '@/app/page.module.css';
+
+const defaultInstagramPosts = [
+  {
+    id: 1,
+    image: '/image/tobehonest_web.webp',
+    caption: 'TO BE HONEST — Sound Garden',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 2,
+    image: '/image/nightswim_web.webp',
+    caption: 'NIGHT SWIM — 3 Year Anniversary',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 3,
+    image: '/image/growgarden_web.webp',
+    caption: 'GROW GARDEN — Open Air',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 4,
+    image: '/image/latecheckout_web.webp',
+    caption: 'LATE CHECKOUT — Waterfront',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 5,
+    image: '/image/jackie_web.webp',
+    caption: 'JACKIE HOLLANDER — Soundstage',
+    url: 'https://instagram.com/offstagesession',
+  },
+  {
+    id: 6,
+    image: '/image/shipwreck_web.webp',
+    caption: 'SHIP WREK — Power Plant',
+    url: 'https://instagram.com/offstagesession',
+  },
+];
+
+interface HomeContentProps {
+  initialShows?: any[];
+}
+
+export default function HomeContent({ initialShows = [] }: HomeContentProps) {
+  useReveal();
+  const [feedPosts, setFeedPosts] = useState(defaultInstagramPosts);
+  const [showsData, setShowsData] = useState<any[]>(initialShows);
+
+  // Sync with live shows if client navigates without full page reload
+  useEffect(() => {
+    fetch('/api/shows', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          setShowsData(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const beholdUrl = process.env.NEXT_PUBLIC_BEHOLD_FEED_URL || 'https://feeds.behold.so/sRkAEKqjRO8V5cW8pZDt';
+    fetch(beholdUrl)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        const posts = Array.isArray(data) ? data : data?.posts;
+        if (Array.isArray(posts) && posts.length > 0) {
+          // Filter out Reels & Videos (only keep Photos and Carousels)
+          const photoPosts = posts.filter((item: any) => {
+            const isReel = item.permalink?.includes('/reel/') || item.mediaType === 'VIDEO';
+            return !isReel;
+          });
+
+          const targetPosts = photoPosts.length > 0 ? photoPosts : posts;
+
+          const formatted = targetPosts.map((item: any, idx: number) => ({
+            id: item.id || idx,
+            image: item.sizes?.medium?.mediaUrl || item.thumbnailUrl || item.mediaUrl || '/image/tobehonest_web.webp',
+            caption: item.prunedCaption || item.caption || '@offstagesession',
+            url: item.permalink || 'https://instagram.com/offstagesession',
+          }));
+          setFeedPosts(formatted);
+        }
+      })
+      .catch((err) => {
+        console.warn('Behold Instagram Feed: using default fallback', err);
+      });
+  }, []);
+
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      // Kinetic Masked Typography (Split-Line Reveal)
+      gsap.fromTo(
+        `.${styles.statementLine}`,
+        { yPercent: 120, rotate: 2, opacity: 0 },
+        {
+          yPercent: 0,
+          rotate: 0,
+          opacity: 1,
+          duration: 1.1,
+          ease: 'power4.out',
+          stagger: 0.09,
+          scrollTrigger: {
+            trigger: `.${styles.statement}`,
+            start: 'top 75%',
+          },
+        }
+      );
+
+      gsap.fromTo(
+        `.${styles.statementTagLine}`,
+        { yPercent: 120, rotate: -2, opacity: 0 },
+        {
+          yPercent: 0,
+          rotate: 0,
+          opacity: 1,
+          duration: 1.1,
+          ease: 'power4.out',
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: `.${styles.statement}`,
+            start: 'top 65%',
+          },
+        }
+      );
+    });
+
+    return () => ctx.revert();
+  }, []);
+
+  // Upcoming shows: filter out past shows
+  const upcomingShows = showsData.filter((s: any) => s.status !== 'past');
+  // Display all active upcoming shows in sync with /shows
+  const displayShows = upcomingShows.length > 0 ? upcomingShows : showsData;
+
+  return (
+    <div className="relative w-full flex flex-col z-10" style={{ background: 'transparent' }}>
+      {/* HERO SECTION (Rendered inside 3D Canvas with 3D Video Plane & Interactive Glass Typography) */}
+      <section className={`relative flex h-screen w-full flex-col items-center justify-center z-10 px-4 pointer-events-none ${styles.hero}`} />
+
+      {/* Kinetic Statement Section with masked typography */}
+      <section className={styles.statement}>
+        <div className={styles.statementContainer}>
+          <div className={styles.statementLineMask}>
+            <span className={styles.statementLine}>BEYOND</span>
+          </div>
+          <div className={styles.statementLineMask}>
+            <span className={styles.statementLine}>THE</span>
+          </div>
+          <div className={styles.statementLineMask}>
+            <span className={`${styles.statementLine} ${styles.statementLineAccent}`}>STAGE.</span>
+          </div>
+        </div>
+
+        <div className={styles.statementTagline}>
+          <div className={styles.statementTagMask}>
+            <span className={styles.statementTagLine}>BALTIMORE · DC DANCE MUSIC</span>
+          </div>
+          <div className={styles.statementTagMask}>
+            <span className={styles.statementTagLine}>CULTURE & COMMUNITY</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Marquee Ticker */}
+      <section className={styles.checkoutMarquee}>
+        <div className={styles.checkoutTrack}>
+          <div className={styles.checkoutGroup}>
+            {[...Array(6)].map((_, i) => (
+              <span key={`group1-${i}`} className={styles.checkoutItem}>
+                CHECKOUT UPCOMING EVENTS
+                <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
+              </span>
+            ))}
+            {[...Array(6)].map((_, i) => (
+              <span key={`group2-${i}`} className={styles.checkoutItem}>
+                CHECKOUT UPCOMING EVENTS
+                <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
+              </span>
+            ))}
+          </div>
+          <div className={styles.checkoutGroup} aria-hidden="true">
+            {[...Array(6)].map((_, i) => (
+              <span key={`dup1-${i}`} className={styles.checkoutItem}>
+                CHECKOUT UPCOMING EVENTS
+                <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
+              </span>
+            ))}
+            {[...Array(6)].map((_, i) => (
+              <span key={`dup2-${i}`} className={styles.checkoutItem}>
+                CHECKOUT UPCOMING EVENTS
+                <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Upcoming Shows */}
+      <section className={styles.upcomingShowsSection}>
+        <div className={styles.upcomingShowsHeader}>
+          <h2 className={styles.upcomingTitle}>
+            <span className={styles.titleSolid}>UPCOMING</span>
+            <span className={styles.titleOutline}>SHOWS</span>
+          </h2>
+          <Link href="/shows" className={styles.showsViewAll} data-cursor="EXPLORE" data-cursor-magnetic="true">
+            VIEW ALL SHOWS
+          </Link>
+        </div>
+
+        <div className={styles.upcomingShowsGrid}>
+          {displayShows.map((show) => (
+            <TiltCard key={show.id} maxTilt={10} scale={1.03}>
+              <Link
+                href={`/shows#show-${show.id}`}
+                className={styles.showsGridCard}
+                data-cursor="VIEW"
+              >
+                <Image
+                  src={show.poster || show.poster_url || '/image/tobehonest_web.webp'}
+                  alt={show.name}
+                  width={600}
+                  height={800}
+                  className={styles.showsGridCardImg}
+                />
+                <div className={styles.showsGridCardOverlay} />
+                <div className={styles.showsGridCardInfo}>
+                  <div className={styles.showDate}>{show.dateCode || show.date_code}</div>
+                  <h3 className={styles.showName}>{show.name}</h3>
+                  {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
+                  <div className={styles.showVenue}>{show.venue}</div>
+                </div>
+              </Link>
+            </TiltCard>
+          ))}
+        </div>
+      </section>
+
+      {/* Instagram Feed */}
+      <section className={styles.instagramSection}>
+        <div className={styles.instagramHeader}>
+          <h2 className={styles.instagramTitle}>
+            <span>FOLLOW US ON</span>
+            <span className={styles.instagramOutline}>INSTAGRAM</span>
+          </h2>
+        </div>
+
+        <div className={styles.instagramMarquee}>
+          {/* Double the posts for seamless loop */}
+          {[...feedPosts, ...feedPosts].map((post, i) => (
+            <a
+              key={`${post.id}-${i}`}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.instagramPost}
+              data-cursor="VISIT ↗"
+            >
+              <Image
+                src={post.image}
+                alt={post.caption}
+                width={300}
+                height={300}
+                unoptimized
+                className={styles.instagramPostImg}
+              />
+              <div className={styles.instagramPostOverlay}>
+                <span className={styles.instagramPostIcon}>
+                  ↗ {post.caption}
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.about} id="about">
+        <div className={`${styles.aboutHeader} reveal`}>
+          <h2 className={styles.aboutTitle}>
+            <span>ABOUT</span>
+            <span className={styles.aboutTitleOutline}>OFFSTAGE</span>
+          </h2>
+        </div>
+
+        <div className={`${styles.aboutGrid} reveal`}>
+          <div className={styles.aboutCol}>
+            <p className={styles.aboutParagraph}>
+              Offstage started the way a lot of good things do, with a couple of friends who loved dance music and felt like Baltimore deserved more of it. What began as throwing house music nights at local bars slowly turned into something bigger as those rooms filled up, word spread, and the community kept showing up. There was never a grand plan, just a shared belief that the best nights are built on good music, good people, and a space where everyone feels welcome.
+            </p>
+            <p className={styles.aboutParagraph}>
+              At its core, Offstage is still about friends throwing parties for the city they love. It is about late nights, shared memories, and the kind of connection you only get when the lights are low and the music hits just right. The best moments are made Offstage, and everyone is invited.
+            </p>
+          </div>
+
+          <div className={styles.aboutCol}>
+            <p className={styles.aboutParagraph}>
+              As the crowds grew, so did the vision. Offstage began bringing in nationally and globally recognized artists while staying rooted in the local scene that made it possible. Each event is built with intention, from the sound and production to the energy in the room, blending house, techno, bass, and everything in between. The goal has always been to create moments that feel personal, inclusive, and electric, whether it is an intimate dance floor or a packed room moving as one.
+            </p>
+          </div>
+        </div>
+
+        <GlitchBanner />
+      </section>
+
+      {/* The Footer serves as the contact section correctly per layout */}
+    </div>
+  );
+}

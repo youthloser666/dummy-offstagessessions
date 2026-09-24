@@ -2,16 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getShows } from '@/lib/services/shows';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tag = searchParams.get('tag') || undefined;
     const shows = await getShows(tag);
 
-    return NextResponse.json({
-      success: true,
-      data: shows,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: shows,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to retrieve shows' },

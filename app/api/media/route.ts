@@ -2,13 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMediaArchives } from '@/lib/services/media';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const media = await getMediaArchives();
-    return NextResponse.json({
-      success: true,
-      data: media,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: media,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to retrieve media archives' },

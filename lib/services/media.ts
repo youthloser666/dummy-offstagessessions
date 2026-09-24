@@ -90,11 +90,16 @@ export async function getMediaArchives(): Promise<MediaGalleryItem[]> {
     const { data, error } = await supabase
       .from('media_archives')
       .select('*')
-      .order('display_order', { ascending: true });
+      .order('display_order', { ascending: true })
+      .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      if (error) console.warn('Supabase getMediaArchives error, using fallback:', error.message);
+    if (error) {
+      console.warn('Supabase getMediaArchives error, using fallback:', error.message);
       return fallbackGalleries;
+    }
+
+    if (!data) {
+      return [];
     }
 
     return (data as DbMedia[]).map(mapDbMediaToGallery);

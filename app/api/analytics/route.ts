@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
@@ -154,21 +157,70 @@ export async function GET(request: NextRequest) {
       created_at: v.created_at,
     }));
 
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          totalViews,
+          uniqueVisitors,
+          viewsToday,
+          uniqueVisitorsToday,
+          topPages,
+          devices,
+          browsers,
+          osBreakdown,
+          sources,
+          recentVisits,
+          hasData: totalViews > 0,
+        },
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
+    const adminPass = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
+
+    if (authHeader !== adminPass && authHeader !== `Bearer ${adminPass}`) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Invalid admin passkey' },
+        { status: 401 }
+      );
+    }
+
+    const supabase = getSupabaseServerClient(true);
+    if (!supabase) {
+      return NextResponse.json(
+        { success: false, error: 'Supabase server client not configured' },
+        { status: 503 }
+      );
+    }
+
+    // Delete all rows from page_views
+    const { error } = await supabase
+      .from('page_views')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+
     return NextResponse.json({
       success: true,
-      data: {
-        totalViews,
-        uniqueVisitors,
-        viewsToday,
-        uniqueVisitorsToday,
-        topPages,
-        devices,
-        browsers,
-        osBreakdown,
-        sources,
-        recentVisits,
-        hasData: totalViews > 0,
-      },
+      message: 'All analytics traffic data reset successfully',
     });
   } catch (error: any) {
     return NextResponse.json(

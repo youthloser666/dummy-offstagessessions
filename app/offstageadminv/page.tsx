@@ -237,6 +237,27 @@ export default function AdminPage() {
     }
   };
 
+  const handleResetAnalytics = async () => {
+    if (!window.confirm('RESET ALL TRAFFIC ANALYTICS?\n\nThis will permanently delete all visitor records, page view counts, and live streams from Supabase. Are you sure?')) {
+      return;
+    }
+    setLoadingAnalytics(true);
+    try {
+      const res = await fetch('/api/analytics', {
+        method: 'DELETE',
+        headers: { 'x-admin-passkey': passkey },
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || 'Failed to reset analytics');
+      notify('success', 'All site traffic analytics have been reset');
+      loadAnalytics();
+    } catch (err: any) {
+      notify('error', err.message);
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
   const openEditShow = (show: any) => {
     setEditingShow({
       id: show.id,
@@ -1818,6 +1839,20 @@ export default function AdminPage() {
                   className={styles.btnSecondary}
                 >
                   {loadingAnalytics ? 'Refreshing...' : 'Refresh Traffic'}
+                </button>
+
+                <button
+                  onClick={handleResetAnalytics}
+                  disabled={loadingAnalytics}
+                  className={styles.btnSecondary}
+                  style={{
+                    backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                    borderColor: 'rgba(255, 68, 68, 0.3)',
+                    color: '#ff6b6b',
+                  }}
+                  title="Clear all visitor traffic history"
+                >
+                  Reset Analytics
                 </button>
 
                 <a

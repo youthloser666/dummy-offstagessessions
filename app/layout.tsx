@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
       <head>
-        {/* Synchronous 0ms Splash Screen Mask (Mencegah bocor landing page sebelum splash muncul) */}
+        {/* Synchronous 0ms*/}
         <script
           dangerouslySetInnerHTML={{
             __html: `
