@@ -53,6 +53,20 @@ const defaultInstagramPosts = [
 export default function Home() {
   useReveal();
   const [feedPosts, setFeedPosts] = useState(defaultInstagramPosts);
+  const [showsData, setShowsData] = useState(upcomingShows);
+
+  useEffect(() => {
+    fetch('/api/shows')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          const upcoming = json.data.filter((s: any) => s.status !== 'past');
+          const display = (upcoming.length > 0 ? upcoming : json.data).slice(0, 3);
+          setShowsData(display);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const beholdUrl = process.env.NEXT_PUBLIC_BEHOLD_FEED_URL || 'https://feeds.behold.so/sRkAEKqjRO8V5cW8pZDt';
@@ -210,7 +224,7 @@ export default function Home() {
         </div>
 
         <div className={styles.upcomingShowsGrid}>
-          {upcomingShows.map((show) => (
+          {showsData.map((show) => (
             <TiltCard key={show.id} maxTilt={10} scale={1.03}>
               <Link
                 href={`/shows#show-${show.id}`}

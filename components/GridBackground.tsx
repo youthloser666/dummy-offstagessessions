@@ -34,9 +34,11 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
     let cols = Math.ceil(viewport.width / TILE_SIZE) + 2;
     let rows = Math.ceil(viewport.height / TILE_SIZE) + 2;
 
-    // Expand grid so all 134 photos each get a unique tile slot
-    // The diagonal scroll naturally reveals every image as it wraps around
-    while (cols * rows < PHOTO_URLS.length) {
+    // Expand grid so all photos get slots on desktop, but keep mobile lean & smooth (35 tiles max)
+    const isMobileViewport = viewport.width < 5.0 || visibleCols <= 3;
+    const maxTargetTiles = isMobileViewport ? 35 : PHOTO_URLS.length;
+
+    while (cols * rows < maxTargetTiles) {
         if (cols <= rows) cols++;
         else rows++;
     }

@@ -11,11 +11,23 @@ import styles from './shows.module.css';
 const FILTERS = ['All', 'House', 'Techno', 'Bass'];
 
 export default function ShowsPage() {
+    const [showsList, setShowsList] = useState<Show[]>(shows);
     const [activeFilter, setActiveFilter] = useState('All');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [hoveredShow, setHoveredShow] = useState<Show | null>(null);
 
-    useReveal([activeFilter, viewMode]);
+    useEffect(() => {
+        fetch('/api/shows')
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                    setShowsList(json.data);
+                }
+            })
+            .catch((err) => console.warn('Shows live fetch failed, using fallback:', err));
+    }, []);
+
+    useReveal([activeFilter, viewMode, showsList]);
 
     // Framer Motion mouse tracking for floating poster
     const mouseX = useMotionValue(-500);
@@ -45,9 +57,9 @@ export default function ShowsPage() {
     }, [viewMode, mouseX, mouseY]);
 
     // Filter shows based on activeFilter
-    const filteredShows = shows.filter((show) => {
+    const filteredShows = showsList.filter((show) => {
         if (activeFilter === 'All') return true;
-        return show.tags.includes(activeFilter);
+        return Array.isArray(show.tags) && show.tags.includes(activeFilter);
     });
 
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, createContext, useContext, useEffect, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, createContext, useContext, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import SplashScreen from './SplashScreen';
 import gsap from 'gsap';
@@ -16,16 +16,16 @@ export function useSplash() {
     return useContext(SplashContext);
 }
 
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
 export default function ClientShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
     const [splashState, setSplashState] = useState<'active' | 'revealing' | 'done'>('done');
     const [shouldRenderSplash, setShouldRenderSplash] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Synchronous evaluation before browser paint to determine splash screen state
-    useIsomorphicLayoutEffect(() => {
+    // Run splash evaluation only after client hydration completes
+    useEffect(() => {
+        setMounted(true);
         if (typeof window === 'undefined') return;
 
         const isHomePage = pathname === '/';
@@ -49,7 +49,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             document.body.style.overflow = '';
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [pathname]);
 
     // Triggered when splash animation begins pulling the curtain upward
     const handleSplashReveal = useCallback(() => {
@@ -107,7 +107,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
 
     return (
         <SplashContext.Provider value={{ splashState }}>
-            {shouldRenderSplash && (
+            {mounted && shouldRenderSplash && (
                 <SplashScreen 
                     onReveal={handleSplashReveal}
                     onComplete={handleSplashComplete} 

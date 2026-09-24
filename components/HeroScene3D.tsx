@@ -276,17 +276,17 @@ function GlassOffstageModel({
                     >
                         <MeshTransmissionMaterial
                             backside={GLASS_CONFIG.backside}
-                            samples={GLASS_CONFIG.samples}
-                            resolution={GLASS_CONFIG.resolution}
+                            samples={isMobile ? 3 : GLASS_CONFIG.samples}
+                            resolution={isMobile ? 128 : GLASS_CONFIG.resolution}
                             transmission={GLASS_CONFIG.transmission}
                             roughness={GLASS_CONFIG.roughness}
                             thickness={GLASS_CONFIG.thickness}
                             ior={GLASS_CONFIG.ior}
-                            chromaticAberration={GLASS_CONFIG.chromaticAberration}
-                            anisotropy={GLASS_CONFIG.anisotropy}
+                            chromaticAberration={isMobile ? 0.04 : GLASS_CONFIG.chromaticAberration}
+                            anisotropy={isMobile ? 0.1 : GLASS_CONFIG.anisotropy}
                             distortion={GLASS_CONFIG.distortion}
                             distortionScale={GLASS_CONFIG.distortionScale}
-                            temporalDistortion={GLASS_CONFIG.temporalDistortion}
+                            temporalDistortion={isMobile ? 0 : GLASS_CONFIG.temporalDistortion}
                             color={GLASS_CONFIG.color}
                             attenuationColor={GLASS_CONFIG.attenuationColor}
                             attenuationDistance={GLASS_CONFIG.attenuationDistance}
@@ -421,15 +421,9 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         window.addEventListener('click', onFirstInteraction, { passive: true, once: true });
 
         window.addEventListener('mousemove', onPointerMove, { passive: true });
-        window.addEventListener('touchmove', onPointerMove, { passive: true });
-        window.addEventListener('touchstart', onPointerMove, { passive: true });
-        window.addEventListener('touchend', onTouchEnd, { passive: true });
 
         return () => {
             window.removeEventListener('mousemove', onPointerMove);
-            window.removeEventListener('touchmove', onPointerMove);
-            window.removeEventListener('touchstart', onPointerMove);
-            window.removeEventListener('touchend', onTouchEnd);
             window.removeEventListener('deviceorientation', onOrientation);
             window.removeEventListener('touchstart', onFirstInteraction);
             window.removeEventListener('click', onFirstInteraction);
@@ -482,27 +476,29 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                 heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
             }
 
-            // ── NEON GLOW INTERACTION: TRIGGERED BY CLICK / TAP / CURSOR HOVER ──
-            pointerVec.set(cursor.current.x, cursor.current.y);
-            raycaster.setFromCamera(pointerVec, camera);
+            // ── NEON GLOW INTERACTION: TRIGGERED BY CURSOR HOVER (DESKTOP ONLY) ──
+            if (!isMobileMode) {
+                pointerVec.set(cursor.current.x, cursor.current.y);
+                raycaster.setFromCamera(pointerVec, camera);
 
-            const meshes: THREE.Mesh[] = [];
-            const ids: string[] = [];
-            hitboxesRef.current.forEach((mesh, id) => {
-                meshes.push(mesh);
-                ids.push(id);
-            });
+                const meshes: THREE.Mesh[] = [];
+                const ids: string[] = [];
+                hitboxesRef.current.forEach((mesh, id) => {
+                    meshes.push(mesh);
+                    ids.push(id);
+                });
 
-            if (meshes.length > 0) {
-                const intersects = raycaster.intersectObjects(meshes, false);
-                if (intersects.length > 0) {
-                    const hitMesh = intersects[0].object as THREE.Mesh;
-                    const hitIdx = meshes.indexOf(hitMesh);
-                    if (hitIdx !== -1) {
-                        setHoveredWord(ids[hitIdx]);
+                if (meshes.length > 0) {
+                    const intersects = raycaster.intersectObjects(meshes, false);
+                    if (intersects.length > 0) {
+                        const hitMesh = intersects[0].object as THREE.Mesh;
+                        const hitIdx = meshes.indexOf(hitMesh);
+                        if (hitIdx !== -1) {
+                            setHoveredWord(ids[hitIdx]);
+                        }
+                    } else {
+                        setHoveredWord(null);
                     }
-                } else if (!isMobileMode) {
-                    setHoveredWord((prev) => (prev ? null : prev));
                 }
             }
         }

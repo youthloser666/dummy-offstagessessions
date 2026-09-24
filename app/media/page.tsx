@@ -1,56 +1,42 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useReveal } from '@/hooks/useReveal';
 import ParallaxMediaCard, { MediaItem } from '@/components/ParallaxMediaCard';
+import { fallbackGalleries } from '@/lib/services/media';
 import styles from './media.module.css';
 
-const galleries: MediaItem[] = [
-    {
-        id: 1,
-        name: 'JACKIE HOLLANDER 6.13',
-        image: '/image/jackie_web.webp',
-        date: 'JUNE 13, 2026 · SOUNDSTAGE',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-    {
-        id: 2,
-        name: 'HONEYLUV 5.02',
-        image: '/image/honey_web.webp',
-        date: 'MAY 2, 2026 · WAREHOUSE 8',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-    {
-        id: 3,
-        name: 'SHIP WREK 4.10',
-        image: '/image/shipwreck_web.webp',
-        date: 'APRIL 10, 2026 · POWER PLANT',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-    {
-        id: 4,
-        name: 'TO BE HONEST 5.09',
-        image: '/image/tobehonest_web.webp',
-        date: 'MAY 9, 2026 · SOUND GARDEN',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-    {
-        id: 5,
-        name: 'NIGHT SWIM 3.28',
-        image: '/image/nightswim_web.webp',
-        date: 'MARCH 28, 2026 · THE WATERFRONT',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-    {
-        id: 6,
-        name: 'GROW GARDEN 4.25',
-        image: '/image/growgarden_web.webp',
-        date: 'APRIL 25, 2026 · OPEN AIR DC',
-        facebookUrl: 'https://www.facebook.com/offstagesessions',
-    },
-];
-
 export default function MediaPage() {
-    useReveal();
+    const [galleryItems, setGalleryItems] = useState<MediaItem[]>(
+        fallbackGalleries.map((g) => ({
+            id: g.id,
+            name: g.name,
+            image: g.image,
+            date: g.date,
+            facebookUrl: g.facebookUrl,
+        }))
+    );
+
+    useEffect(() => {
+        fetch('/api/media')
+            .then((res) => res.json())
+            .then((json) => {
+                if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+                    setGalleryItems(
+                        json.data.map((item: any) => ({
+                            id: item.id,
+                            name: item.name,
+                            image: item.image || item.image_url || item.thumbnail || item.thumbnail_url,
+                            date: item.date,
+                            facebookUrl: item.facebookUrl || item.facebook_url,
+                        }))
+                    );
+                }
+            })
+            .catch((err) => console.warn('Media live fetch failed, using fallback:', err));
+    }, []);
+
+    useReveal([galleryItems]);
 
     return (
         <div className="bg-transparent" style={{ background: 'transparent' }}>
@@ -62,7 +48,7 @@ export default function MediaPage() {
 
             {/* Parallax Gallery Cards (Framer Motion & Grayscale Reveal) */}
             <div className={styles.galleryList}>
-                {galleries.map((gallery, idx) => (
+                {galleryItems.map((gallery, idx) => (
                     <div key={gallery.id} className="reveal">
                         <ParallaxMediaCard
                             item={gallery}

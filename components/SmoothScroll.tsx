@@ -16,18 +16,39 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Register ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    // Initialize Lenis with premium inertia & smooth damping
+    // Detect touch-first mobile & tablet devices
+    const isMobileTouch =
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+       (window.innerWidth < 840 && ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0)));
+
+    // On mobile touch devices: Use browser's native hardware momentum scrolling!
+    // This eliminates:
+    // 1. "Floaty" / disconnected finger drag (1:1 direct finger tracking)
+    // 2. Micro-stutters and 60Hz/120Hz display refresh mismatches across different phone brands
+    // 3. Inertia fighting with native browser gestures
+    if (isMobileTouch) {
+      const onNativeScroll = () => {
+        ScrollTrigger.update();
+      };
+      window.addEventListener('scroll', onNativeScroll, { passive: true });
+
+      return () => {
+        window.removeEventListener('scroll', onNativeScroll);
+      };
+    }
+
+    // On Desktop: Initialize Lenis for luxurious smooth mouse wheel damping
     const lenis = new Lenis({
-      lerp: 0.065,
-      duration: 1.6,
+      lerp: 0.085,
+      duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 0.88,
-      touchMultiplier: 1.5,
-      syncTouch: true,
+      wheelMultiplier: 1.0,
+      syncTouch: false, // Never virtualize touch on mobile
+      touchMultiplier: 1.0,
       infinite: false,
     });
 

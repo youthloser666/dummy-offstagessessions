@@ -129,6 +129,17 @@ body::before {
   }
 }
 
+@media (hover: none) and (pointer: coarse), (max-width: 840px) {
+  body {
+    cursor: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cursor-dot,
+  .cursor-pill {
+    display: none !important;
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Moderniz', sans-serif;
 }

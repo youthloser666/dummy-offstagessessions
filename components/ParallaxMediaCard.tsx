@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import styles from '@/app/media/media.module.css';
 
 export interface MediaItem {
-    id: number;
+    id: string | number;
     name: string;
     image: string;
     date: string;

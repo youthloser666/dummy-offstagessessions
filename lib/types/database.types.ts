@@ -70,37 +70,37 @@ export interface Database {
       };
       media_archives: {
         Row: {
-          id: string;
+          id: string | number;
           name: string;
           date: string;
           thumbnail_url: string;
           image_url: string | null;
           facebook_url: string;
-          category: 'photo' | 'video' | 'mix' | 'gallery';
+          category: 'photo' | 'video' | 'mix' | 'gallery' | 'highlight';
           display_order: number;
           created_at: string;
           updated_at: string;
         };
         Insert: {
-          id?: string;
+          id?: string | number;
           name: string;
           date?: string;
           thumbnail_url: string;
           image_url?: string | null;
           facebook_url: string;
-          category?: 'photo' | 'video' | 'mix' | 'gallery';
+          category?: 'photo' | 'video' | 'mix' | 'gallery' | 'highlight';
           display_order?: number;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
-          id?: string;
+          id?: string | number;
           name?: string;
           date?: string;
           thumbnail_url?: string;
           image_url?: string | null;
           facebook_url?: string;
-          category?: 'photo' | 'video' | 'mix' | 'gallery';
+          category?: 'photo' | 'video' | 'mix' | 'gallery' | 'highlight';
           display_order?: number;
           updated_at?: string;
         };
@@ -108,30 +108,74 @@ export interface Database {
       };
       contact_inquiries: {
         Row: {
-          id: string;
+          id: string | number;
           name: string | null;
           email: string | null;
           subject: string;
+          category?: string;
           message: string;
-          status: 'unread' | 'read' | 'replied';
+          status: 'unread' | 'read' | 'archived' | 'replied';
+          ip_address?: string | null;
           created_at: string;
         };
         Insert: {
-          id?: string;
+          id?: string | number;
           name?: string | null;
           email?: string | null;
           subject: string;
+          category?: string;
           message: string;
-          status?: 'unread' | 'read' | 'replied';
+          status?: 'unread' | 'read' | 'archived' | 'replied';
+          ip_address?: string | null;
           created_at?: string;
         };
         Update: {
-          id?: string;
+          id?: string | number;
           name?: string | null;
           email?: string | null;
           subject?: string;
+          category?: string;
           message?: string;
-          status?: 'unread' | 'read' | 'replied';
+          status?: 'unread' | 'read' | 'archived' | 'replied';
+          ip_address?: string | null;
+        };
+        Relationships: [];
+      };
+      page_views: {
+        Row: {
+          id: string | number;
+          page_path: string;
+          referrer: string | null;
+          user_agent: string | null;
+          device_type: string;
+          browser: string | null;
+          os: string | null;
+          ip_hash: string | null;
+          country: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string | number;
+          page_path: string;
+          referrer?: string | null;
+          user_agent?: string | null;
+          device_type?: string;
+          browser?: string | null;
+          os?: string | null;
+          ip_hash?: string | null;
+          country?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string | number;
+          page_path?: string;
+          referrer?: string | null;
+          user_agent?: string | null;
+          device_type?: string;
+          browser?: string | null;
+          os?: string | null;
+          ip_hash?: string | null;
+          country?: string | null;
         };
         Relationships: [];
       };
@@ -146,3 +190,4 @@ export interface Database {
 export type DbShow = Database['public']['Tables']['shows']['Row'];
 export type DbMedia = Database['public']['Tables']['media_archives']['Row'];
 export type DbInquiry = Database['public']['Tables']['contact_inquiries']['Row'];
+export type DbPageView = Database['public']['Tables']['page_views']['Row'];

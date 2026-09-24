@@ -7,6 +7,7 @@ import ClientShell from '@/components/ClientShell';
 import SmoothScroll from '@/components/SmoothScroll';
 import GlobalBackgroundCanvas from '@/components/GlobalBackgroundCanvas';
 import SocialDock from '@/components/SocialDock';
+import TrafficTracker from '@/components/TrafficTracker';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -39,7 +40,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-black text-white cursor-none overflow-x-hidden">
+      <body suppressHydrationWarning className="bg-black text-white cursor-none overflow-x-hidden">
         {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
           id="fixed-background-root"
@@ -91,6 +92,9 @@ export default function RootLayout({
 
         {/* Desktop Fixed Floating Social Media Dock */}
         <SocialDock />
+
+        {/* Site Traffic & Visitor Tracking */}
+        <TrafficTracker />
 
         {/* Custom Cursor Overlay */}
         <CustomCursor />

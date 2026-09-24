@@ -25,7 +25,7 @@ export default function GlobalBackgroundCanvas() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    pointerEvents: 'auto',
+                    pointerEvents: 'none',
                 }}
             >
                 <ambientLight intensity={0.8} />
