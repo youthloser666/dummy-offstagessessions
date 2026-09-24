@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { smoothScrollTo } from '@/lib/utils/scroll';
 
 const NAV_ITEMS = [
     { href: '/', label: 'Home' },
@@ -53,6 +54,26 @@ function Nav() {
         return pathname.startsWith(href);
     };
 
+    const handleHomeClick = (e: React.MouseEvent) => {
+        if (pathname === '/') {
+            e.preventDefault();
+            closeDrawer();
+            smoothScrollTo(0, 1.8);
+        } else {
+            closeDrawer();
+        }
+    };
+
+    const handleContactClick = (e: React.MouseEvent) => {
+        if (pathname === '/') {
+            e.preventDefault();
+            closeDrawer();
+            smoothScrollTo('#contact', 1.8);
+        } else {
+            closeDrawer();
+        }
+    };
+
     if (pathname?.startsWith('/offstageadminv')) {
         return null;
     }
@@ -72,7 +93,7 @@ function Nav() {
             >
                 {/* Far Left: Brand Logo */}
                 <div className="logo pointer-events-auto">
-                    <Link href="/" onClick={closeDrawer}>
+                    <Link href="/" onClick={handleHomeClick}>
                         <Image
                             src="/image/offstages.gif"
                             alt="Offstage Sessions"
@@ -94,6 +115,7 @@ function Nav() {
                                 <li key={item.href}>
                                     <Link
                                         href={item.href}
+                                        onClick={item.href === '/' ? handleHomeClick : closeDrawer}
                                         className={`nav-link-item ${active ? 'is-active' : ''}`}
                                         data-hover
                                     >
@@ -118,6 +140,7 @@ function Nav() {
                     <div className="nav-right">
                         <a 
                             href="#contact" 
+                            onClick={handleContactClick}
                             className="btn-contact" 
                             data-cursor="CONTACT" 
                             data-hover
@@ -226,7 +249,7 @@ function Nav() {
                                 >
                                     <Link
                                         href={item.href}
-                                        onClick={closeDrawer}
+                                        onClick={item.href === '/' ? handleHomeClick : closeDrawer}
                                         style={{
                                             display: 'inline-flex',
                                             alignItems: 'center',
@@ -257,7 +280,7 @@ function Nav() {
                         >
                             <a
                                 href="#contact"
-                                onClick={closeDrawer}
+                                onClick={handleContactClick}
                                 className="btn-contact btn-contact-mobile"
                                 data-hover
                             >

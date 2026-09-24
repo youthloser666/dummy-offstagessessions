@@ -46,6 +46,27 @@ export default function SocialDock() {
   // Landing page starts hidden until scrolling past hero; subpages are enabled immediately
   const [isPastHero, setIsPastHero] = useState(!isLanding);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+  const [links, setLinks] = useState({
+    instagram: 'https://instagram.com/offstagesession',
+    tiktok: 'https://www.tiktok.com/@offstagesessions',
+    facebook: 'https://www.facebook.com/offstagesessions',
+  });
+
+  useEffect(() => {
+    fetch('/api/socials')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setLinks((prev) => ({
+            ...prev,
+            instagram: json.data.instagram || prev.instagram,
+            tiktok: json.data.tiktok || prev.tiktok,
+            facebook: json.data.facebook || prev.facebook,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // 1. Monitor scroll position on landing page (hide at hero / page 1 fold)
   useEffect(() => {
@@ -122,20 +143,31 @@ export default function SocialDock() {
       className={`${styles.socialDockDesktop} ${!isVisible ? styles.isHidden : ''}`}
       aria-label="Social Media Links"
     >
-      {SOCIAL_LINKS.map((link) => (
-        <a
-          key={link.name}
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.socialBtn}
-          aria-label={link.name}
-          data-cursor={link.cursorLabel}
-          data-cursor-magnetic="true"
-        >
-          {link.icon}
-        </a>
-      ))}
+      {SOCIAL_LINKS.map((link) => {
+        const dynamicUrl =
+          link.name === 'Instagram'
+            ? links.instagram
+            : link.name === 'TikTok'
+            ? links.tiktok
+            : link.name === 'Facebook'
+            ? links.facebook
+            : link.url;
+
+        return (
+          <a
+            key={link.name}
+            href={dynamicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.socialBtn}
+            aria-label={link.name}
+            data-cursor={link.cursorLabel}
+            data-cursor-magnetic="true"
+          >
+            {link.icon}
+          </a>
+        );
+      })}
     </aside>
   );
 }

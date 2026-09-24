@@ -83,19 +83,33 @@ CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON public.page_views(create
 CREATE INDEX IF NOT EXISTS idx_page_views_page_path ON public.page_views(page_path);
 
 -- ============================================================================
--- 5. ROW-LEVEL SECURITY (RLS) POLICIES
+-- 5. SITE SETTINGS & CONFIGURATION TABLE (Social Media & Site Metadata)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.site_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    description TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================================================
+-- 6. ROW-LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 ALTER TABLE public.shows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.media_archives ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
--- Anonymous public read access for shows and media archives
+-- Anonymous public read access for shows, media archives, and site settings
 CREATE POLICY "Public shows are viewable by everyone" 
 ON public.shows FOR SELECT USING (true);
 
 CREATE POLICY "Public media is viewable by everyone" 
 ON public.media_archives FOR SELECT USING (true);
+
+CREATE POLICY "Public settings are viewable by everyone" 
+ON public.site_settings FOR SELECT USING (true);
 
 -- Anonymous users can insert contact inquiries
 CREATE POLICY "Public can submit contact inquiries" 
@@ -122,8 +136,12 @@ CREATE POLICY "Admin full access on page_views"
 ON public.page_views FOR ALL 
 USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
 
+CREATE POLICY "Admin full access on site_settings" 
+ON public.site_settings FOR ALL 
+USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
+
 -- ============================================================================
--- 5. INITIAL SEED DATA
+-- 7. INITIAL SEED DATA
 -- ============================================================================
 -- Seed: Shows & Tour Dates
 INSERT INTO public.shows (
@@ -286,3 +304,21 @@ INSERT INTO public.media_archives (
     6
 )
 ON CONFLICT DO NOTHING;
+
+-- Seed: Default Site Settings (Social Media links)
+INSERT INTO public.site_settings (key, value, description)
+VALUES (
+    'social_links',
+    '{
+        "instagram": "https://instagram.com/offstagesession",
+        "tiktok": "https://www.tiktok.com/@offstagesessions",
+        "facebook": "https://www.facebook.com/offstagesessions",
+        "email": "offstage@offstagesessions.com",
+        "spotify": "",
+        "soundcloud": "",
+        "youtube": ""
+    }'::jsonb,
+    'Social media & channel links used across the site'
+)
+ON CONFLICT (key) DO NOTHING;
+

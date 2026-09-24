@@ -179,6 +179,27 @@ export interface Database {
         };
         Relationships: [];
       };
+      site_settings: {
+        Row: {
+          key: string;
+          value: Json;
+          description: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Json;
+          description?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          value?: Json;
+          description?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -191,3 +212,4 @@ export type DbShow = Database['public']['Tables']['shows']['Row'];
 export type DbMedia = Database['public']['Tables']['media_archives']['Row'];
 export type DbInquiry = Database['public']['Tables']['contact_inquiries']['Row'];
 export type DbPageView = Database['public']['Tables']['page_views']['Row'];
+export type DbSiteSetting = Database['public']['Tables']['site_settings']['Row'];

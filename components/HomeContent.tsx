@@ -49,6 +49,23 @@ const defaultInstagramPosts = [
   },
 ];
 
+function cleanInstagramCaption(caption: string, maxLen = 50): string {
+  if (!caption) return '@offstagesession';
+  const lines = caption
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  const headline = lines[0] || caption;
+
+  if (headline.length <= maxLen) {
+    return headline;
+  }
+  const truncated = headline.slice(0, maxLen);
+  const lastSpace = truncated.lastIndexOf(' ');
+  const cleanCut = lastSpace > 20 ? truncated.slice(0, lastSpace) : truncated;
+  return `${cleanCut.trim()}...`;
+}
+
 interface HomeContentProps {
   initialShows?: any[];
 }
@@ -155,50 +172,55 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
       {/* HERO SECTION (Rendered inside 3D Canvas with 3D Video Plane & Interactive Glass Typography) */}
       <section className={`relative flex h-screen w-full flex-col items-center justify-center z-10 px-4 pointer-events-none ${styles.hero}`} />
 
-      {/* Kinetic Statement Section with masked typography */}
-      <section className={styles.statement}>
-        <div className={styles.statementContainer}>
-          <div className={styles.statementLineMask}>
-            <span className={styles.statementLine}>BEYOND</span>
-          </div>
-          <div className={styles.statementLineMask}>
-            <span className={styles.statementLine}>THE</span>
-          </div>
-          <div className={styles.statementLineMask}>
-            <span className={`${styles.statementLine} ${styles.statementLineAccent}`}>STAGE.</span>
+      {/* Statement section with Kinetic Split-Line Reveal (Layar Kedua / Di Bawah Hero) */}
+      <section className={`${styles.statement} relative z-10`} style={{ position: 'relative', zIndex: 10 }}>
+        <div className={styles.statementBody}>
+          <h2 className={styles.statementHeading}>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>HOUSE</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>TECHNO</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementLine}>BASS, AND</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={`${styles.statementLine} ${styles.acidText}`}>EVERYTHING</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={`${styles.statementLine} ${styles.acidText}`}>IN BETWEEN</span>
+            </div>
+          </h2>
+        </div>
+        <div className={styles.statementBottom}>
+          <div className={styles.statementTag}>
+            <div className={styles.statementMask}>
+              <span className={styles.statementTagLine}>BORN IN</span>
+            </div>
+            <div className={styles.statementMask}>
+              <span className={styles.statementTagLine}>BALTIMORE</span>
+            </div>
           </div>
         </div>
-
-        <div className={styles.statementTagline}>
-          <div className={styles.statementTagMask}>
-            <span className={styles.statementTagLine}>BALTIMORE · DC DANCE MUSIC</span>
-          </div>
-          <div className={styles.statementTagMask}>
-            <span className={styles.statementTagLine}>CULTURE & COMMUNITY</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Marquee Ticker */}
-      <section className={styles.checkoutMarquee}>
-        <div className={styles.checkoutTrack}>
-          <div className={styles.checkoutGroup}>
+        <div className={styles.checkoutMarquee}>
+          <div className={styles.checkoutTrack}>
             {[...Array(6)].map((_, i) => (
-              <span key={`group1-${i}`} className={styles.checkoutItem}>
+              <span key={i} className={styles.checkoutItem}>
                 CHECKOUT UPCOMING EVENTS
                 <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
               </span>
             ))}
             {[...Array(6)].map((_, i) => (
-              <span key={`group2-${i}`} className={styles.checkoutItem}>
+              <span key={`dup-${i}`} className={styles.checkoutItem}>
                 CHECKOUT UPCOMING EVENTS
                 <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
               </span>
             ))}
           </div>
-          <div className={styles.checkoutGroup} aria-hidden="true">
+          <div className={styles.checkoutTrackReverse}>
             {[...Array(6)].map((_, i) => (
-              <span key={`dup1-${i}`} className={styles.checkoutItem}>
+              <span key={i} className={styles.checkoutItem}>
                 CHECKOUT UPCOMING EVENTS
                 <img src="/image/dots.svg" alt="dots" className={styles.checkoutDots} />
               </span>
@@ -282,9 +304,14 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
                 className={styles.instagramPostImg}
               />
               <div className={styles.instagramPostOverlay}>
-                <span className={styles.instagramPostIcon}>
-                  ↗ {post.caption}
-                </span>
+                <div className={styles.instagramPostContent}>
+                  <p className={styles.instagramCaptionText} title={post.caption}>
+                    {cleanInstagramCaption(post.caption)}
+                  </p>
+                  <span className={styles.instagramVisitBtn}>
+                    VISIT ↗
+                  </span>
+                </div>
               </div>
             </a>
           ))}
