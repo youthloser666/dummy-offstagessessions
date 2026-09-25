@@ -55,6 +55,8 @@ export default function HeroVideoBackground({ visible = true }: { visible?: bool
     const materialRef = useRef<THREE.ShaderMaterial>(null);
     const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
     const opacityRef = useRef(visible ? 1 : 0);
+    // Cache scrollY from passive scroll listener to avoid forced layout in useFrame
+    const cachedScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const planeWidth = viewport.width * 1.05;
@@ -149,16 +151,39 @@ export default function HeroVideoBackground({ visible = true }: { visible?: bool
         return () => video.removeEventListener('loadedmetadata', updateAspect);
     }, [planeWidth, planeHeight, uniforms]);
 
+    // Cache scrollY in a ref so useFrame never triggers forced layout
+    useEffect(() => {
+        const handleScroll = () => {
+            cachedScrollY.current = window.scrollY;
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     // Keep position synchronized with Lenis scroll on every frame
     useFrame((_, delta) => {
         const target = visible ? 1 : 0;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, target, 8, delta);
 
+        const scrollY = cachedScrollY.current;
+        const vh = typeof window !== 'undefined' ? (window.innerHeight || 800) : 800;
+        const isOffscreen = scrollY > vh * 1.35;
+
+        // Auto pause video when scrolled off-screen to save mobile CPU/GPU & battery
+        if (videoRef.current) {
+            if (isOffscreen && !videoRef.current.paused) {
+                videoRef.current.pause();
+            } else if (!isOffscreen && videoRef.current.paused && visible) {
+                videoRef.current.play().catch(() => {});
+            }
+        }
+
         if (meshRef.current) {
-            meshRef.current.visible = opacityRef.current > 0.005;
-            const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
-            const unitPerPixel = viewport.height / (typeof window !== 'undefined' ? (window.innerHeight || 1) : 1);
-            meshRef.current.position.y = initialY + scrollY * unitPerPixel;
+            meshRef.current.visible = opacityRef.current > 0.005 && !isOffscreen;
+            if (!isOffscreen) {
+                const unitPerPixel = viewport.height / (typeof window !== 'undefined' ? (window.innerHeight || 1) : 1);
+                meshRef.current.position.y = initialY + scrollY * unitPerPixel;
+            }
         }
 
         if (materialRef.current) {

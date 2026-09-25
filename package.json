@@ -19,13 +19,13 @@
     "next": "^14.2.5",
     "react": "^18",
     "react-dom": "^18",
+    "sharp": "^0.35.3",
     "three": "^0.175.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "sharp": "^0.35.3",
     "typescript": "^5"
   }
 }

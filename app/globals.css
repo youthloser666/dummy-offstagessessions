@@ -123,7 +123,8 @@ body::before {
   z-index: 9999;
 }
 
-@media (max-width: 768px) {
+/* Disable grain on mobile / touch devices — saves a compositing layer on GPU-constrained devices */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
   body::before {
     display: none;
   }
@@ -133,6 +134,8 @@ body::before {
   body {
     cursor: auto !important;
     -webkit-overflow-scrolling: touch;
+    /* Eliminate 300ms touch delay for instant scroll response */
+    touch-action: manipulation;
   }
   .cursor-dot,
   .cursor-pill {
@@ -821,22 +824,24 @@ footer {
 }
 
 /* ============================================
-   REVEAL ANIMATION
+   REVEAL ANIMATION (GPU-ACCELERATED)
+   Using translate3d for guaranteed compositor layer promotion
    ============================================ */
 .reveal {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translate3d(0, 40px, 0);
   transition: opacity 0.75s ease, transform 0.75s ease;
+  will-change: transform, opacity;
 }
 
 .reveal.visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
 }
 
 .reveal.exit {
   opacity: 0;
-  transform: translateY(40px);
+  transform: translate3d(0, 40px, 0);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 

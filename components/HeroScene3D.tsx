@@ -220,6 +220,8 @@ function InteractiveWord({
 }
 
 // 3D Glass Model: Clean, serene, luxurious refractive glass without glitching
+// Mobile: Uses lightweight MeshPhysicalMaterial (no FBO re-render = halved GPU cost)
+// Desktop: Full MeshTransmissionMaterial for premium glass refraction
 function GlassOffstageModel({ 
     fontSize,
     isMobile = false,
@@ -274,23 +276,41 @@ function GlassOffstageModel({
                         geometry={nodes.Curve.geometry}
                         rotation={[Math.PI / 2, 0, 0]}
                     >
-                        <MeshTransmissionMaterial
-                            backside={GLASS_CONFIG.backside}
-                            samples={isMobile ? 3 : GLASS_CONFIG.samples}
-                            resolution={isMobile ? 128 : GLASS_CONFIG.resolution}
-                            transmission={GLASS_CONFIG.transmission}
-                            roughness={GLASS_CONFIG.roughness}
-                            thickness={GLASS_CONFIG.thickness}
-                            ior={GLASS_CONFIG.ior}
-                            chromaticAberration={isMobile ? 0.04 : GLASS_CONFIG.chromaticAberration}
-                            anisotropy={isMobile ? 0.1 : GLASS_CONFIG.anisotropy}
-                            distortion={GLASS_CONFIG.distortion}
-                            distortionScale={GLASS_CONFIG.distortionScale}
-                            temporalDistortion={isMobile ? 0 : GLASS_CONFIG.temporalDistortion}
-                            color={GLASS_CONFIG.color}
-                            attenuationColor={GLASS_CONFIG.attenuationColor}
-                            attenuationDistance={GLASS_CONFIG.attenuationDistance}
-                        />
+                        {isMobile ? (
+                            /* MOBILE: Lightweight glass-like material without FBO re-render.
+                               Eliminates the second-pass scene render that doubles GPU draw calls
+                               on weak mobile GPUs. Visual is still glass-like via physical shading. */
+                            <meshPhysicalMaterial
+                                color="#ffffff"
+                                metalness={0.0}
+                                roughness={0.05}
+                                transmission={0.92}
+                                thickness={0.18}
+                                ior={1.12}
+                                envMapIntensity={1.5}
+                                transparent
+                                opacity={0.95}
+                            />
+                        ) : (
+                            /* DESKTOP: Full premium glass with transmission FBO */
+                            <MeshTransmissionMaterial
+                                backside={GLASS_CONFIG.backside}
+                                samples={GLASS_CONFIG.samples}
+                                resolution={GLASS_CONFIG.resolution}
+                                transmission={GLASS_CONFIG.transmission}
+                                roughness={GLASS_CONFIG.roughness}
+                                thickness={GLASS_CONFIG.thickness}
+                                ior={GLASS_CONFIG.ior}
+                                chromaticAberration={GLASS_CONFIG.chromaticAberration}
+                                anisotropy={GLASS_CONFIG.anisotropy}
+                                distortion={GLASS_CONFIG.distortion}
+                                distortionScale={GLASS_CONFIG.distortionScale}
+                                temporalDistortion={GLASS_CONFIG.temporalDistortion}
+                                color={GLASS_CONFIG.color}
+                                attenuationColor={GLASS_CONFIG.attenuationColor}
+                                attenuationDistance={GLASS_CONFIG.attenuationDistance}
+                            />
+                        )}
                     </mesh>
                 </Center>
             </Float>
@@ -302,6 +322,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     const heroGroupRef = useRef<THREE.Group>(null);
     const { viewport, camera } = useThree();
     const transitionRef = useRef(visible ? 1 : 0);
+    // Cache scrollY from passive scroll listener to avoid forced layout in useFrame
+    const cachedScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
 
     const [isMobile, setIsMobile] = useState(false);
 
@@ -422,11 +444,18 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
 
         window.addEventListener('mousemove', onPointerMove, { passive: true });
 
+        // Cache scrollY from passive scroll listener
+        const onScroll = () => {
+            cachedScrollY.current = window.scrollY;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+
         return () => {
             window.removeEventListener('mousemove', onPointerMove);
             window.removeEventListener('deviceorientation', onOrientation);
             window.removeEventListener('touchstart', onFirstInteraction);
             window.removeEventListener('click', onFirstInteraction);
+            window.removeEventListener('scroll', onScroll);
         };
     }, [isMobileMode]);
 
@@ -435,7 +464,16 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         transitionRef.current = THREE.MathUtils.damp(transitionRef.current, target, 9, delta);
 
         if (heroGroupRef.current) {
-            heroGroupRef.current.visible = transitionRef.current > 0.005;
+            // Use cached scrollY (no forced layout reflow in render loop)
+            const scrollY = cachedScrollY.current;
+            const windowH = typeof window !== 'undefined' ? (window.innerHeight || 800) : 800;
+            const isOffscreen = scrollY > windowH * 1.35;
+
+            // When scrolled off-screen, completely hide the hero group and skip rendering
+            heroGroupRef.current.visible = transitionRef.current > 0.005 && !isOffscreen;
+            if (isOffscreen) {
+                return;
+            }
 
             // Interpolate smooth cursor and smooth gyro
             smoothCursor.current.x = THREE.MathUtils.damp(smoothCursor.current.x, cursor.current.x, 5, delta);
@@ -443,8 +481,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
             smoothGyro.current.x = THREE.MathUtils.damp(smoothGyro.current.x, gyro.current.x, 6, delta);
             smoothGyro.current.y = THREE.MathUtils.damp(smoothGyro.current.y, gyro.current.y, 6, delta);
 
-            const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
-            const unitPerPixel = viewport.height / (typeof window !== 'undefined' ? (window.innerHeight || 1) : 1);
+            const unitPerPixel = viewport.height / windowH;
 
             if (isMobileMode) {
                 // ── MOBILE MODE: GYRO STRICTLY FOR MOTION (TILT & PARALLAX) ──

@@ -1,5 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadMedia, isCloudinaryConfigured } from '@/lib/cloudinary';
+import sharp from 'sharp';
+
+/**
+ * Optimizes an input image buffer using sharp:
+ * 1. Rotates based on EXIF orientation (prevents upside down / sideways photos)
+ * 2. Constrains max dimensions (e.g. max 2048x2048 fit inside without upscaling)
+ * 3. Converts to high-quality compressed WebP (quality: 85, effort: 5)
+ */
+async function optimizeImageToWebP(inputBuffer: Buffer): Promise<{ buffer: Buffer; mimeType: string }> {
+  try {
+    const webpBuffer = await sharp(inputBuffer)
+      .rotate() // Auto-orient using EXIF orientation tag
+      .resize({
+        width: 2048,
+        height: 2048,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .webp({
+        quality: 85,
+        effort: 5,
+        smartSubsample: true,
+      })
+      .toBuffer();
+
+    return { buffer: webpBuffer, mimeType: 'image/webp' };
+  } catch (err) {
+    console.warn('Sharp optimization fallback (using original buffer):', err);
+    return { buffer: inputBuffer, mimeType: 'image/jpeg' };
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,23 +57,29 @@ export async function POST(request: NextRequest) {
       }
 
       const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const mimeType = file.type || 'image/jpeg';
-      const base64Data = `data:${mimeType};base64,${buffer.toString('base64')}`;
+      const rawBuffer = Buffer.from(bytes);
+
+      // Optimize image buffer through sharp to WebP
+      const { buffer: optimizedBuffer, mimeType } = await optimizeImageToWebP(rawBuffer);
+      const base64Data = `data:${mimeType};base64,${optimizedBuffer.toString('base64')}`;
 
       if (isCloudinaryConfigured) {
-        const uploadRes = await uploadMedia(base64Data, folder);
+        const uploadRes = await uploadMedia(base64Data, folder, { format: 'webp' });
         return NextResponse.json({
           success: true,
           url: uploadRes.secureUrl,
           publicId: uploadRes.publicId,
+          format: uploadRes.format || 'webp',
+          optimized: true,
         });
       } else {
-        // Fallback in dev/offline mode: return Data URI directly
+        // Fallback in dev/offline mode: return optimized WebP Data URI directly
         return NextResponse.json({
           success: true,
           url: base64Data,
           isOfflineFallback: true,
+          format: 'webp',
+          optimized: true,
         });
       }
     }
@@ -55,18 +92,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'No image provided' }, { status: 400 });
     }
 
+    // Extract buffer from base64 string
+    let rawBuffer: Buffer;
+    if (image.startsWith('data:')) {
+      const base64Index = image.indexOf('base64,');
+      if (base64Index !== -1) {
+        rawBuffer = Buffer.from(image.substring(base64Index + 7), 'base64');
+      } else {
+        rawBuffer = Buffer.from(image);
+      }
+    } else {
+      rawBuffer = Buffer.from(image, 'base64');
+    }
+
+    // Optimize through sharp to WebP
+    const { buffer: optimizedBuffer, mimeType } = await optimizeImageToWebP(rawBuffer);
+    const base64Data = `data:${mimeType};base64,${optimizedBuffer.toString('base64')}`;
+
     if (isCloudinaryConfigured) {
-      const uploadRes = await uploadMedia(image, folder);
+      const uploadRes = await uploadMedia(base64Data, folder, { format: 'webp' });
       return NextResponse.json({
         success: true,
         url: uploadRes.secureUrl,
         publicId: uploadRes.publicId,
+        format: uploadRes.format || 'webp',
+        optimized: true,
       });
     } else {
       return NextResponse.json({
         success: true,
-        url: image,
+        url: base64Data,
         isOfflineFallback: true,
+        format: 'webp',
+        optimized: true,
       });
     }
   } catch (error: any) {

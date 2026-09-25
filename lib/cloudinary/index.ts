@@ -49,16 +49,21 @@ export function generateUploadSignature(folder: string = 'offstage-sessions') {
 /**
  * Upload a Base64 or Data URI string directly from server-side.
  */
-export async function uploadMedia(fileData: string, folder: string = 'offstage-sessions') {
+export async function uploadMedia(
+  fileData: string, 
+  folder: string = 'offstage-sessions',
+  options?: { format?: string; quality?: string | number }
+) {
   if (!isCloudinaryConfigured) {
     throw new Error('Cloudinary is not configured.');
   }
 
   const result = await cloudinary.uploader.upload(fileData, {
     folder,
-    resource_type: 'auto',
+    resource_type: 'image',
+    format: options?.format || 'webp',
     transformation: [
-      { quality: 'auto', fetch_format: 'auto' },
+      { quality: options?.quality || 'auto', fetch_format: 'auto' },
     ],
   });
 

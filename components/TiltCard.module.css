@@ -14,3 +14,15 @@
     transition: opacity 0.3s ease;
     mix-blend-mode: overlay;
 }
+
+/* Mobile & Touch Devices: Disable 3D compositing layers and glare overlays to keep scrolling 60fps */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .tiltCard {
+        transform-style: flat;
+        will-change: auto;
+    }
+
+    .glare {
+        display: none !important;
+    }
+}

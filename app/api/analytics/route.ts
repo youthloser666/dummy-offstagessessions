@@ -157,6 +157,27 @@ export async function GET(request: NextRequest) {
       created_at: v.created_at,
     }));
 
+    // Past 7 days daily traffic trend
+    const dailyTrend: { date: string; label: string; shortDay: string; views: number; uniqueVisitors: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const shortDay = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+      const dayViews = list.filter((v) => v.created_at && v.created_at.startsWith(dateStr));
+      const dayUnique = new Set(dayViews.map((v) => v.ip_hash).filter(Boolean)).size;
+
+      dailyTrend.push({
+        date: dateStr,
+        label,
+        shortDay,
+        views: dayViews.length,
+        uniqueVisitors: dayUnique,
+      });
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -171,6 +192,7 @@ export async function GET(request: NextRequest) {
           osBreakdown,
           sources,
           recentVisits,
+          dailyTrend,
           hasData: totalViews > 0,
         },
       },
@@ -208,11 +230,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete all rows from page_views
+    // Delete all rows from page_views (id is BIGINT identity, not UUID)
     const { error } = await supabase
       .from('page_views')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+      .gte('id', 0);
 
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 400 });
@@ -246,6 +268,7 @@ function getEmptyAnalytics(note?: string) {
     osBreakdown: [],
     sources: [],
     recentVisits: [],
+    dailyTrend: [],
     hasData: false,
     note: note || 'No traffic logged yet',
   };

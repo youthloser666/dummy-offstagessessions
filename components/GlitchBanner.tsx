@@ -23,10 +23,29 @@ export default function GlitchBanner() {
     const [isHovered, setIsHovered] = useState(false);
     const isGlitchingRef = useRef(false);
 
+    const [isVisible, setIsVisible] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
     // Skip expensive glitch slice layers on touch/mobile devices
     const isDesktop = useMemo(() => {
         if (typeof window === 'undefined') return true;
         return !window.matchMedia('(pointer: coarse)').matches;
+    }, []);
+
+    // IntersectionObserver to only animate slideshow when banner is in view
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsVisible(entry.isIntersecting);
+            },
+            { threshold: 0.1 }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
     }, []);
 
     // Trigger glitch transition and swap to next photo
@@ -47,19 +66,22 @@ export default function GlitchBanner() {
         }, 360);
     };
 
-    // Auto slideshow every 3.2s
+    // Auto slideshow every 3.2s ONLY when visible in viewport
     useEffect(() => {
+        if (!isVisible) return;
+
         const interval = setInterval(() => {
             advanceSlide();
         }, 3200);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isVisible]);
 
     const currentSrc = BANNER_IMAGES[currentIndex];
 
     return (
         <div
+            ref={containerRef}
             className={`${styles.bannerContainer} reveal`}
             onClick={advanceSlide}
             onMouseEnter={() => setIsHovered(true)}

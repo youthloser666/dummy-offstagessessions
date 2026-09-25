@@ -5,14 +5,21 @@ import { useFrame, useThree, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { getShuffledPhotos } from '@/lib/mediaPhotos';
 
-const BASE_SPEED = 0.12; // Default idle speed (calm, slow ambient diagonal drift)
-const BOOST_FACTOR = 0.004; // Multiplier when user scrolls
-const BOOST_DECAY = 0.92; // Friction decay back to idle speed
-const MAX_BOOST = 3.5; // Cap on scroll velocity boost
+// Calm, slow ambient diagonal drift (diperlambat agar tenang, tidak pusing & sangat ringan di mobile)
+const BASE_SPEED = 0.20;
 
-// Preload all 134 optimized 500x500 WebP photos from /bg/*.webp (~4.5MB total payload)
 // Shuffled once at module load so every refresh shows a different mix of photos
-const PHOTO_URLS = getShuffledPhotos();
+const ALL_PHOTO_URLS = getShuffledPhotos();
+
+// Detect mobile touch devices at module level for texture budget
+const IS_MOBILE_TOUCH =
+    typeof window !== 'undefined' &&
+    (window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
+        (window.innerWidth < 840 && ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0)));
+
+// Mobile: only preload textures needed for the grid (35 max) to save ~4MB GPU memory
+// Desktop: preload all 134 photos for the full infinite collage
+const PHOTO_URLS = IS_MOBILE_TOUCH ? ALL_PHOTO_URLS.slice(0, 35) : ALL_PHOTO_URLS;
 
 export default function GridBackground({ isHome = true }: { isHome?: boolean }) {
     const groupRef = useRef<THREE.Group>(null);
@@ -77,26 +84,14 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
         });
     }, [textures]);
 
-    // 3. Scroll Velocity Tracking
-    const scrollBoostRef = useRef<number>(0);
+    // 3. Constant speed offset & Cached scrollY for hero dimming only (no scroll velocity calculations)
     const accumulatedOffsetRef = useRef<number>(0);
+    const cachedScrollY = useRef<number>(typeof window !== 'undefined' ? window.scrollY : 0);
 
     useEffect(() => {
-        let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
-        let lastTime = performance.now();
-
         const handleScroll = () => {
-            const now = performance.now();
-            const currentScrollY = window.scrollY;
-            const deltaY = Math.abs(currentScrollY - lastScrollY);
-            const deltaTime = Math.max(now - lastTime, 16);
-
-            const velocity = deltaY / deltaTime;
-            const addedBoost = velocity * BOOST_FACTOR * 10;
-            scrollBoostRef.current = Math.min(scrollBoostRef.current + addedBoost, MAX_BOOST);
-
-            lastScrollY = currentScrollY;
-            lastTime = now;
+            // Cache scrollY solely for hero dimming without forced reflow
+            cachedScrollY.current = window.scrollY;
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -118,14 +113,9 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
         };
     }, [planeGeo]);
 
-    // 5. Animation Loop with Diagonal Modulo Wrapping & Smooth Scroll Decay
+    // 5. Animation Loop: Constant gentle diagonal drift, completely independent of scroll
     useFrame((state, delta) => {
-        scrollBoostRef.current *= BOOST_DECAY;
-        if (scrollBoostRef.current < 0.001) scrollBoostRef.current = 0;
-
-        const currentSpeed = BASE_SPEED + scrollBoostRef.current;
-        accumulatedOffsetRef.current += currentSpeed * delta * 4;
-
+        accumulatedOffsetRef.current += BASE_SPEED * delta;
         const offset = accumulatedOffsetRef.current;
 
         let index = 0;
@@ -151,7 +141,8 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
         }
 
         // Smoothly adjust collage brightness: dimmed at hero on landing page, full everywhere else
-        const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+        // Use cached scrollY (no forced layout reflow in render loop)
+        const scrollY = cachedScrollY.current;
         const vh = typeof window !== 'undefined' ? (window.innerHeight || 800) : 800;
 
         if (isHome) {
