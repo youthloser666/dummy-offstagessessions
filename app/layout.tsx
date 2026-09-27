@@ -44,10 +44,11 @@ export default function RootLayout({
         {/* LAYER 1: Fixed Background Root (3D Canvas + Radial Mask) */}
         <div
           id="fixed-background-root"
+          suppressHydrationWarning
           style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden', backgroundColor: '#000000' }}
         >
           {/* LAYER 1A: 3D Canvas */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+          <div suppressHydrationWarning style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
             <GlobalBackgroundCanvas />
           </div>
 

@@ -44,6 +44,7 @@ function InteractiveWord({
     isHovered = false,
     registerHitbox,
     visible = true,
+    isMobile = false,
 }: {
     id: string;
     text: string;
@@ -54,6 +55,7 @@ function InteractiveWord({
     isHovered?: boolean;
     registerHitbox?: (id: string, mesh: THREE.Mesh | null) => void;
     visible?: boolean;
+    isMobile?: boolean;
 }) {
     const groupRef = useRef<THREE.Group>(null);
     const mainTextRef = useRef<any>(null);
@@ -66,9 +68,7 @@ function InteractiveWord({
 
     const whiteColor = useMemo(() => new THREE.Color('#ffffff'), []);
     const neonHotCoreColor = useMemo(() => new THREE.Color('#f6ffe0'), []);
-    const blackShadowColor = useMemo(() => new THREE.Color('#000000'), []);
     const neonAcidColor = useMemo(() => new THREE.Color(NEON_ACID_COLOR), []);
-    const currentOutlineColor = useRef(new THREE.Color('#000000'));
     const currentColor = useRef(new THREE.Color('#ffffff'));
 
     useFrame((state, delta) => {
@@ -94,7 +94,7 @@ function InteractiveWord({
             groupRef.current.scale.set(targetScale, targetScale, 1.0);
         }
 
-        // 2. Core Text - Pure, brilliant, solid white
+        // 2. Core Text - Pure, brilliant, solid white with neon outline on touch/hover
         if (mainTextRef.current) {
             mainTextRef.current.fillOpacity = opacityRef.current;
             if (effectiveGlow > 0.005) {
@@ -141,13 +141,13 @@ function InteractiveWord({
 
     return (
         <group ref={groupRef} position={position}>
-            {/* Invisible Hitbox for 100% raycast coverage */}
+            {/* Invisible Hitbox for 100% raycast coverage - with generous padding for mobile touch */}
             <mesh
                 ref={(el) => registerHitbox?.(id, el)}
                 position={[0, 0, 0.02]}
             >
-                <planeGeometry args={[wordWidth, fontSize * 1.3]} />
-                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+                <planeGeometry args={[wordWidth * (isMobile ? 1.35 : 1.15), fontSize * (isMobile ? 1.8 : 1.6)]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
             </mesh>
 
             {/* Layer 1: Deep Atmospheric Neon Wash (Wide Bloom Aura) */}
@@ -219,37 +219,59 @@ function InteractiveWord({
     );
 }
 
-// 3D Glass Model: Clean, serene, luxurious refractive glass without glitching
-// Mobile: Uses lightweight MeshPhysicalMaterial (no FBO re-render = halved GPU cost)
-// Desktop: Full MeshTransmissionMaterial for premium glass refraction
+// 3D Glass Model: Full premium refractive glass with chromatic dispersion on both desktop & mobile
 function GlassOffstageModel({ 
     fontSize,
     isMobile = false,
     visible = true,
     gyroX = 0,
     gyroY = 0,
+    isHovered = false,
+    registerHitbox,
 }: { 
     fontSize: number;
     isMobile?: boolean;
     visible?: boolean;
     gyroX?: number;
     gyroY?: number;
+    isHovered?: boolean;
+    registerHitbox?: (id: string, mesh: THREE.Mesh | null) => void;
 }) {
     const { nodes } = useGLTF('/3D/offstage_text.glb') as any;
     const groupRef = useRef<THREE.Group>(null);
+    const lightRef = useRef<THREE.PointLight>(null);
+    const matRef = useRef<any>(null);
     const opacityRef = useRef(visible ? 1 : 0);
+    const glowRef = useRef(0);
     const scaleFactor = isMobile ? 5.2 : 7.0;
     const baseScale = (fontSize * scaleFactor / 0.127) * MOTION_CONFIG.scaleMultiplier;
+
+    const whiteColor = useMemo(() => new THREE.Color('#ffffff'), []);
+    const neonAcidColor = useMemo(() => new THREE.Color(NEON_ACID_COLOR), []);
 
     useFrame((_, delta) => {
         const targetOpacity = visible ? 1 : 0;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, targetOpacity, 9, delta);
 
+        const targetGlow = isHovered ? 1.0 : 0.0;
+        glowRef.current = THREE.MathUtils.damp(glowRef.current, targetGlow, 8, delta);
+
         if (!groupRef.current) return;
         groupRef.current.visible = opacityRef.current > 0.01;
 
-        const currentScale = baseScale * THREE.MathUtils.lerp(0.85, 1.0, opacityRef.current);
+        const currentScale = baseScale * THREE.MathUtils.lerp(0.85, 1.0, opacityRef.current) * (1.0 + glowRef.current * 0.06);
         groupRef.current.scale.lerp(new THREE.Vector3(currentScale, currentScale, currentScale), delta * 8);
+
+        // Dynamic 3D Neon light flaring behind glass when touched
+        if (lightRef.current) {
+            lightRef.current.intensity = glowRef.current * 4.5 * opacityRef.current;
+        }
+
+        // Electrify glass material with neon acid green-yellow when touched
+        if (matRef.current) {
+            matRef.current.color.lerpColors(whiteColor, neonAcidColor, glowRef.current * 0.85);
+            matRef.current.attenuationColor.lerpColors(whiteColor, neonAcidColor, glowRef.current * 0.95);
+        }
 
         // Mobile gyro reaction: dynamic specular refraction & tilt as phone rotates
         if (isMobile) {
@@ -265,38 +287,44 @@ function GlassOffstageModel({
     if (!nodes || !nodes.Curve) return null;
 
     return (
-        <group ref={groupRef} position={[0, 0, 0.28]}>
-            <Float
-                speed={visible ? MOTION_CONFIG.floatSpeed : 0}
-                rotationIntensity={visible ? MOTION_CONFIG.floatIntensity * 0.8 : 0}
-                floatIntensity={visible ? MOTION_CONFIG.floatIntensity : 0}
+        <group position={[0, 0, 0.28]}>
+            {/* Interactive Hitbox for OFFSTAGE 3D Model: unscaled 1:1 world coordinates */}
+            <mesh
+                ref={(el) => registerHitbox?.('OFFSTAGE', el)}
+                position={[0, 0, 0.05]}
             >
-                <Center>
-                    <mesh
-                        geometry={nodes.Curve.geometry}
-                        rotation={[Math.PI / 2, 0, 0]}
-                    >
-                        {isMobile ? (
-                            /* MOBILE: Lightweight glass-like material without FBO re-render.
-                               Eliminates the second-pass scene render that doubles GPU draw calls
-                               on weak mobile GPUs. Visual is still glass-like via physical shading. */
-                            <meshPhysicalMaterial
-                                color="#ffffff"
-                                metalness={0.0}
-                                roughness={0.05}
-                                transmission={0.92}
-                                thickness={0.18}
-                                ior={1.12}
-                                envMapIntensity={1.5}
-                                transparent
-                                opacity={0.95}
-                            />
-                        ) : (
-                            /* DESKTOP: Full premium glass with transmission FBO */
+                <planeGeometry args={[fontSize * (isMobile ? 7.2 : 9.5), fontSize * 1.5]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+            </mesh>
+
+            {/* Dynamic Localized 3D Neon Point Light behind the glass */}
+            <pointLight
+                ref={lightRef}
+                position={[0, 0, 0.38]}
+                color={NEON_ACID_COLOR}
+                intensity={0.0}
+                distance={fontSize * 16}
+                decay={2}
+            />
+
+            {/* 3D Glass model container scaled by baseScale */}
+            <group ref={groupRef}>
+                <Float
+                    speed={visible ? MOTION_CONFIG.floatSpeed : 0}
+                    rotationIntensity={visible ? MOTION_CONFIG.floatIntensity * 0.8 : 0}
+                    floatIntensity={visible ? MOTION_CONFIG.floatIntensity : 0}
+                >
+                    <Center>
+                        <mesh
+                            geometry={nodes.Curve.geometry}
+                            rotation={[Math.PI / 2, 0, 0]}
+                        >
+                            {/* Full premium 3D glass with transmission FBO on both desktop & mobile */}
                             <MeshTransmissionMaterial
+                                ref={matRef}
                                 backside={GLASS_CONFIG.backside}
-                                samples={GLASS_CONFIG.samples}
-                                resolution={GLASS_CONFIG.resolution}
+                                samples={isMobile ? 6 : GLASS_CONFIG.samples}
+                                resolution={isMobile ? 256 : GLASS_CONFIG.resolution}
                                 transmission={GLASS_CONFIG.transmission}
                                 roughness={GLASS_CONFIG.roughness}
                                 thickness={GLASS_CONFIG.thickness}
@@ -310,17 +338,17 @@ function GlassOffstageModel({
                                 attenuationColor={GLASS_CONFIG.attenuationColor}
                                 attenuationDistance={GLASS_CONFIG.attenuationDistance}
                             />
-                        )}
-                    </mesh>
-                </Center>
-            </Float>
+                        </mesh>
+                    </Center>
+                </Float>
+            </group>
         </group>
     );
 }
 
 export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     const heroGroupRef = useRef<THREE.Group>(null);
-    const { viewport, camera } = useThree();
+    const { viewport, camera, size } = useThree();
     const transitionRef = useRef(visible ? 1 : 0);
     // Cache scrollY from passive scroll listener to avoid forced layout in useFrame
     const cachedScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
@@ -365,36 +393,164 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
 
     const [hoveredWord, setHoveredWord] = useState<string | null>(null);
     const touchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isTouchActiveRef = useRef(false);
 
-    // Unified cursor, smooth cursor (desktop) & gyroscope tracking (mobile)
-    const cursor = useRef({ x: 0, y: 0 });
+    // Initialized offscreen (999, 999) to prevent false hover at (0, 0)
+    const cursor = useRef({ x: 999, y: 999 });
     const smoothCursor = useRef({ x: 0, y: 0 });
     const gyro = useRef({ x: 0, y: 0, active: false });
     const smoothGyro = useRef({ x: 0, y: 0 });
     const raycaster = useMemo(() => new THREE.Raycaster(), []);
     const pointerVec = useMemo(() => new THREE.Vector2(0, 0), []);
 
-    useEffect(() => {
-        const onPointerMove = (e: MouseEvent | TouchEvent) => {
-            let clientX = 0, clientY = 0;
-            if ('touches' in e && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else if ('clientX' in e) {
-                clientX = e.clientX;
-                clientY = e.clientY;
+    // Perform direct raycasting against all registered word & 3D hitboxes, with mobile proximity fallback
+    const checkIntersection = useCallback((clientX?: number, clientY?: number) => {
+        if (typeof clientX === 'number' && typeof clientY === 'number') {
+            const w = size.width || window.innerWidth || 1;
+            const h = size.height || window.innerHeight || 1;
+            cursor.current.x = (clientX / w) * 2 - 1;
+            cursor.current.y = -((clientY / h) * 2 - 1);
+        }
+
+        pointerVec.set(cursor.current.x, cursor.current.y);
+        raycaster.setFromCamera(pointerVec, camera);
+
+        const meshes: THREE.Mesh[] = [];
+        const ids: string[] = [];
+        hitboxesRef.current.forEach((mesh, id) => {
+            meshes.push(mesh);
+            ids.push(id);
+        });
+
+        if (meshes.length > 0) {
+            // 1. Direct raycast intersection check
+            const intersects = raycaster.intersectObjects(meshes, false);
+            if (intersects.length > 0) {
+                const hitMesh = intersects[0].object as THREE.Mesh;
+                const hitIdx = meshes.indexOf(hitMesh);
+                if (hitIdx !== -1) {
+                    const hitId = ids[hitIdx];
+                    setHoveredWord(hitId);
+                    return true;
+                }
             }
-            cursor.current.x = (clientX / (window.innerWidth || 1)) * 2 - 1;
-            cursor.current.y = -((clientY / (window.innerHeight || 1)) * 2 - 1);
+
+            // 2. Mobile touch proximity fallback (detect nearest word when finger taps between or near words)
+            if (isMobileMode || isTouchActiveRef.current) {
+                let closestId: string | null = null;
+                let minDistance = 0.45; // generous touch tolerance in NDC (~90px)
+                const tempVec = new THREE.Vector3();
+                const aspect = (size.width || 390) / (size.height || 844);
+
+                hitboxesRef.current.forEach((mesh, id) => {
+                    mesh.getWorldPosition(tempVec);
+                    tempVec.project(camera);
+                    const dx = (cursor.current.x - tempVec.x) * aspect;
+                    const dy = cursor.current.y - tempVec.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestId = id;
+                    }
+                });
+
+                if (closestId) {
+                    setHoveredWord(closestId);
+                    return true;
+                }
+            }
+
+            // On desktop when mouse leaves words, clear hover
+            if (!isTouchActiveRef.current && !isMobileMode) {
+                setHoveredWord(null);
+            }
+        }
+        return false;
+    }, [camera, isMobileMode, pointerVec, raycaster, size.height, size.width]);
+
+    // Initial mobile teaser glow on "BEST" so hero text greets the user with vivid centerpiece energy
+    useEffect(() => {
+        if (isMobileMode) {
+            const timer = setTimeout(() => {
+                setHoveredWord('BEST');
+                touchTimeoutRef.current = setTimeout(() => {
+                    setHoveredWord(null);
+                    cursor.current.x = 999;
+                    cursor.current.y = 999;
+                }, 2200);
+            }, 600);
+            return () => {
+                clearTimeout(timer);
+                if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+            };
+        }
+    }, [isMobileMode]);
+
+    useEffect(() => {
+        const handleTouchStart = (clientX: number, clientY: number) => {
+            isTouchActiveRef.current = true;
+            if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+            checkIntersection(clientX, clientY);
+        };
+
+        const handleTouchMove = (clientX: number, clientY: number) => {
+            isTouchActiveRef.current = true;
+            checkIntersection(clientX, clientY);
+        };
+
+        const handleTouchEnd = () => {
+            isTouchActiveRef.current = false;
+            if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
+            // Smooth lingering neon glow for 1.8 seconds after touch release before smooth fade
+            touchTimeoutRef.current = setTimeout(() => {
+                setHoveredWord(null);
+                cursor.current.x = 999;
+                cursor.current.y = 999;
+            }, 1800);
+        };
+
+        // Pointer event handlers (universal for touchscreens, mobile emulation, and stylus)
+        const onPointerDown = (e: PointerEvent) => {
+            handleTouchStart(e.clientX, e.clientY);
+        };
+
+        const onPointerMove = (e: PointerEvent) => {
+            if (e.pointerType === 'mouse') {
+                const w = window.innerWidth || 1;
+                const h = window.innerHeight || 1;
+                cursor.current.x = (e.clientX / w) * 2 - 1;
+                cursor.current.y = -((e.clientY / h) * 2 - 1);
+            } else if (isTouchActiveRef.current) {
+                handleTouchMove(e.clientX, e.clientY);
+            }
+        };
+
+        const onPointerUp = () => {
+            if (isTouchActiveRef.current) {
+                handleTouchEnd();
+            }
+        };
+
+        // Standard touch event handlers
+        const onTouchStart = (e: TouchEvent) => {
+            if (e.touches && e.touches.length > 0) {
+                handleTouchStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        };
+
+        const onTouchMove = (e: TouchEvent) => {
+            if (e.touches && e.touches.length > 0) {
+                handleTouchMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
         };
 
         const onTouchEnd = () => {
-            if (touchTimeoutRef.current) clearTimeout(touchTimeoutRef.current);
-            touchTimeoutRef.current = setTimeout(() => {
-                if (!isMobileMode) {
-                    setHoveredWord(null);
-                }
-            }, 650);
+            handleTouchEnd();
+        };
+
+        const onClick = (e: MouseEvent) => {
+            handleTouchStart(e.clientX, e.clientY);
+            handleTouchEnd();
         };
 
         const onOrientation = (e: DeviceOrientationEvent) => {
@@ -437,27 +593,51 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
         const onFirstInteraction = () => {
             requestGyroPermission();
             window.removeEventListener('touchstart', onFirstInteraction);
+            window.removeEventListener('pointerdown', onFirstInteraction);
             window.removeEventListener('click', onFirstInteraction);
         };
         window.addEventListener('touchstart', onFirstInteraction, { passive: true, once: true });
+        window.addEventListener('pointerdown', onFirstInteraction, { passive: true, once: true });
         window.addEventListener('click', onFirstInteraction, { passive: true, once: true });
 
-        window.addEventListener('mousemove', onPointerMove, { passive: true });
+        window.addEventListener('pointerdown', onPointerDown, { passive: true });
+        window.addEventListener('pointermove', onPointerMove, { passive: true });
+        window.addEventListener('pointerup', onPointerUp, { passive: true });
+        window.addEventListener('pointercancel', onPointerUp, { passive: true });
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
+        window.addEventListener('touchend', onTouchEnd, { passive: true });
+        window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+        window.addEventListener('click', onClick, { passive: true });
 
         // Cache scrollY from passive scroll listener
         const onScroll = () => {
             cachedScrollY.current = window.scrollY;
+            if (window.scrollY > 200) {
+                setHoveredWord(null);
+                cursor.current.x = 999;
+                cursor.current.y = 999;
+            }
         };
         window.addEventListener('scroll', onScroll, { passive: true });
 
         return () => {
-            window.removeEventListener('mousemove', onPointerMove);
+            window.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            window.removeEventListener('pointercancel', onPointerUp);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchcancel', onTouchEnd);
+            window.removeEventListener('click', onClick);
             window.removeEventListener('deviceorientation', onOrientation);
             window.removeEventListener('touchstart', onFirstInteraction);
+            window.removeEventListener('pointerdown', onFirstInteraction);
             window.removeEventListener('click', onFirstInteraction);
             window.removeEventListener('scroll', onScroll);
         };
-    }, [isMobileMode]);
+    }, [checkIntersection]);
 
     useFrame((state, delta) => {
         const target = visible ? 1 : 0;
@@ -476,8 +656,10 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
             }
 
             // Interpolate smooth cursor and smooth gyro
-            smoothCursor.current.x = THREE.MathUtils.damp(smoothCursor.current.x, cursor.current.x, 5, delta);
-            smoothCursor.current.y = THREE.MathUtils.damp(smoothCursor.current.y, cursor.current.y, 5, delta);
+            if (cursor.current.x < 900) {
+                smoothCursor.current.x = THREE.MathUtils.damp(smoothCursor.current.x, cursor.current.x, 5, delta);
+                smoothCursor.current.y = THREE.MathUtils.damp(smoothCursor.current.y, cursor.current.y, 5, delta);
+            }
             smoothGyro.current.x = THREE.MathUtils.damp(smoothGyro.current.x, gyro.current.x, 6, delta);
             smoothGyro.current.y = THREE.MathUtils.damp(smoothGyro.current.y, gyro.current.y, 6, delta);
 
@@ -513,28 +695,52 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                 heroGroupRef.current.position.y = THREE.MathUtils.damp(heroGroupRef.current.position.y, targetPosY, 6, delta);
             }
 
-            // ── NEON GLOW INTERACTION: TRIGGERED BY CURSOR HOVER (DESKTOP ONLY) ──
-            if (!isMobileMode) {
-                pointerVec.set(cursor.current.x, cursor.current.y);
-                raycaster.setFromCamera(pointerVec, camera);
+            // ── NEON GLOW INTERACTION: TRIGGERED BY CURSOR HOVER (DESKTOP) & ACTIVE TOUCH (MOBILE) ──
+            if (!isMobileMode || isTouchActiveRef.current) {
+                if (cursor.current.x < 900) {
+                    pointerVec.set(cursor.current.x, cursor.current.y);
+                    raycaster.setFromCamera(pointerVec, camera);
 
-                const meshes: THREE.Mesh[] = [];
-                const ids: string[] = [];
-                hitboxesRef.current.forEach((mesh, id) => {
-                    meshes.push(mesh);
-                    ids.push(id);
-                });
+                    const meshes: THREE.Mesh[] = [];
+                    const ids: string[] = [];
+                    hitboxesRef.current.forEach((mesh, id) => {
+                        meshes.push(mesh);
+                        ids.push(id);
+                    });
 
-                if (meshes.length > 0) {
-                    const intersects = raycaster.intersectObjects(meshes, false);
-                    if (intersects.length > 0) {
-                        const hitMesh = intersects[0].object as THREE.Mesh;
-                        const hitIdx = meshes.indexOf(hitMesh);
-                        if (hitIdx !== -1) {
-                            setHoveredWord(ids[hitIdx]);
+                    if (meshes.length > 0) {
+                        const intersects = raycaster.intersectObjects(meshes, false);
+                        if (intersects.length > 0) {
+                            const hitMesh = intersects[0].object as THREE.Mesh;
+                            const hitIdx = meshes.indexOf(hitMesh);
+                            if (hitIdx !== -1) {
+                                setHoveredWord(ids[hitIdx]);
+                            }
+                        } else if (isMobileMode || isTouchActiveRef.current) {
+                            // Proximity fallback for mobile touch
+                            let closestId: string | null = null;
+                            let minDistance = 0.45;
+                            const tempVec = new THREE.Vector3();
+                            const aspect = (size.width || 390) / (size.height || 844);
+
+                            hitboxesRef.current.forEach((mesh, id) => {
+                                mesh.getWorldPosition(tempVec);
+                                tempVec.project(camera);
+                                const dx = (cursor.current.x - tempVec.x) * aspect;
+                                const dy = cursor.current.y - tempVec.y;
+                                const dist = Math.hypot(dx, dy);
+                                if (dist < minDistance) {
+                                    minDistance = dist;
+                                    closestId = id;
+                                }
+                            });
+
+                            if (closestId) {
+                                setHoveredWord(closestId);
+                            }
+                        } else {
+                            setHoveredWord(null);
                         }
-                    } else {
-                        setHoveredWord(null);
                     }
                 }
             }
@@ -558,6 +764,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'THE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={true}
                         />
                         <InteractiveWord
                             id="BEST"
@@ -568,6 +775,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'BEST'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={true}
                         />
                     </group>
 
@@ -582,6 +790,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'MOMENTS'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={true}
                         />
                     </group>
 
@@ -596,6 +805,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'ARE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={true}
                         />
                         <InteractiveWord
                             id="MADE"
@@ -606,6 +816,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'MADE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={true}
                         />
                     </group>
 
@@ -617,6 +828,8 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             visible={visible} 
                             gyroX={smoothGyro.current.x} 
                             gyroY={smoothGyro.current.y} 
+                            isHovered={hoveredWord === 'OFFSTAGE'}
+                            registerHitbox={registerHitbox}
                         />
                     </group>
                 </>
@@ -634,6 +847,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'THE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={false}
                         />
                         <InteractiveWord
                             id="BEST"
@@ -644,6 +858,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'BEST'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={false}
                         />
                         <InteractiveWord
                             id="MOMENTS"
@@ -654,6 +869,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'MOMENTS'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={false}
                         />
                     </group>
 
@@ -668,6 +884,7 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'ARE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={false}
                         />
                         <InteractiveWord
                             id="MADE"
@@ -678,12 +895,19 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
                             isHovered={hoveredWord === 'MADE'}
                             registerHitbox={registerHitbox}
                             visible={visible}
+                            isMobile={false}
                         />
                     </group>
 
                     {/* LINE 3: OFFSTAGE (3D Glass Model) */}
                     <group position={[0, -lineHeight, 0.2]}>
-                        <GlassOffstageModel fontSize={fontSize} isMobile={false} visible={visible} />
+                        <GlassOffstageModel 
+                            fontSize={fontSize} 
+                            isMobile={false} 
+                            visible={visible} 
+                            isHovered={hoveredWord === 'OFFSTAGE'}
+                            registerHitbox={registerHitbox}
+                        />
                     </group>
                 </>
             )}
