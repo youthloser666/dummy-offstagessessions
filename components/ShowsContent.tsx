@@ -15,6 +15,7 @@ interface ShowsContentProps {
 
 export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
     const [showsList, setShowsList] = useState<Show[]>(initialShows);
+    const [loading, setLoading] = useState(initialShows.length === 0);
     const [activeFilter, setActiveFilter] = useState('All');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [hoveredShow, setHoveredShow] = useState<Show | null>(null);
@@ -28,7 +29,8 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                     setShowsList(json.data);
                 }
             })
-            .catch((err) => console.warn('Shows live fetch failed:', err));
+            .catch((err) => console.warn('Shows live fetch failed:', err))
+            .finally(() => setLoading(false));
     }, []);
 
     useReveal([activeFilter, viewMode, showsList]);
@@ -103,30 +105,154 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
             </div>
 
             <div className={styles.showsSection}>
-                {viewMode === 'grid' ? (
+                {loading ? (
+                    viewMode === 'grid' ? (
+                        /* Skeleton Grid Cards */
+                        <div className={styles.showsGrid}>
+                            {[1, 2, 3, 4, 5, 6].map((n) => (
+                                <div
+                                    key={n}
+                                    className={styles.showsGridCard}
+                                    style={{ pointerEvents: 'none' }}
+                                >
+                                    <div
+                                        className="skeletonShimmer"
+                                        style={{ width: '100%', height: '100%', minHeight: 380, borderRadius: '4px' }}
+                                    />
+                                    <div className={styles.showsGridCardInfo} style={{ zIndex: 2 }}>
+                                        <div className="skeletonShimmer" style={{ width: '80px', height: '14px', marginBottom: '8px', borderRadius: '2px' }} />
+                                        <div className="skeletonShimmer" style={{ width: '180px', height: '28px', marginBottom: '8px', borderRadius: '2px' }} />
+                                        <div className="skeletonShimmer" style={{ width: '120px', height: '14px', marginBottom: '12px', borderRadius: '2px' }} />
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <div className="skeletonShimmer" style={{ width: '60px', height: '22px', borderRadius: '12px' }} />
+                                            <div className="skeletonShimmer" style={{ width: '50px', height: '22px', borderRadius: '12px' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        /* Skeleton List Rows */
+                        <div className={styles.showsList}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                                <div
+                                    key={n}
+                                    className={styles.showsListItem}
+                                    style={{ pointerEvents: 'none' }}
+                                >
+                                    <div className="skeletonShimmer" style={{ width: '90px', height: '18px', borderRadius: '2px' }} />
+                                    <div className={styles.listTitleCol}>
+                                        <div className="skeletonShimmer" style={{ width: '220px', height: '26px', marginBottom: '6px', borderRadius: '2px' }} />
+                                        <div className="skeletonShimmer" style={{ width: '140px', height: '14px', borderRadius: '2px' }} />
+                                    </div>
+                                    <div className="skeletonShimmer" style={{ width: '150px', height: '16px', borderRadius: '2px' }} />
+                                    <div className="skeletonShimmer" style={{ width: '70px', height: '24px', borderRadius: '12px' }} />
+                                    <div className="skeletonShimmer" style={{ width: '110px', height: '36px', borderRadius: '4px' }} />
+                                </div>
+                            ))}
+                        </div>
+                    )
+                ) : viewMode === 'grid' ? (
                     /* ---- GRID VIEW ---- */
                     <div className={styles.showsGrid}>
-                        {filteredShows.map((show) => (
-                            <div
-                                key={show.id}
-                                id={`show-${show.id}`}
-                                className={`${styles.showsGridCard} reveal`}
-                                data-cursor="VIEW"
-                            >
-                                <Image
-                                    src={show.poster}
-                                    alt={show.name}
-                                    width={600}
-                                    height={800}
-                                    className={styles.showsGridCardImg}
-                                />
-                                <div className={styles.showsGridCardOverlay} />
-                                <div className={styles.showsGridCardInfo}>
-                                    <div className={styles.showDate}>{show.dateCode}</div>
-                                    <h3 className={styles.showName}>{show.name}</h3>
-                                    {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
-                                    <div className={styles.showVenue}>{show.venue}</div>
-                                    <div className={styles.tagsRow}>
+                        {filteredShows.length === 0 ? (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 0', color: '#86868b' }}>
+                                No events found matching &ldquo;{activeFilter}&rdquo;.
+                            </div>
+                        ) : (
+                            filteredShows.map((show) => (
+                                <div
+                                    key={show.id}
+                                    id={`show-${show.id}`}
+                                    className={`${styles.showsGridCard} reveal`}
+                                    data-cursor="VIEW"
+                                >
+                                    <Image
+                                        src={show.poster}
+                                        alt={show.name}
+                                        width={600}
+                                        height={800}
+                                        className={styles.showsGridCardImg}
+                                    />
+                                    <div className={styles.showsGridCardOverlay} />
+                                    <div className={styles.showsGridCardInfo}>
+                                        <div className={styles.showDate}>{show.dateCode}</div>
+                                        <h3 className={styles.showName}>{show.name}</h3>
+                                        {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
+                                        <div className={styles.showVenue}>{show.venue}</div>
+                                        <div className={styles.tagsRow}>
+                                            {show.tags.map((tag) => (
+                                                <span
+                                                    key={tag}
+                                                    className={`${styles.tag} ${tag === 'House'
+                                                            ? styles.tagHouse
+                                                            : tag === 'Techno'
+                                                                ? styles.tagTechno
+                                                                : styles.tagBass
+                                                        }`}
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {show.ticketUrl && (
+                                            <a
+                                                href={show.ticketUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={styles.ticketBtn}
+                                                data-cursor="MORE INFO"
+                                                data-cursor-magnetic="true"
+                                            >
+                                                <span>MORE INFO</span>
+                                                <svg
+                                                    className={styles.ticketArrow}
+                                                    width="11"
+                                                    height="11"
+                                                    viewBox="0 0 12 12"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    aria-hidden="true"
+                                                >
+                                                    <path
+                                                        d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2.4"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    /* ---- LIST VIEW (K95 Style with Floating Poster Preview) ---- */
+                    <div className={styles.showsList}>
+                        {filteredShows.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '80px 0', color: '#86868b' }}>
+                                No events found matching &ldquo;{activeFilter}&rdquo;.
+                            </div>
+                        ) : (
+                            filteredShows.map((show) => (
+                                <div
+                                    key={show.id}
+                                    id={`show-${show.id}`}
+                                    className={`${styles.showsListItem} reveal`}
+                                    onMouseEnter={() => setHoveredShow(show)}
+                                    onMouseLeave={() => setHoveredShow((cur) => (cur?.id === show.id ? null : cur))}
+                                    data-cursor="VIEW"
+                                >
+                                    <div className={styles.listDate}>{show.dateCode}</div>
+                                    <div className={styles.listTitleCol}>
+                                        <h3 className={styles.listName}>{show.name}</h3>
+                                        {show.subtitle && <div className={styles.listSub}>{show.subtitle}</div>}
+                                    </div>
+                                    <div className={styles.listVenue}>{show.venue}</div>
+                                    <div className={styles.listTags}>
                                         {show.tags.map((tag) => (
                                             <span
                                                 key={tag}
@@ -141,7 +267,7 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                                             </span>
                                         ))}
                                     </div>
-                                    {show.ticketUrl && (
+                                    {show.ticketUrl ? (
                                         <a
                                             href={show.ticketUrl}
                                             target="_blank"
@@ -149,6 +275,7 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                                             className={styles.ticketBtn}
                                             data-cursor="MORE INFO"
                                             data-cursor-magnetic="true"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             <span>MORE INFO</span>
                                             <svg
@@ -169,80 +296,14 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                                                 />
                                             </svg>
                                         </a>
+                                    ) : (
+                                        <span className={styles.ticketBtn} style={{ opacity: 0.4 }}>
+                                            SOON
+                                        </span>
                                     )}
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    /* ---- LIST VIEW (K95 Style with Floating Poster Preview) ---- */
-                    <div className={styles.showsList}>
-                        {filteredShows.map((show) => (
-                            <div
-                                key={show.id}
-                                id={`show-${show.id}`}
-                                className={`${styles.showsListItem} reveal`}
-                                onMouseEnter={() => setHoveredShow(show)}
-                                onMouseLeave={() => setHoveredShow((cur) => (cur?.id === show.id ? null : cur))}
-                                data-cursor="VIEW"
-                            >
-                                <div className={styles.listDate}>{show.dateCode}</div>
-                                <div className={styles.listTitleCol}>
-                                    <h3 className={styles.listName}>{show.name}</h3>
-                                    {show.subtitle && <div className={styles.listSub}>{show.subtitle}</div>}
-                                </div>
-                                <div className={styles.listVenue}>{show.venue}</div>
-                                <div className={styles.listTags}>
-                                    {show.tags.map((tag) => (
-                                        <span
-                                            key={tag}
-                                            className={`${styles.tag} ${tag === 'House'
-                                                    ? styles.tagHouse
-                                                    : tag === 'Techno'
-                                                        ? styles.tagTechno
-                                                        : styles.tagBass
-                                                }`}
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                                {show.ticketUrl ? (
-                                    <a
-                                        href={show.ticketUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={styles.ticketBtn}
-                                        data-cursor="MORE INFO"
-                                        data-cursor-magnetic="true"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <span>MORE INFO</span>
-                                        <svg
-                                            className={styles.ticketArrow}
-                                            width="11"
-                                            height="11"
-                                            viewBox="0 0 12 12"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            aria-hidden="true"
-                                        >
-                                            <path
-                                                d="M2.5 9.5L9.5 2.5M9.5 2.5H4M9.5 2.5V8"
-                                                stroke="currentColor"
-                                                strokeWidth="2.4"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
-                                    </a>
-                                ) : (
-                                    <span className={styles.ticketBtn} style={{ opacity: 0.4 }}>
-                                        SOON
-                                    </span>
-                                )}
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 )}
             </div>

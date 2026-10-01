@@ -154,11 +154,11 @@ export default function EditShowModal({
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Posh.vip / Ticket URL</label>
+              <label className={styles.formLabel}>Ticket / Event URL</label>
               <input
                 type="url"
                 className={styles.formInput}
-                placeholder="https://posh.vip/e/..."
+                placeholder="https://... (e.g. Eventbrite, Posh, RA, etc.)"
                 value={editingShow.posh_url}
                 onChange={(e) => setEditingShow({ ...editingShow, posh_url: e.target.value })}
               />

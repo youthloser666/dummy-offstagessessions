@@ -17,6 +17,13 @@ export async function GET() {
       message: string;
       cloudName?: string;
     };
+    shopify: {
+      configured: boolean;
+      connected: boolean;
+      message: string;
+      storeDomain?: string;
+      productsCount?: number;
+    };
   } = {
     supabase: {
       configured: false,
@@ -27,6 +34,11 @@ export async function GET() {
       configured: false,
       connected: false,
       message: 'Cloudinary credentials missing in environment variables.',
+    },
+    shopify: {
+      configured: false,
+      connected: false,
+      message: 'Shopify credentials missing in environment variables.',
     },
   };
 
@@ -77,9 +89,46 @@ export async function GET() {
     }
   }
 
+  // 3. Test Shopify
+  const shopifyDomain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
+  const shopifyToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
+
+  if (shopifyDomain && shopifyToken) {
+    result.shopify.configured = true;
+    result.shopify.storeDomain = shopifyDomain;
+
+    try {
+      const response = await fetch(`https://${shopifyDomain}/api/2024-07/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': shopifyToken,
+        },
+        body: JSON.stringify({
+          query: '{ products(first: 20) { edges { node { id } } } }',
+        }),
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        if (json.data?.products) {
+          result.shopify.connected = true;
+          result.shopify.productsCount = json.data.products.edges.length;
+          result.shopify.message = `Shopify connected successfully (${result.shopify.productsCount} products found).`;
+        }
+      }
+    } catch (err: any) {
+      result.shopify.message = `Shopify ping error: ${err.message}`;
+    }
+  }
+
   return NextResponse.json({
     timestamp: new Date().toISOString(),
-    status: result.supabase.connected && result.cloudinary.connected ? 'all_connected' : 'partial_or_offline',
+    status:
+      result.supabase.connected && result.cloudinary.connected && result.shopify.connected
+        ? 'all_connected'
+        : 'partial_or_offline',
     ...result,
   });
 }
+

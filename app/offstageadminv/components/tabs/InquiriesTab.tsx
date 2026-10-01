@@ -96,7 +96,33 @@ export default function InquiriesTab({
               </tr>
             </thead>
             <tbody>
-              {inquiriesList.length === 0 ? (
+              {loadingInquiries ? (
+                [1, 2, 3, 4].map((n) => (
+                  <tr key={n} className={styles.tableRow}>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 65, height: 14 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 140, height: 16 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 75, height: 20, borderRadius: 12 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 120, height: 16 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 180, height: 14 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 70, height: 22, borderRadius: 12 }} />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="skeletonShimmer" style={{ width: 80, height: 26, margin: '0 auto', borderRadius: 4 }} />
+                    </td>
+                  </tr>
+                ))
+              ) : inquiriesList.length === 0 ? (
                 <tr>
                   <td colSpan={7} style={{ textAlign: 'center', padding: '36px 0', color: '#86868b' }}>
                     No inquiries received yet. Try submitting the contact form on your website!

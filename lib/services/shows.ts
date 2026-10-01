@@ -2,10 +2,22 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { shows as fallbackShows, Show } from '@/lib/data';
 import { DbShow } from '@/lib/types/database.types';
 
+export type ShowWithAliases = Show & {
+  poshUrl?: string;
+  posh_url?: string;
+  ticket_url?: string;
+  poster_url?: string;
+  date_code?: string;
+  date_formatted?: string;
+  status?: string;
+  eventDate?: string | null;
+  event_date?: string | null;
+};
+
 /**
  * Normalizes a database row into the front-end Show model.
  */
-export function mapDbShowToShow(row: DbShow): Show & { poshUrl?: string; status?: string; eventDate?: string | null } {
+export function mapDbShowToShow(row: DbShow): ShowWithAliases {
   const poshLink = row.posh_url || row.ticket_url || undefined;
   return {
     id: row.id as any,
@@ -21,8 +33,14 @@ export function mapDbShowToShow(row: DbShow): Show & { poshUrl?: string; status?
     month: row.month,
     ticketUrl: poshLink,
     poshUrl: poshLink,
+    ticket_url: poshLink,
+    posh_url: poshLink,
+    poster_url: row.poster_url,
+    date_code: row.date_code,
+    date_formatted: row.date_formatted,
     status: row.status || 'upcoming',
     eventDate: row.event_date,
+    event_date: row.event_date,
   };
 }
 
@@ -30,7 +48,7 @@ export function mapDbShowToShow(row: DbShow): Show & { poshUrl?: string; status?
  * Fetch all shows with optional genre/tag filter.
  * Automatically falls back to lib/data.ts only if Supabase is offline or not configured.
  */
-export async function getShows(filterTag?: string): Promise<(Show & { poshUrl?: string; status?: string; eventDate?: string | null })[]> {
+export async function getShows(filterTag?: string): Promise<ShowWithAliases[]> {
   try {
     const supabase = getSupabaseServerClient();
     if (!supabase) {
@@ -65,9 +83,9 @@ export async function getShows(filterTag?: string): Promise<(Show & { poshUrl?: 
   }
 }
 
-function getFilteredFallbackShows(filterTag?: string): (Show & { poshUrl?: string; status?: string; eventDate?: string | null })[] {
+function getFilteredFallbackShows(filterTag?: string): ShowWithAliases[] {
   if (!filterTag || filterTag === 'All') {
-    return fallbackShows;
+    return fallbackShows as ShowWithAliases[];
   }
-  return fallbackShows.filter((s) => s.tags.includes(filterTag));
+  return fallbackShows.filter((s) => s.tags.includes(filterTag)) as ShowWithAliases[];
 }

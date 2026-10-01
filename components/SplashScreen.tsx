@@ -8,9 +8,10 @@ import styles from './SplashScreen.module.css';
 interface SplashScreenProps {
     onReveal?: () => void;
     onComplete: () => void;
+    isReady?: boolean;
 }
 
-export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps) {
+export default function SplashScreen({ onReveal, onComplete, isReady = true }: SplashScreenProps) {
     const overlayRef = useRef<HTMLDivElement>(null);
     const noiseRef = useRef<HTMLDivElement>(null);
     const centerContentRef = useRef<HTMLDivElement>(null);
@@ -18,6 +19,19 @@ export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps
     const logoRef = useRef<HTMLImageElement>(null);
     const accentRef = useRef<HTMLDivElement>(null);
     const taglineRef = useRef<HTMLDivElement>(null);
+
+    const isReadyRef = useRef(isReady);
+    const hasTriggeredCurtainRef = useRef(false);
+    const pendingExitCallbackRef = useRef<(() => void) | null>(null);
+
+    // Track isReady changes from parent
+    useEffect(() => {
+        isReadyRef.current = isReady;
+        if (isReady && pendingExitCallbackRef.current && !hasTriggeredCurtainRef.current) {
+            pendingExitCallbackRef.current();
+            pendingExitCallbackRef.current = null;
+        }
+    }, [isReady]);
 
     useEffect(() => {
         // 1. Ultra-smooth GPU-accelerated GSAP timeline
@@ -65,33 +79,50 @@ export default function SplashScreen({ onReveal, onComplete }: SplashScreenProps
         // Phase 4: Hold with organic analog grain jitter (0.85s)
         tl.to({}, { duration: 0.85 });
 
-        // Phase 5: THEATRICAL CURTAIN PULL (Tirai ditarik serentak ke atas secara utuh)
-        tl.add(() => {
-            if (onReveal) onReveal();
+        // Phase 5: Synchronize with Data Readiness before THEATRICAL CURTAIN PULL
+        tl.call(() => {
+            const executeCurtainSweep = () => {
+                if (hasTriggeredCurtainRef.current) return;
+                hasTriggeredCurtainRef.current = true;
+
+                if (onReveal) onReveal();
+
+                const exitTl = gsap.timeline({ defaults: { force3D: true } });
+
+                // Parallax logo drift as the stage curtain rises
+                exitTl.to(centerContentRef.current, {
+                    y: -100,
+                    opacity: 0.2,
+                    duration: 0.95,
+                    ease: 'power2.in',
+                }, 'curtainSweep');
+
+                // The entire TV Screen + Noise + Scanlines pulls upward like a dramatic curtain
+                exitTl.to(overlayRef.current, {
+                    yPercent: -100,
+                    duration: 1.15,
+                    ease: 'power3.inOut',
+                    onComplete: () => {
+                        if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('splashSeen', 'true');
+                        }
+                        onComplete();
+                    },
+                }, 'curtainSweep');
+            };
+
+            // If website data is already loaded and ready, sweep curtain immediately!
+            if (isReadyRef.current) {
+                executeCurtainSweep();
+            } else {
+                // Otherwise, hold analog CRT screen until data is fully ready
+                pendingExitCallbackRef.current = executeCurtainSweep;
+                // Safety maximum timeout of 4s so offline or slow network doesn't trap the user
+                setTimeout(() => {
+                    executeCurtainSweep();
+                }, 4000);
+            }
         });
-
-        // Parallax logo drift as the stage curtain rises
-        tl.to(centerContentRef.current, {
-            y: -100,
-            opacity: 0.2,
-            duration: 0.95,
-            ease: 'power2.in',
-            force3D: true,
-        }, 'curtainSweep');
-
-        // The entire TV Screen + Noise + Scanlines pulls upward like a dramatic curtain!
-        tl.to(overlayRef.current, {
-            yPercent: -100,
-            duration: 1.15,
-            ease: 'power3.inOut',
-            force3D: true,
-            onComplete: () => {
-                if (typeof window !== 'undefined') {
-                    sessionStorage.setItem('splashSeen', 'true');
-                }
-                onComplete();
-            },
-        }, 'curtainSweep');
 
         return () => {
             tl.kill();

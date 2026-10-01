@@ -74,6 +74,7 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
   useReveal();
   const [feedPosts, setFeedPosts] = useState(defaultInstagramPosts);
   const [showsData, setShowsData] = useState<any[]>(initialShows);
+  const [loadingShows, setLoadingShows] = useState(initialShows.length === 0);
 
   // Sync with live shows if client navigates without full page reload
   useEffect(() => {
@@ -84,7 +85,8 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
           setShowsData(json.data);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoadingShows(false));
   }, []);
 
   useEffect(() => {
@@ -248,30 +250,50 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
         </div>
 
         <div className={styles.upcomingShowsGrid}>
-          {displayShows.map((show) => (
-            <TiltCard key={show.id} maxTilt={10} scale={1.03}>
-              <Link
-                href={`/shows#show-${show.id}`}
+          {loadingShows ? (
+            [1, 2, 3].map((n) => (
+              <div
+                key={n}
                 className={styles.showsGridCard}
-                data-cursor="VIEW"
+                style={{ pointerEvents: 'none' }}
               >
-                <Image
-                  src={show.poster || show.poster_url || '/image/tobehonest_web.webp'}
-                  alt={show.name}
-                  width={600}
-                  height={800}
-                  className={styles.showsGridCardImg}
+                <div
+                  className="skeletonShimmer"
+                  style={{ width: '100%', height: '100%', minHeight: 420 }}
                 />
-                <div className={styles.showsGridCardOverlay} />
-                <div className={styles.showsGridCardInfo}>
-                  <div className={styles.showDate}>{show.dateCode || show.date_code}</div>
-                  <h3 className={styles.showName}>{show.name}</h3>
-                  {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
-                  <div className={styles.showVenue}>{show.venue}</div>
+                <div className={styles.showsGridCardInfo} style={{ zIndex: 2 }}>
+                  <div className="skeletonShimmer" style={{ width: '80px', height: '14px', marginBottom: '8px' }} />
+                  <div className="skeletonShimmer" style={{ width: '180px', height: '28px', marginBottom: '8px' }} />
+                  <div className="skeletonShimmer" style={{ width: '120px', height: '14px' }} />
                 </div>
-              </Link>
-            </TiltCard>
-          ))}
+              </div>
+            ))
+          ) : (
+            displayShows.map((show) => (
+              <TiltCard key={show.id} maxTilt={10} scale={1.03}>
+                <Link
+                  href={`/shows#show-${show.id}`}
+                  className={styles.showsGridCard}
+                  data-cursor="VIEW"
+                >
+                  <Image
+                    src={show.poster || show.poster_url || '/image/tobehonest_web.webp'}
+                    alt={show.name}
+                    width={600}
+                    height={800}
+                    className={styles.showsGridCardImg}
+                  />
+                  <div className={styles.showsGridCardOverlay} />
+                  <div className={styles.showsGridCardInfo}>
+                    <div className={styles.showDate}>{show.dateCode || show.date_code}</div>
+                    <h3 className={styles.showName}>{show.name}</h3>
+                    {show.subtitle && <div className={styles.showSub}>{show.subtitle}</div>}
+                    <div className={styles.showVenue}>{show.venue}</div>
+                  </div>
+                </Link>
+              </TiltCard>
+            ))
+          )}
         </div>
       </section>
 

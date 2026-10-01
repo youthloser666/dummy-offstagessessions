@@ -43,7 +43,7 @@ export default function ShowsTab({
         <div>
           <h1 className={styles.pageTitle}>Shows &amp; Events</h1>
           <p className={styles.pageDesc}>
-            Manage scheduled tour dates, tickets via Posh.vip, and event flyers.
+            Manage scheduled tour dates, ticketing links, and event flyers.
           </p>
         </div>
 
@@ -199,11 +199,11 @@ export default function ShowsTab({
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Posh.vip Ticket Link</label>
+                <label className={styles.formLabel}>Ticket Outlet URL / Link</label>
                 <input
                   type="url"
                   className={styles.formInput}
-                  placeholder="https://posh.vip/e/..."
+                  placeholder="https://... (e.g. Eventbrite, Posh, RA, etc.)"
                   value={newShow.posh_url}
                   onChange={(e) => setNewShow({ ...newShow, posh_url: e.target.value })}
                 />
@@ -279,76 +279,112 @@ export default function ShowsTab({
               </tr>
             </thead>
             <tbody>
-              {showsList.map((show, idx) => (
-                <tr key={show.id || idx} className={styles.tableRow}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={show.poster || show.poster_url || '/image/tobehonest_web.webp'}
-                      alt={show.name}
-                      className={styles.tableThumb}
-                    />
-                  </td>
-                  <td>
-                    <div className={styles.tableTitle}>{show.name}</div>
-                    {show.subtitle && <div className={styles.tableSubtitle}>{show.subtitle}</div>}
-                  </td>
-                  <td>
-                    <div style={{ color: '#ffffff', fontWeight: 500 }}>{show.dateCode || show.date_code}</div>
-                    <div style={{ fontSize: 12, color: '#86868b' }}>{show.venue}</div>
-                  </td>
-                  <td>
-                    {(Array.isArray(show.tags) ? show.tags : (show.tags ? [show.tags] : [])).map((t: string) => (
-                      <span key={t} className={styles.tagPill}>
-                        {t}
-                      </span>
-                    ))}
-                  </td>
-                  <td>
-                    {(show.poshUrl || show.posh_url || show.ticketUrl || show.ticket_url) ? (
-                      <a
-                        href={show.poshUrl || show.posh_url || show.ticketUrl || show.ticket_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={`${styles.linkPill} ${styles.linkPosh}`}
-                      >
-                        Posh.vip ↗
-                      </a>
-                    ) : (
-                      <span style={{ color: '#55555a', fontSize: 11 }}>No link</span>
-                    )}
-                  </td>
-                  <td>
-                    <span
-                      className={`${styles.statusBadge} ${
-                        show.status === 'past' ? styles.statusPast : styles.statusUpcoming
-                      }`}
-                    >
-                      {show.status || 'upcoming'}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <div className={styles.btnGroup}>
-                      <button
-                        type="button"
-                        className={styles.btnEdit}
-                        onClick={() => openEditShow(show)}
-                        title={`Edit ${show.name}`}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.btnDanger}
-                        onClick={() => handleDeleteShow(show.id, show.name)}
-                        title={`Delete ${show.name}`}
-                      >
-                        Delete
-                      </button>
-                    </div>
+              {loadingShows ? (
+                [1, 2, 3, 4].map((n) => (
+                  <tr key={n} className={styles.tableRow}>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 44, height: 58, borderRadius: 4 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 140, height: 16, marginBottom: 6 }} />
+                      <div className="skeletonShimmer" style={{ width: 90, height: 12 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 80, height: 14, marginBottom: 4 }} />
+                      <div className="skeletonShimmer" style={{ width: 110, height: 12 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 70, height: 20, borderRadius: 12 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 65, height: 20, borderRadius: 12 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 75, height: 20, borderRadius: 12 }} />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="skeletonShimmer" style={{ width: 90, height: 28, margin: '0 auto', borderRadius: 4 }} />
+                    </td>
+                  </tr>
+                ))
+              ) : showsList.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 0', color: '#86868b' }}>
+                    No events scheduled yet. Click &ldquo;+ Add Show&rdquo; above to create one.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                showsList.map((show, idx) => (
+                  <tr key={show.id || idx} className={styles.tableRow}>
+                    <td>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={show.poster || show.poster_url || '/image/tobehonest_web.webp'}
+                        alt={show.name}
+                        className={styles.tableThumb}
+                      />
+                    </td>
+                    <td>
+                      <div className={styles.tableTitle}>{show.name}</div>
+                      {show.subtitle && <div className={styles.tableSubtitle}>{show.subtitle}</div>}
+                    </td>
+                    <td>
+                      <div style={{ color: '#ffffff', fontWeight: 500 }}>{show.dateCode || show.date_code}</div>
+                      <div style={{ fontSize: 12, color: '#86868b' }}>{show.venue}</div>
+                    </td>
+                    <td>
+                      {(Array.isArray(show.tags) ? show.tags : (show.tags ? [show.tags] : [])).map((t: string) => (
+                        <span key={t} className={styles.tagPill}>
+                          {t}
+                        </span>
+                      ))}
+                    </td>
+                    <td>
+                      {(show.poshUrl || show.posh_url || show.ticketUrl || show.ticket_url) ? (
+                        <a
+                          href={show.poshUrl || show.posh_url || show.ticketUrl || show.ticket_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`${styles.linkPill} ${styles.linkPosh}`}
+                        >
+                          Tickets ↗
+                        </a>
+                      ) : (
+                        <span style={{ color: '#55555a', fontSize: 11 }}>No link</span>
+                      )}
+                    </td>
+                    <td>
+                      <span
+                        className={`${styles.statusBadge} ${
+                          show.status === 'past' ? styles.statusPast : styles.statusUpcoming
+                        }`}
+                      >
+                        {show.status || 'upcoming'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className={styles.btnGroup}>
+                        <button
+                          type="button"
+                          className={styles.btnEdit}
+                          onClick={() => openEditShow(show)}
+                          title={`Edit ${show.name}`}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnDanger}
+                          onClick={() => handleDeleteShow(show.id, show.name)}
+                          title={`Delete ${show.name}`}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

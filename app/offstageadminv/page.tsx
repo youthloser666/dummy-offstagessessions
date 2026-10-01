@@ -26,6 +26,7 @@ import MediaTab from './components/tabs/MediaTab';
 import InquiriesTab from './components/tabs/InquiriesTab';
 import AnalyticsTab from './components/tabs/AnalyticsTab';
 import SocialsTab from './components/tabs/SocialsTab';
+import StoreTab from './components/tabs/StoreTab';
 
 // Modals
 import EditShowModal from './components/modals/EditShowModal';
@@ -39,13 +40,13 @@ export default function AdminPage() {
 
   // Inquiries & Email Tracking State
   const [inquiriesList, setInquiriesList] = useState<Inquiry[]>([]);
-  const [loadingInquiries, setLoadingInquiries] = useState(false);
+  const [loadingInquiries, setLoadingInquiries] = useState(true);
   const [inquiryFilter, setInquiryFilter] = useState<string>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
 
   // Shows state
   const [showsList, setShowsList] = useState<Show[]>([]);
-  const [loadingShows, setLoadingShows] = useState(false);
+  const [loadingShows, setLoadingShows] = useState(true);
   const [newShow, setNewShow] = useState({
     name: '',
     subtitle: '',
@@ -64,7 +65,7 @@ export default function AdminPage() {
 
   // Media state
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);
-  const [loadingMedia, setLoadingMedia] = useState(false);
+  const [loadingMedia, setLoadingMedia] = useState(true);
   const [newMedia, setNewMedia] = useState({
     name: '',
     date: '',
@@ -112,6 +113,7 @@ export default function AdminPage() {
   const [loadingSocials, setLoadingSocials] = useState(false);
   const [savingSocials, setSavingSocials] = useState(false);
   const [socialTableMissing, setSocialTableMissing] = useState(false);
+  const [storeCount, setStoreCount] = useState<number>(0);
 
   // Notification & Service Connection States
   const [notification, setNotification] = useState<NotificationState | null>(null);
@@ -124,8 +126,21 @@ export default function AdminPage() {
     loadInquiries();
     loadAnalytics();
     loadSocials();
+    loadStoreCount();
     checkConnection();
   }, []);
+
+  const loadStoreCount = async () => {
+    try {
+      const res = await fetch('/api/shopify/products');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.products)) {
+        setStoreCount(data.products.length);
+      }
+    } catch {
+      // silent
+    }
+  };
 
   const notify = (type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -646,6 +661,7 @@ export default function AdminPage() {
         setShowCreateDrawer={setShowCreateDrawer}
         showsCount={showsList.length}
         mediaCount={mediaList.length}
+        storeCount={storeCount}
         inquiriesCount={inquiriesList.length}
         unreadInquiriesCount={unreadInquiriesCount}
       />
@@ -746,6 +762,10 @@ export default function AdminPage() {
               handleSaveSocials={handleSaveSocials}
               notify={notify}
             />
+          )}
+
+          {activeTab === 'store' && (
+            <StoreTab notify={notify} />
           )}
         </div>
       </main>

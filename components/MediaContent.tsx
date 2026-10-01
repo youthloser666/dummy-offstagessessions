@@ -11,6 +11,7 @@ interface MediaContentProps {
 
 export default function MediaContent({ initialMedia = [] }: MediaContentProps) {
     const [galleryItems, setGalleryItems] = useState<MediaItem[]>(initialMedia);
+    const [loading, setLoading] = useState(initialMedia.length === 0);
 
     // Sync with live media if client navigates without full page reload
     useEffect(() => {
@@ -29,10 +30,11 @@ export default function MediaContent({ initialMedia = [] }: MediaContentProps) {
                     );
                 }
             })
-            .catch((err) => console.warn('Media live fetch failed:', err));
+            .catch((err) => console.warn('Media live fetch failed:', err))
+            .finally(() => setLoading(false));
     }, []);
 
-    useReveal([galleryItems]);
+    useReveal([galleryItems, loading]);
 
     return (
         <div className="bg-transparent" style={{ background: 'transparent' }}>
@@ -44,14 +46,57 @@ export default function MediaContent({ initialMedia = [] }: MediaContentProps) {
 
             {/* Parallax Gallery Cards (Framer Motion & Grayscale Reveal) */}
             <div className={styles.galleryList}>
-                {galleryItems.map((gallery, idx) => (
-                    <div key={gallery.id} className="reveal">
-                        <ParallaxMediaCard
-                            item={gallery}
-                            priority={idx === 0}
-                        />
+                {loading ? (
+                    [1, 2, 3].map((n) => (
+                        <div
+                            key={n}
+                            style={{
+                                width: '100%',
+                                height: '70vh',
+                                minHeight: '450px',
+                                position: 'relative',
+                                borderRadius: '4px',
+                                overflow: 'hidden',
+                                marginBottom: '40px',
+                            }}
+                        >
+                            <div
+                                className="skeletonShimmer"
+                                style={{ width: '100%', height: '100%' }}
+                            />
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '30px',
+                                    left: '30px',
+                                    right: '30px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'flex-end',
+                                }}
+                            >
+                                <div>
+                                    <div className="skeletonShimmer" style={{ width: '120px', height: '16px', marginBottom: '12px' }} />
+                                    <div className="skeletonShimmer" style={{ width: '320px', height: '36px' }} />
+                                </div>
+                                <div className="skeletonShimmer" style={{ width: '140px', height: '36px', borderRadius: '20px' }} />
+                            </div>
+                        </div>
+                    ))
+                ) : galleryItems.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '100px 0', color: '#86868b' }}>
+                        No media archives available at this time.
                     </div>
-                ))}
+                ) : (
+                    galleryItems.map((gallery, idx) => (
+                        <div key={gallery.id} className="reveal">
+                            <ParallaxMediaCard
+                                item={gallery}
+                                priority={idx === 0}
+                            />
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

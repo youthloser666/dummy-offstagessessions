@@ -40,7 +40,7 @@ export default function DashboardTab({
 }: DashboardTabProps) {
   const upcomingShows = showsList.filter((s) => s.status === 'upcoming');
   const nextShow = upcomingShows[0] || showsList[0] || null;
-  const ticketLinksCount = showsList.filter((s) => s.ticket_url || s.posh_url).length;
+  const ticketLinksCount = showsList.filter((s) => Boolean(s.ticketUrl || s.ticket_url || s.poshUrl || s.posh_url)).length;
 
   const handleRefreshAll = () => {
     loadShows();
@@ -114,6 +114,22 @@ export default function DashboardTab({
                 : 'Checking...'}
             </span>
           </div>
+
+          <div className={styles.connectionItem}>
+            <span
+              className={`${styles.statusDot} ${
+                connStatus?.shopify?.connected ? styles.dotConnected : styles.dotWarning
+              }`}
+            />
+            <span>
+              Shopify:{' '}
+              {connStatus
+                ? connStatus.shopify?.connected
+                  ? `Connected (${connStatus.shopify.productsCount} products)`
+                  : 'Disconnected'
+                : 'Checking...'}
+            </span>
+          </div>
         </div>
 
         <button
@@ -160,7 +176,7 @@ export default function DashboardTab({
         <div className={styles.metricCard}>
           <div className={styles.metricLabel}>Active Ticketing</div>
           <div className={styles.metricValue}>{ticketLinksCount}</div>
-          <div className={styles.metricSubtitle}>Integrated via Posh.vip</div>
+          <div className={styles.metricSubtitle}>Active Ticket Outlets</div>
         </div>
 
         <div className={styles.metricCard}>
@@ -338,7 +354,7 @@ export default function DashboardTab({
                   rel="noreferrer"
                   className={`${styles.linkPill} ${styles.linkPosh}`}
                 >
-                  Posh.vip Tickets ↗
+                  Get Tickets ↗
                 </a>
               )}
               <button

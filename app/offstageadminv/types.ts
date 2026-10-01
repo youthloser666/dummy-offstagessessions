@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'socials';
+export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'socials' | 'store';
 
 export interface Show {
   id: string;

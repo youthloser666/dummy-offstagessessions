@@ -179,54 +179,82 @@ export default function MediaTab({
               </tr>
             </thead>
             <tbody>
-              {mediaList.map((item, idx) => (
-                <tr key={item.id || idx} className={styles.tableRow}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.thumbnail || item.image || item.thumbnail_url || '/image/jackie_web.webp'}
-                      alt={item.name}
-                      className={styles.tableThumb}
-                    />
-                  </td>
-                  <td>
-                    <div className={styles.tableTitle}>{item.name}</div>
-                  </td>
-                  <td>
-                    <div style={{ color: '#86868b' }}>{item.date}</div>
-                  </td>
-                  <td>
-                    <a
-                      href={item.facebookUrl || item.facebook_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.linkPill}
-                    >
-                      Facebook Album ↗
-                    </a>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <div className={styles.btnGroup}>
-                      <button
-                        type="button"
-                        className={styles.btnEdit}
-                        onClick={() => openEditMedia(item)}
-                        title={`Edit ${item.name}`}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.btnDanger}
-                        onClick={() => handleDeleteMedia(item.id, item.name)}
-                        title={`Delete ${item.name}`}
-                      >
-                        Delete
-                      </button>
-                    </div>
+              {loadingMedia ? (
+                [1, 2, 3, 4].map((n) => (
+                  <tr key={n} className={styles.tableRow}>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 48, height: 48, borderRadius: 4 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 160, height: 16 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 90, height: 14 }} />
+                    </td>
+                    <td>
+                      <div className="skeletonShimmer" style={{ width: 120, height: 24, borderRadius: 12 }} />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className="skeletonShimmer" style={{ width: 90, height: 28, margin: '0 auto', borderRadius: 4 }} />
+                    </td>
+                  </tr>
+                ))
+              ) : mediaList.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px 0', color: '#86868b' }}>
+                    No media archives saved yet. Click &ldquo;+ Add Gallery&rdquo; above to upload one.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                mediaList.map((item, idx) => (
+                  <tr key={item.id || idx} className={styles.tableRow}>
+                    <td>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.thumbnail || item.image || item.thumbnail_url || '/image/jackie_web.webp'}
+                        alt={item.name}
+                        className={styles.tableThumb}
+                      />
+                    </td>
+                    <td>
+                      <div className={styles.tableTitle}>{item.name}</div>
+                    </td>
+                    <td>
+                      <div style={{ color: '#86868b' }}>{item.date}</div>
+                    </td>
+                    <td>
+                      <a
+                        href={item.facebookUrl || item.facebook_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.linkPill}
+                      >
+                        Facebook Album ↗
+                      </a>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <div className={styles.btnGroup}>
+                        <button
+                          type="button"
+                          className={styles.btnEdit}
+                          onClick={() => openEditMedia(item)}
+                          title={`Edit ${item.name}`}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnDanger}
+                          onClick={() => handleDeleteMedia(item.id, item.name)}
+                          title={`Delete ${item.name}`}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

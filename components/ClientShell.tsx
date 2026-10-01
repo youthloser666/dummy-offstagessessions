@@ -21,7 +21,63 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     const [mounted, setMounted] = useState(false);
     const [splashState, setSplashState] = useState<'active' | 'revealing' | 'done'>('done');
     const [shouldRenderSplash, setShouldRenderSplash] = useState(false);
+    const [isDataReady, setIsDataReady] = useState(false);
     const contentRef = useRef<HTMLDivElement>(null);
+
+    // Verify all site data and assets are fully loaded and ready
+    useEffect(() => {
+        let isCancelled = false;
+
+        async function verifyReadiness() {
+            try {
+                // 1. Wait for custom web fonts (Anton, Space Mono, Moderniz)
+                const fontPromise = typeof document !== 'undefined' && document.fonts
+                    ? document.fonts.ready
+                    : Promise.resolve();
+
+                // 2. Preload shows data into cache
+                const showsPromise = fetch('/api/shows')
+                    .then((res) => res.json())
+                    .catch(() => null);
+
+                // 3. Preload shopify data into cache
+                const shopifyPromise = fetch('/api/shopify/products')
+                    .then((res) => res.json())
+                    .catch(() => null);
+
+                // 4. Preload media archives into cache
+                const mediaPromise = fetch('/api/media')
+                    .then((res) => res.json())
+                    .catch(() => null);
+
+                // 5. Ensure window/DOM load state
+                const windowPromise = typeof window !== 'undefined' && document.readyState === 'complete'
+                    ? Promise.resolve()
+                    : new Promise<void>((resolve) => {
+                        if (typeof window !== 'undefined') {
+                            window.addEventListener('load', () => resolve(), { once: true });
+                            setTimeout(resolve, 2500); // 2.5s fallback
+                        } else {
+                            resolve();
+                        }
+                    });
+
+                await Promise.allSettled([fontPromise, showsPromise, shopifyPromise, mediaPromise, windowPromise]);
+            } catch (err) {
+                console.warn('Readiness check notice:', err);
+            } finally {
+                if (!isCancelled) {
+                    setIsDataReady(true);
+                }
+            }
+        }
+
+        verifyReadiness();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, []);
 
     // Run splash evaluation only after client hydration completes
     useEffect(() => {
@@ -110,7 +166,8 @@ export default function ClientShell({ children }: { children: React.ReactNode })
             {mounted && shouldRenderSplash && (
                 <SplashScreen 
                     onReveal={handleSplashReveal}
-                    onComplete={handleSplashComplete} 
+                    onComplete={handleSplashComplete}
+                    isReady={isDataReady}
                 />
             )}
             <div ref={contentRef} style={{ width: '100%', minHeight: '100vh' }}>
