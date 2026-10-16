@@ -130,6 +130,20 @@ export default function DashboardTab({
                 : 'Checking...'}
             </span>
           </div>
+
+          <div
+            className={styles.connectionItem}
+            onClick={() => setActiveTab('metapixel')}
+            style={{ cursor: 'pointer' }}
+            title="Click to open Meta Pixel & Ads dashboard"
+          >
+            <span
+              className={`${styles.statusDot} ${styles.dotConnected}`}
+            />
+            <span>
+              Meta Pixel: Active (435764085453303)
+            </span>
+          </div>
         </div>
 
         <button

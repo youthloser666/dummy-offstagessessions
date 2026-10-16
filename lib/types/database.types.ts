@@ -200,6 +200,47 @@ export interface Database {
         };
         Relationships: [];
       };
+      shop_banners: {
+        Row: {
+          id: string;
+          title: string;
+          category: string;
+          price: string | null;
+          image_url: string;
+          link_url: string | null;
+          button_text: string | null;
+          display_order: number;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          category?: string;
+          price?: string | null;
+          image_url: string;
+          link_url?: string | null;
+          button_text?: string | null;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          category?: string;
+          price?: string | null;
+          image_url?: string;
+          link_url?: string | null;
+          button_text?: string | null;
+          display_order?: number;
+          active?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -213,3 +254,4 @@ export type DbMedia = Database['public']['Tables']['media_archives']['Row'];
 export type DbInquiry = Database['public']['Tables']['contact_inquiries']['Row'];
 export type DbPageView = Database['public']['Tables']['page_views']['Row'];
 export type DbSiteSetting = Database['public']['Tables']['site_settings']['Row'];
+export type DbShopBanner = Database['public']['Tables']['shop_banners']['Row'];

@@ -8,6 +8,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import GlobalBackgroundCanvas from '@/components/GlobalBackgroundCanvas';
 import SocialDock from '@/components/SocialDock';
 import TrafficTracker from '@/components/TrafficTracker';
+import Analytics from '@/components/Analytics';
 
 export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
@@ -36,6 +37,22 @@ export default function RootLayout({
                   }
                 } catch (e) {}
               })();
+            `,
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              html.splash-pending nav,
+              html.splash-pending #fixed-background-root,
+              html.splash-pending #app-viewport,
+              html.splash-pending aside,
+              html.splash-pending .cursor-dot,
+              html.splash-pending .cursor-pill {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+              }
             `,
           }}
         />
@@ -93,6 +110,9 @@ export default function RootLayout({
 
         {/* Desktop Fixed Floating Social Media Dock */}
         <SocialDock />
+
+        {/* Analytics: Meta Pixel + Google Analytics 4 */}
+        <Analytics />
 
         {/* Site Traffic & Visitor Tracking */}
         <TrafficTracker />

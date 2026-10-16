@@ -93,6 +93,25 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
 );
 
 -- ============================================================================
+-- 5B. SHOP HERO BANNERS TABLE (Merchandise Carousel)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.shop_banners (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    category TEXT DEFAULT 'Apparel',
+    price TEXT,
+    image_url TEXT NOT NULL,
+    link_url TEXT,
+    button_text TEXT DEFAULT 'SHOP NOW',
+    display_order INTEGER DEFAULT 1,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shop_banners_order ON public.shop_banners(display_order);
+
+-- ============================================================================
 -- 6. ROW-LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 ALTER TABLE public.shows ENABLE ROW LEVEL SECURITY;
@@ -100,8 +119,9 @@ ALTER TABLE public.media_archives ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.shop_banners ENABLE ROW LEVEL SECURITY;
 
--- Anonymous public read access for shows, media archives, and site settings
+-- Anonymous public read access for shows, media archives, site settings, and shop banners
 CREATE POLICY "Public shows are viewable by everyone" 
 ON public.shows FOR SELECT USING (true);
 
@@ -110,6 +130,9 @@ ON public.media_archives FOR SELECT USING (true);
 
 CREATE POLICY "Public settings are viewable by everyone" 
 ON public.site_settings FOR SELECT USING (true);
+
+CREATE POLICY "Public shop banners are viewable by everyone" 
+ON public.shop_banners FOR SELECT USING (true);
 
 -- Anonymous users can insert contact inquiries
 CREATE POLICY "Public can submit contact inquiries" 

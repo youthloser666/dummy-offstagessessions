@@ -72,8 +72,23 @@ function InteractiveWord({
     const currentColor = useRef(new THREE.Color('#ffffff'));
 
     useFrame((state, delta) => {
-        const targetOpacity = visible ? 1 : 0;
+        if (!visible) {
+            opacityRef.current = 0;
+            glowFactorRef.current = 0;
+            if (groupRef.current) groupRef.current.visible = false;
+            if (mainTextRef.current) mainTextRef.current.fillOpacity = 0;
+            if (haloTextRef.current) haloTextRef.current.visible = false;
+            if (auraTextRef.current) auraTextRef.current.visible = false;
+            if (lightRef.current) lightRef.current.intensity = 0;
+            return;
+        }
+
+        const targetOpacity = 1;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, targetOpacity, 9, delta);
+
+        if (groupRef.current) {
+            groupRef.current.visible = opacityRef.current > 0.01;
+        }
 
         // Smooth glow transition when hovered or touched
         const targetGlow = isHovered ? 1.0 : 0.0;
@@ -250,7 +265,14 @@ function GlassOffstageModel({
     const neonAcidColor = useMemo(() => new THREE.Color(NEON_ACID_COLOR), []);
 
     useFrame((_, delta) => {
-        const targetOpacity = visible ? 1 : 0;
+        if (!visible) {
+            opacityRef.current = 0;
+            glowRef.current = 0;
+            if (groupRef.current) groupRef.current.visible = false;
+            return;
+        }
+
+        const targetOpacity = 1;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, targetOpacity, 9, delta);
 
         const targetGlow = isHovered ? 1.0 : 0.0;
@@ -640,7 +662,15 @@ export default function HeroScene3D({ visible = true }: { visible?: boolean }) {
     }, [checkIntersection]);
 
     useFrame((state, delta) => {
-        const target = visible ? 1 : 0;
+        if (!visible) {
+            transitionRef.current = 0;
+            if (heroGroupRef.current) {
+                heroGroupRef.current.visible = false;
+            }
+            return;
+        }
+
+        const target = 1;
         transitionRef.current = THREE.MathUtils.damp(transitionRef.current, target, 9, delta);
 
         if (heroGroupRef.current) {

@@ -25,6 +25,7 @@ import ShowsTab from './components/tabs/ShowsTab';
 import MediaTab from './components/tabs/MediaTab';
 import InquiriesTab from './components/tabs/InquiriesTab';
 import AnalyticsTab from './components/tabs/AnalyticsTab';
+import MetaPixelTab from './components/tabs/MetaPixelTab';
 import SocialsTab from './components/tabs/SocialsTab';
 import StoreTab from './components/tabs/StoreTab';
 
@@ -748,6 +749,16 @@ export default function AdminPage() {
               loadAnalytics={loadAnalytics}
               handleResetAnalytics={handleResetAnalytics}
               notify={notify}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {activeTab === 'metapixel' && (
+            <MetaPixelTab
+              inquiriesList={inquiriesList}
+              analyticsData={analyticsData}
+              notify={notify}
+              setActiveTab={setActiveTab}
             />
           )}
 
@@ -765,7 +776,7 @@ export default function AdminPage() {
           )}
 
           {activeTab === 'store' && (
-            <StoreTab notify={notify} />
+            <StoreTab passkey={passkey} notify={notify} />
           )}
         </div>
       </main>

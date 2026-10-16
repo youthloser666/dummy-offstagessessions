@@ -19,6 +19,8 @@ yarn-error.log*
 # Environment variables (Sangat penting agar API key/secret tidak bocor)
 .env
 .env*.local
+.env*.deploy
+.env.deploy
 
 # Vercel
 .vercel

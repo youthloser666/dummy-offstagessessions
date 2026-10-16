@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { trackLead } from '@/lib/analytics';
 
 export default function ContactEmailForm() {
     const [email, setEmail] = useState('');
@@ -31,6 +32,12 @@ export default function ContactEmailForm() {
                 }),
             });
             setSubmitted(true);
+
+            // Fire Meta Pixel Lead + GA4 generate_lead event
+            trackLead({
+                content_name: subject.trim(),
+                content_category: category,
+            });
         } catch (err) {
             console.warn('Failed to record inquiry to backend:', err);
         } finally {

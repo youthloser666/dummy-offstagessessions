@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useReveal } from '@/hooks/useReveal';
+import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
 import styles from './shop.module.css';
 
 const PRODUCTS_PER_PAGE = 8;
@@ -47,15 +48,35 @@ export default function ShopPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+    const [banners, setBanners] = useState<any[]>([]);
+    const [isGlitching, setIsGlitching] = useState(false);
+    const isGlitchingRef = useRef(false);
 
     // Cart state
     const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
     const [cart, setCart] = useState<CartState | null>(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
 
-    // Fetch real Shopify products
+    // Fetch real Shopify products and custom Shop Banners
     useEffect(() => {
         let isMounted = true;
+
+        async function fetchBanners() {
+            try {
+                const res = await fetch('/api/shop-banners');
+                const data = await res.json();
+                if (isMounted && data.success && Array.isArray(data.data)) {
+                    const active = data.data.filter((b: any) => b.active !== false);
+                    if (active.length > 0) {
+                        setBanners(active);
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to load shop banners:', err);
+            }
+        }
+
+        fetchBanners();
 
         async function fetchShopify() {
             setLoading(true);
@@ -96,19 +117,39 @@ export default function ShopPage() {
 
     useReveal([currentPage, sortBy, allProducts, loading]);
 
-    // Hero carousel interval
+    // Hero carousel interval based on banners or products
+    const activeSlideCount = banners.length > 0 ? banners.length : Math.min(allProducts.length, 5);
+
+    const goToHeroSlide = (targetIdx: number) => {
+        if (isGlitchingRef.current || targetIdx === currentHeroIndex) return;
+        isGlitchingRef.current = true;
+        setIsGlitching(true);
+
+        // Mid-glitch burst (160ms), switch the active slide
+        setTimeout(() => {
+            setCurrentHeroIndex(targetIdx);
+        }, 160);
+
+        // Reset glitch state
+        setTimeout(() => {
+            setIsGlitching(false);
+            isGlitchingRef.current = false;
+        }, 360);
+    };
+
     useEffect(() => {
-        if (allProducts.length <= 1) {
+        if (activeSlideCount <= 1) {
             setCurrentHeroIndex(0);
             return;
         }
 
         const interval = setInterval(() => {
-            setCurrentHeroIndex((prev) => (prev + 1) % Math.min(allProducts.length, 5));
-        }, 4500);
+            const nextIdx = (currentHeroIndex + 1) % activeSlideCount;
+            goToHeroSlide(nextIdx);
+        }, 4800);
 
         return () => clearInterval(interval);
-    }, [allProducts.length]);
+    }, [activeSlideCount, currentHeroIndex]);
 
     const sortedProducts = useMemo(() => {
         let sorted = [...allProducts];
@@ -171,6 +212,15 @@ export default function ShopPage() {
                     },
                 });
                 setIsCartOpen(true);
+
+                // Fire Meta Pixel AddToCart + GA4 add_to_cart
+                trackAddToCart({
+                    content_name: product.name,
+                    content_ids: [product.shopifyId],
+                    content_type: 'product',
+                    value: variant.price,
+                    currency: product.currency || 'USD',
+                });
             } else {
                 alert(data.error || 'Failed to add item to cart.');
             }
@@ -183,20 +233,147 @@ export default function ShopPage() {
 
     return (
         <div className="bg-transparent" style={{ background: 'transparent' }}>
-            {/* Full-Width Hero Image Banner (Bleeding under transparent navbar) */}
-            <div className={`${styles.heroBanner} relative reveal`}>
-                {allProducts.length > 0 ? (
+            {/* Full-Width Hero Image Banner (Bleeding under transparent navbar on desktop & mobile) */}
+            <div className={`${styles.heroBanner} relative ${isGlitching ? styles.stageGlitching : ''}`}>
+                {banners.length > 0 ? (
+                    banners.map((item, idx) => {
+                        const isCurrent = idx === currentHeroIndex;
+                        const showTitleAndCat = !item.hide_title && Boolean(item.title || item.category);
+                        const showPrice = !item.hide_price && Boolean(item.price);
+                        const showButton = !item.hide_button && Boolean(item.link_url && item.button_text);
+                        const hasAnyOverlay = showTitleAndCat || showPrice || showButton;
+
+                        return (
+                            <div
+                                key={item.id}
+                                className={`${styles.heroSlide} ${isCurrent ? styles.activeSlide : ''}`}
+                            >
+                                {/* Ambient Blur backdrop to softly blend letterbox on various aspect ratios */}
+                                <div className={styles.heroImgBlurWrap}>
+                                    <Image
+                                        src={item.image_url}
+                                        alt=""
+                                        fill
+                                        className={styles.heroImgBlur}
+                                        priority
+                                    />
+                                </div>
+
+                                {/* Main Hero Banner Image */}
+                                <Image
+                                    src={item.image_url}
+                                    alt={item.title || 'Shop Hero Banner'}
+                                    fill
+                                    className={styles.heroImg}
+                                    priority
+                                />
+
+                                {/* Glitch Slice Layers (Red / Cyan chromatic channels) */}
+                                <Image
+                                    src={item.image_url}
+                                    alt=""
+                                    fill
+                                    aria-hidden="true"
+                                    className={styles.sliceA}
+                                />
+                                <Image
+                                    src={item.image_url}
+                                    alt=""
+                                    fill
+                                    aria-hidden="true"
+                                    className={styles.sliceB}
+                                />
+
+                                {/* Clickable banner link when CTA button is hidden/removed */}
+                                {item.link_url && (!showButton || !hasAnyOverlay) && (
+                                    <a
+                                        href={item.link_url}
+                                        className={styles.heroSlideLink}
+                                        aria-label={item.title || 'Shop Banner Slide'}
+                                        onClick={(e) => {
+                                            if (item.link_url?.startsWith('#')) {
+                                                e.preventDefault();
+                                                document.querySelector(item.link_url)?.scrollIntoView({ behavior: 'smooth' });
+                                            }
+                                        }}
+                                    />
+                                )}
+
+                                {/* Gradient Overlay only rendered if there is text overlay to display */}
+                                {hasAnyOverlay && <div className={styles.heroOverlay} />}
+
+                                {/* Info Card (Title, Category, Price, CTA Button) */}
+                                {hasAnyOverlay && (
+                                    <div className={styles.heroInfo}>
+                                        {showTitleAndCat && (
+                                            <>
+                                                {item.category && <span className={styles.heroCategory}>{item.category}</span>}
+                                                {item.title && <h2 className={styles.heroTitle}>{item.title}</h2>}
+                                            </>
+                                        )}
+                                        {showPrice && (
+                                            <span className={styles.heroPrice}>
+                                                {item.price}
+                                            </span>
+                                        )}
+                                        {showButton && (
+                                            <a
+                                                href={item.link_url}
+                                                className={styles.heroCtaBtn}
+                                                onClick={(e) => {
+                                                    if (item.link_url?.startsWith('#')) {
+                                                        e.preventDefault();
+                                                        document.querySelector(item.link_url)?.scrollIntoView({ behavior: 'smooth' });
+                                                    }
+                                                }}
+                                            >
+                                                <span>{item.button_text || 'SHOP NOW'}</span>
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                                    <polyline points="12 5 19 12 12 19" />
+                                                </svg>
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })
+                ) : allProducts.length > 0 ? (
                     allProducts.slice(0, 5).map((item, idx) => (
                         <div
                             key={item.id}
                             className={`${styles.heroSlide} ${idx === currentHeroIndex ? styles.activeSlide : ''}`}
                         >
+                            <div className={styles.heroImgBlurWrap}>
+                                <Image
+                                    src={item.image}
+                                    alt=""
+                                    fill
+                                    className={styles.heroImgBlur}
+                                    priority
+                                />
+                            </div>
                             <Image
                                 src={item.image}
                                 alt={item.name}
                                 fill
                                 className={styles.heroImg}
-                                priority={idx === 0}
+                                priority
+                            />
+                            <Image
+                                src={item.image}
+                                alt=""
+                                fill
+                                aria-hidden="true"
+                                className={styles.sliceA}
+                            />
+                            <Image
+                                src={item.image}
+                                alt=""
+                                fill
+                                aria-hidden="true"
+                                className={styles.sliceB}
                             />
                             <div className={styles.heroOverlay} />
                             <div className={styles.heroInfo}>
@@ -209,7 +386,7 @@ export default function ShopPage() {
                         </div>
                     ))
                 ) : (
-                    /* Elegant brand hero banner when store is loading or empty */
+                    /* Brand hero banner when store is loading or empty */
                     <div className={`${styles.heroSlide} ${styles.activeSlide}`}>
                         <div
                             style={{
@@ -223,6 +400,55 @@ export default function ShopPage() {
                             <span className={styles.heroCategory}>Official Merchandise</span>
                             <h2 className={styles.heroTitle}>Offstage Store</h2>
                         </div>
+                    </div>
+                )}
+
+                {/* Top Vignette for clean Navbar bleeding overlay */}
+                <div className={styles.heroTopVignette} />
+
+                {/* Glitch CRT Scanlines, Acid Flash Burst, and VHS Tracking Bar */}
+                <div className={styles.scanlines} />
+                <div className={styles.flashOverlay} />
+                <div className={styles.trackingBar} />
+
+                {/* Carousel Indicator Dots */}
+                {activeSlideCount > 1 && (
+                    <div className={styles.heroNavDots}>
+                        {Array.from({ length: activeSlideCount }).map((_, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                className={`${styles.heroNavDot} ${idx === currentHeroIndex ? styles.heroNavDotActive : ''}`}
+                                onClick={() => goToHeroSlide(idx)}
+                                aria-label={`Go to slide ${idx + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Carousel Arrow Controls */}
+                {activeSlideCount > 1 && (
+                    <div className={styles.heroArrowNav}>
+                        <button
+                            type="button"
+                            className={styles.heroArrowBtn}
+                            onClick={() => goToHeroSlide((currentHeroIndex - 1 + activeSlideCount) % activeSlideCount)}
+                            aria-label="Previous slide"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            className={styles.heroArrowBtn}
+                            onClick={() => goToHeroSlide((currentHeroIndex + 1) % activeSlideCount)}
+                            aria-label="Next slide"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
                     </div>
                 )}
             </div>
@@ -292,7 +518,16 @@ export default function ShopPage() {
                                     key={product.id}
                                     className={`${styles.productCard} reveal`}
                                     style={{ transitionDelay: `${Math.min(idx, 7) * 0.06}s` }}
-                                    onMouseEnter={() => setHoveredProduct(product.id)}
+                                    onMouseEnter={() => {
+                                        setHoveredProduct(product.id);
+                                        trackViewContent({
+                                            content_name: product.name,
+                                            content_ids: [product.shopifyId],
+                                            content_type: 'product',
+                                            value: product.price,
+                                            currency: product.currency || 'USD',
+                                        });
+                                    }}
                                     onMouseLeave={() => setHoveredProduct(null)}
                                 >
                                     <div className={styles.productImg}>
@@ -468,6 +703,14 @@ export default function ShopPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={styles.checkoutBtn}
+                                onClick={() => {
+                                    trackInitiateCheckout({
+                                        content_ids: cart.lastItem ? [cart.id] : [],
+                                        num_items: cart.totalQuantity,
+                                        value: cart.lastItem?.price,
+                                        currency: 'USD',
+                                    });
+                                }}
                             >
                                 Checkout on Shopify →
                             </a>

@@ -162,7 +162,17 @@ export default function HeroVideoBackground({ visible = true }: { visible?: bool
 
     // Keep position synchronized with Lenis scroll on every frame
     useFrame((_, delta) => {
-        const target = visible ? 1 : 0;
+        if (!visible) {
+            opacityRef.current = 0;
+            if (meshRef.current) meshRef.current.visible = false;
+            if (materialRef.current) materialRef.current.uniforms.opacity.value = 0;
+            if (videoRef.current && !videoRef.current.paused) {
+                videoRef.current.pause();
+            }
+            return;
+        }
+
+        const target = 1;
         opacityRef.current = THREE.MathUtils.damp(opacityRef.current, target, 8, delta);
 
         const scrollY = cachedScrollY.current;

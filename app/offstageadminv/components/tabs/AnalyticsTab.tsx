@@ -10,6 +10,7 @@ interface AnalyticsTabProps {
   loadAnalytics: () => void;
   handleResetAnalytics: () => void;
   notify: (type: 'success' | 'error', message: string) => void;
+  setActiveTab?: (tab: any) => void;
 }
 
 export default function AnalyticsTab({
@@ -18,6 +19,7 @@ export default function AnalyticsTab({
   loadAnalytics,
   handleResetAnalytics,
   notify,
+  setActiveTab,
 }: AnalyticsTabProps) {
   return (
     <div>
@@ -30,6 +32,19 @@ export default function AnalyticsTab({
         </div>
 
         <div className={styles.headerActions}>
+          {setActiveTab && (
+            <button
+              onClick={() => setActiveTab('metapixel')}
+              className={styles.btnSecondary}
+              style={{
+                borderColor: 'rgba(24, 119, 242, 0.4)',
+                color: '#60a5fa',
+              }}
+            >
+              Meta Pixel &amp; Ads →
+            </button>
+          )}
+
           <div
             style={{
               display: 'flex',

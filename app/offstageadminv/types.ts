@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'socials' | 'store';
+export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'metapixel' | 'socials' | 'store';
 
 export interface Show {
   id: string;
@@ -106,4 +106,21 @@ export interface SocialForm {
 export interface NotificationState {
   type: 'success' | 'error';
   message: string;
+}
+
+export interface ShopBanner {
+  id: string;
+  title: string;
+  category: string;
+  price?: string;
+  image_url: string;
+  link_url?: string;
+  button_text?: string;
+  display_order: number;
+  active: boolean;
+  hide_title?: boolean;
+  hide_price?: boolean;
+  hide_button?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }

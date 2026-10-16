@@ -11,14 +11,18 @@
     min-height: 480px;
     margin-top: 0;
     overflow: hidden;
-    background: transparent;
+    background: #050505;
+}
+
+.stageGlitching {
+    animation: glitchShake 0.36s steps(2) forwards;
 }
 
 .heroSlide {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 0.35s ease-in-out;
     pointer-events: none;
 }
 
@@ -27,15 +31,125 @@
     pointer-events: auto;
 }
 
+/* Ambient Blur layer behind image for seamless display without black bars */
+.heroImgBlurWrap {
+    position: absolute;
+    inset: -20px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.heroImgBlur {
+    object-fit: cover;
+    filter: blur(28px) brightness(0.28);
+    transform: scale(1.15);
+}
+
 .heroImg {
     object-fit: cover;
-    filter: brightness(0.68) grayscale(0.15);
+    filter: brightness(0.85);
     transition: transform 6s ease-out;
     transform: scale(1);
+    z-index: 1;
 }
 
 .heroSlide.activeSlide .heroImg {
-    transform: scale(1.05);
+    transform: scale(1.03);
+}
+
+/* Glitch Slice Layer 1 (Red / Cyan Displace Slices) */
+.sliceA {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 3;
+    mix-blend-mode: screen;
+}
+
+.sliceB {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 4;
+    mix-blend-mode: screen;
+}
+
+/* Active Glitch Animations on Slices */
+.stageGlitching .sliceA {
+    opacity: 0.95;
+    animation: glitchSliceA 0.36s steps(2) forwards;
+}
+
+.stageGlitching .sliceB {
+    opacity: 0.95;
+    animation: glitchSliceB 0.36s steps(2) forwards;
+}
+
+/* Acid Flash Overlay during glitch burst */
+.flashOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(226, 255, 50, 0.25);
+    mix-blend-mode: color-dodge;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+}
+
+.stageGlitching .flashOverlay {
+    animation: flashPulse 0.32s ease-out forwards;
+}
+
+/* Subtle CRT Scanlines across hero banner */
+.scanlines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.2) 2px,
+        rgba(0, 0, 0, 0.2) 4px
+    );
+    pointer-events: none;
+    z-index: 6;
+    opacity: 0.45;
+}
+
+/* Moving VHS Glitch Tracking Bar */
+.trackingBar {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 12px rgba(226, 255, 50, 0.6);
+    pointer-events: none;
+    z-index: 7;
+    opacity: 0;
+}
+
+.stageGlitching .trackingBar {
+    opacity: 0.9;
+    animation: trackingSweep 0.36s linear forwards;
+}
+
+/* Whole Slide clickable link */
+.heroSlideLink {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .heroOverlay {
@@ -43,11 +157,30 @@
     inset: 0;
     background: linear-gradient(
         to bottom,
-        transparent 0%,
-        transparent 65%,
-        rgba(0, 0, 0, 0.65) 100%
+        rgba(0, 0, 0, 0.45) 0%,
+        transparent 30%,
+        transparent 55%,
+        rgba(0, 0, 0, 0.76) 100%
     );
-    z-index: 1;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Subtle dark gradient overlay at top so floating navbar links/logo remain crisp & legible */
+.heroTopVignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: clamp(80px, 15vh, 140px);
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.72) 0%,
+        rgba(0, 0, 0, 0.28) 50%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 5;
 }
 
 .heroInfo {
@@ -56,14 +189,15 @@
     left: 0;
     right: 0;
     padding: 60px 5%;
-    z-index: 2;
+    z-index: 9;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
     transform: translateY(20px);
     opacity: 0;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, opacity 0.8s ease 0.3s;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, opacity 0.6s ease 0.15s;
+    pointer-events: none;
 }
 
 .heroSlide.activeSlide .heroInfo {
@@ -94,6 +228,182 @@
     color: rgba(255, 255, 255, 0.9);
     font-family: 'Space Mono', monospace;
     font-weight: 700;
+}
+
+.heroCtaBtn {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--white);
+    color: var(--black);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 12px 24px;
+    border-radius: 2px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.heroCtaBtn:hover {
+    background-color: var(--acid);
+    color: var(--black);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(226, 255, 50, 0.3);
+}
+
+.heroNavDots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.heroNavDot {
+    width: 24px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.heroNavDot:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.heroNavDotActive {
+    background: var(--acid);
+    width: 42px;
+}
+
+.heroArrowNav {
+    position: absolute;
+    bottom: 24px;
+    right: 5%;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.heroArrowBtn {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--white);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.heroArrowBtn:hover {
+    background: var(--acid);
+    color: var(--black);
+    border-color: var(--acid);
+    transform: scale(1.05);
+}
+
+/* ---- GLITCH KEYFRAMES ---- */
+@keyframes glitchShake {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    15% { transform: translate3d(-5px, 2px, 0) scale(1.015); }
+    35% { transform: translate3d(6px, -3px, 0) scale(1.01); }
+    55% { transform: translate3d(-4px, -1px, 0) scale(1.02); }
+    75% { transform: translate3d(4px, 2px, 0) scale(1.008); }
+    90% { transform: translate3d(-1px, 1px, 0) scale(1.004); }
+    100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes glitchSliceA {
+    0% {
+        clip-path: polygon(0 8%, 100% 8%, 100% 22%, 0 22%);
+        transform: translate3d(-18px, 1px, 0);
+        filter: drop-shadow(-5px 0 0 rgba(255, 0, 70, 0.9));
+    }
+    20% {
+        clip-path: polygon(0 60%, 100% 60%, 100% 74%, 0 74%);
+        transform: translate3d(20px, -2px, 0);
+        filter: drop-shadow(6px 0 0 rgba(0, 255, 255, 0.9));
+    }
+    40% {
+        clip-path: polygon(0 30%, 100% 30%, 100% 44%, 0 44%);
+        transform: translate3d(-24px, 2px, 0);
+        filter: drop-shadow(-6px 0 0 rgba(226, 255, 50, 0.9));
+    }
+    65% {
+        clip-path: polygon(0 82%, 100% 82%, 100% 95%, 0 95%);
+        transform: translate3d(14px, -1px, 0);
+        filter: drop-shadow(4px 0 0 rgba(255, 0, 70, 0.9));
+    }
+    85% {
+        clip-path: polygon(0 4%, 100% 4%, 100% 16%, 0 16%);
+        transform: translate3d(-8px, 1px, 0);
+        filter: drop-shadow(-3px 0 0 rgba(0, 255, 255, 0.9));
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes glitchSliceB {
+    0% {
+        clip-path: polygon(0 38%, 100% 38%, 100% 54%, 0 54%);
+        transform: translate3d(18px, -1px, 0);
+        filter: drop-shadow(5px 0 0 rgba(0, 255, 255, 0.85));
+    }
+    22% {
+        clip-path: polygon(0 14%, 100% 14%, 100% 26%, 0 26%);
+        transform: translate3d(-18px, 2px, 0);
+        filter: drop-shadow(-5px 0 0 rgba(255, 0, 60, 0.85));
+    }
+    45% {
+        clip-path: polygon(0 76%, 100% 76%, 100% 90%, 0 90%);
+        transform: translate3d(24px, 0, 0);
+        filter: drop-shadow(6px 0 0 rgba(226, 255, 50, 0.85));
+    }
+    70% {
+        clip-path: polygon(0 48%, 100% 48%, 100% 62%, 0 62%);
+        transform: translate3d(-14px, -2px, 0);
+        filter: drop-shadow(-4px 0 0 rgba(0, 255, 255, 0.85));
+    }
+    100% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+    }
+}
+
+@keyframes flashPulse {
+    0% { opacity: 0; }
+    30% { opacity: 0.45; }
+    60% { opacity: 0.8; }
+    100% { opacity: 0; }
+}
+
+@keyframes trackingSweep {
+    0% { top: 0%; }
+    100% { top: 100%; }
 }
 
 /* ---- Shop Header & Toolbar ---- */
@@ -443,16 +753,94 @@
     }
 }
 
+/* ---- Tablet & Mobile Responsive ---- */
+@media (max-width: 768px) {
+    .heroBanner {
+        width: 100%;
+        height: clamp(440px, 62vh, 600px);
+        min-height: 400px;
+        margin-top: 0;
+        background: #000000;
+    }
+
+    .heroImg,
+    .sliceA,
+    .sliceB {
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .heroInfo {
+        padding: 24px 5% 42px;
+        gap: 6px;
+    }
+
+    .heroTitle {
+        font-size: clamp(1.1rem, 4.2vw, 1.6rem);
+        line-height: 1.1;
+    }
+
+    .heroCategory {
+        font-size: 0.62rem;
+        letter-spacing: 0.15em;
+    }
+
+    .heroPrice {
+        font-size: 0.8rem;
+    }
+
+    .heroCtaBtn {
+        padding: 6px 14px;
+        font-size: 0.68rem;
+        margin-top: 4px;
+    }
+
+    .heroArrowNav {
+        bottom: 12px;
+        right: 3%;
+        gap: 6px;
+    }
+
+    .heroArrowBtn {
+        width: 30px;
+        height: 30px;
+    }
+
+    .heroNavDots {
+        bottom: 14px;
+        gap: 5px;
+    }
+
+    .heroNavDot {
+        width: 14px;
+        height: 2px;
+    }
+
+    .heroNavDotActive {
+        width: 24px;
+    }
+}
+
 /* ---- Mobile ---- */
 @media (max-width: 600px) {
     .heroBanner {
-        height: 55vh;
+        width: 100%;
+        height: clamp(420px, 58vh, 520px);
         min-height: 380px;
         margin-top: 0;
+        background: #000000;
+    }
+
+    .heroImg,
+    .sliceA,
+    .sliceB {
+        object-fit: cover;
+        object-position: center;
     }
     
     .heroInfo {
-        padding: 40px 5%;
+        padding: 16px 4% 40px;
+        gap: 4px;
     }
 
     .productsGrid {

@@ -24,6 +24,18 @@ export async function GET() {
       storeDomain?: string;
       productsCount?: number;
     };
+    metaPixel: {
+      configured: boolean;
+      connected: boolean;
+      pixelId?: string;
+      message: string;
+    };
+    ga4: {
+      configured: boolean;
+      connected: boolean;
+      measurementId?: string;
+      message: string;
+    };
   } = {
     supabase: {
       configured: false,
@@ -39,6 +51,16 @@ export async function GET() {
       configured: false,
       connected: false,
       message: 'Shopify credentials missing in environment variables.',
+    },
+    metaPixel: {
+      configured: false,
+      connected: false,
+      message: 'Meta Pixel ID missing in environment variables.',
+    },
+    ga4: {
+      configured: false,
+      connected: false,
+      message: 'GA4 Measurement ID missing in environment variables.',
     },
   };
 
@@ -120,6 +142,24 @@ export async function GET() {
     } catch (err: any) {
       result.shopify.message = `Shopify ping error: ${err.message}`;
     }
+  }
+
+  // 4. Test Meta Pixel
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+  if (pixelId) {
+    result.metaPixel.configured = true;
+    result.metaPixel.connected = true;
+    result.metaPixel.pixelId = pixelId;
+    result.metaPixel.message = `Meta Pixel initialized with ID ${pixelId}.`;
+  }
+
+  // 5. Test Google Analytics 4
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  if (gaId) {
+    result.ga4.configured = true;
+    result.ga4.connected = true;
+    result.ga4.measurementId = gaId;
+    result.ga4.message = `GA4 initialized with ID ${gaId}.`;
   }
 
   return NextResponse.json({

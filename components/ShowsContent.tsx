@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, useMotionValue, useSpring, useVelocity, useTransform, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/hooks/useReveal';
 import { Show } from '@/lib/data';
+import { trackViewContent } from '@/lib/analytics';
 import styles from '@/app/shows/shows.module.css';
 
 const FILTERS = ['All', 'House', 'Techno', 'Bass'];
@@ -203,6 +204,13 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                                                 className={styles.ticketBtn}
                                                 data-cursor="MORE INFO"
                                                 data-cursor-magnetic="true"
+                                                onClick={() => {
+                                                    trackViewContent({
+                                                        content_name: show.name,
+                                                        content_category: Array.isArray(show.tags) ? show.tags.join(', ') : 'Show',
+                                                        content_ids: [String(show.id)],
+                                                    });
+                                                }}
                                             >
                                                 <span>MORE INFO</span>
                                                 <svg
@@ -275,7 +283,14 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
                                             className={styles.ticketBtn}
                                             data-cursor="MORE INFO"
                                             data-cursor-magnetic="true"
-                                            onClick={(e) => e.stopPropagation()}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                trackViewContent({
+                                                    content_name: show.name,
+                                                    content_category: Array.isArray(show.tags) ? show.tags.join(', ') : 'Show',
+                                                    content_ids: [String(show.id)],
+                                                });
+                                            }}
                                         >
                                             <span>MORE INFO</span>
                                             <svg

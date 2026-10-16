@@ -69,7 +69,8 @@ html {
   color: #ffffff;
 }
 
-/* ---- SPLASH PRE-HYDRATION MASK (Mencegah landing page bocor sebelum splash screen aktif) ---- */
+/* ---- SPLASH PRE-HYDRATION MASK (Mencegah landing page & navbar bocor sebelum splash screen aktif) ---- */
+html.splash-pending nav,
 html.splash-pending #fixed-background-root,
 html.splash-pending #app-viewport,
 html.splash-pending .cursor-dot,

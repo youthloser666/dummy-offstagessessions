@@ -1668,3 +1668,240 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   META PIXEL & ADS DASHBOARD STYLES
+   ========================================================================== */
+
+.metaBrandCard {
+  background: linear-gradient(135deg, rgba(24, 119, 242, 0.12) 0%, rgba(0, 0, 0, 0.6) 100%);
+  border: 1px solid rgba(24, 119, 242, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metaBrandLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.metaLogoBadge {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0081fb, #0064e0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(24, 119, 242, 0.35);
+  flex-shrink: 0;
+}
+
+.metaBrandTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metaBrandSubtitle {
+  font-size: 13px;
+  color: #a1a1a6;
+  margin: 0;
+}
+
+.metaLivePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(85, 243, 133, 0.12);
+  border: 1px solid rgba(85, 243, 133, 0.3);
+  color: #55f385;
+}
+
+.metaLiveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #55f385;
+  box-shadow: 0 0 8px #55f385;
+}
+
+.pixelSimulatorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.pixelTestBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: #ffffff;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pixelTestBtn:hover {
+  background: rgba(24, 119, 242, 0.15);
+  border-color: rgba(24, 119, 242, 0.4);
+  transform: translateY(-2px);
+}
+
+.pixelTestBtn:active {
+  transform: translateY(0);
+}
+
+.pixelTestBtnTitle {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+}
+
+.pixelTestBtnDesc {
+  font-size: 11px;
+  color: #86868b;
+}
+
+.consoleLogCard {
+  background: #0a0a0c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 18px;
+}
+
+.consoleLogHeader {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.consoleLogList {
+  max-height: 280px;
+  overflow-y: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+.consoleLogItem {
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.15s ease;
+}
+
+.consoleLogItem:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.consoleLogItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.consoleEventBadge {
+  background: rgba(24, 119, 242, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(24, 119, 242, 0.35);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.consoleTime {
+  color: #86868b;
+  font-size: 11px;
+}
+
+.consolePayload {
+  color: #d1d1d6;
+  font-size: 11px;
+}
+
+.funnelGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .funnelGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .funnelGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.funnelStepCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 14px;
+  position: relative;
+}
+
+.funnelStepNumber {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #86868b;
+  margin-bottom: 4px;
+}
+
+.funnelStepTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.funnelStepEvent {
+  font-size: 11px;
+  color: #e2ff32;
+  font-family: monospace;
+}
+

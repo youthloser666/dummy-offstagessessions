@@ -184,6 +184,33 @@ export default function AdminSidebar({
           </button>
 
           <button
+            className={`${styles.navItem} ${activeTab === 'metapixel' ? styles.navItemActive : ''}`}
+            onClick={() => handleNavClick('metapixel')}
+          >
+            <div className={styles.navItemLeft}>
+              <span className={styles.navIcon} style={{ color: activeTab === 'metapixel' ? '#60a5fa' : undefined }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <circle cx="12" cy="12" r="6" />
+                  <circle cx="12" cy="12" r="2" />
+                </svg>
+              </span>
+              <span>Meta Pixel &amp; Ads</span>
+            </div>
+            <span
+              className={styles.navBadge}
+              style={{
+                backgroundColor: 'rgba(24, 119, 242, 0.2)',
+                color: '#60a5fa',
+                fontWeight: 600,
+                fontSize: 10,
+              }}
+            >
+              Active
+            </span>
+          </button>
+
+          <button
             className={`${styles.navItem} ${activeTab === 'socials' ? styles.navItemActive : ''}`}
             onClick={() => handleNavClick('socials')}
           >
