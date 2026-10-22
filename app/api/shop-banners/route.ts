@@ -41,11 +41,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, image_url, category, price, link_url, button_text, display_order, active, hide_title, hide_price, hide_button } = body;
+    const { title, image_url, mobile_image_url, category, price, link_url, button_text, display_order, active, hide_title, hide_price, hide_button } = body;
 
-    if (!image_url) {
+    const desktopUrl = (image_url || '').trim();
+    const mobileUrl = (mobile_image_url || '').trim();
+
+    if (!desktopUrl && !mobileUrl) {
       return NextResponse.json(
-        { success: false, error: 'Missing required field: image_url is required.' },
+        { success: false, error: 'Please upload or provide at least one banner image (Desktop or Mobile).' },
         { status: 400 }
       );
     }
@@ -59,7 +62,8 @@ export async function POST(request: NextRequest) {
 
     const created = await createShopBanner({
       title: title || '',
-      image_url,
+      image_url: desktopUrl,
+      mobile_image_url: mobileUrl,
       category: category || '',
       price: price || '',
       link_url: link_url || '',

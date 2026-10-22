@@ -83,10 +83,12 @@ export interface FormattedProduct {
 
 export interface CartLine {
     id: string;
+    variantId?: string;
     quantity: number;
     title: string;
     productTitle: string;
     price: number;
+    currency?: string;
     image?: string;
 }
 
@@ -94,6 +96,9 @@ export interface CartResult {
     id: string;
     checkoutUrl: string;
     totalQuantity: number;
+    subtotal?: number;
+    currency?: string;
+    lines: CartLine[];
 }
 
 /**
@@ -263,13 +268,87 @@ export async function getShopifyProducts(limit = 50): Promise<FormattedProduct[]
     }
 }
 
+const CART_FRAGMENT = `
+  fragment CartDetails on Cart {
+    id
+    checkoutUrl
+    totalQuantity
+    cost {
+      subtotalAmount {
+        amount
+        currencyCode
+      }
+      totalAmount {
+        amount
+        currencyCode
+      }
+    }
+    lines(first: 50) {
+      edges {
+        node {
+          id
+          quantity
+          cost {
+            totalAmount {
+              amount
+              currencyCode
+            }
+          }
+          merchandise {
+            ... on ProductVariant {
+              id
+              title
+              price {
+                amount
+                currencyCode
+              }
+              product {
+                title
+              }
+              image {
+                url
+                altText
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function formatShopifyCart(rawCart: any): CartResult {
+    const lines: CartLine[] = (rawCart.lines?.edges || []).map((edge: any) => {
+        const node = edge.node;
+        const merchandise = node.merchandise || {};
+        return {
+            id: node.id,
+            variantId: merchandise.id,
+            quantity: node.quantity,
+            title: merchandise.title === 'Default Title' ? 'One Size' : merchandise.title || '',
+            productTitle: merchandise.product?.title || '',
+            price: parseFloat(merchandise.price?.amount || '0'),
+            currency: merchandise.price?.currencyCode || 'USD',
+            image: merchandise.image?.url || '',
+        };
+    });
+
+    return {
+        id: rawCart.id,
+        checkoutUrl: rawCart.checkoutUrl,
+        totalQuantity: rawCart.totalQuantity,
+        subtotal: parseFloat(rawCart.cost?.subtotalAmount?.amount || rawCart.cost?.totalAmount?.amount || '0'),
+        currency: rawCart.cost?.subtotalAmount?.currencyCode || 'USD',
+        lines,
+    };
+}
+
 const CREATE_CART_MUTATION = `
+  ${CART_FRAGMENT}
   mutation cartCreate($input: CartInput!) {
     cartCreate(input: $input) {
       cart {
-        id
-        checkoutUrl
-        totalQuantity
+        ...CartDetails
       }
       userErrors {
         field
@@ -280,7 +359,7 @@ const CREATE_CART_MUTATION = `
 `;
 
 /**
- * Create a new cart and return the Shopify Checkout URL
+ * Create a new cart and return formatted CartResult
  */
 export async function createShopifyCart(
     variantId: string,
@@ -288,11 +367,7 @@ export async function createShopifyCart(
 ): Promise<CartResult> {
     const data = await shopifyFetch<{
         cartCreate: {
-            cart: {
-                id: string;
-                checkoutUrl: string;
-                totalQuantity: number;
-            };
+            cart: any;
             userErrors: { field: string; message: string }[];
         };
     }>({
@@ -313,20 +388,15 @@ export async function createShopifyCart(
         throw new Error(data.cartCreate.userErrors[0].message);
     }
 
-    return {
-        id: data.cartCreate.cart.id,
-        checkoutUrl: data.cartCreate.cart.checkoutUrl,
-        totalQuantity: data.cartCreate.cart.totalQuantity,
-    };
+    return formatShopifyCart(data.cartCreate.cart);
 }
 
 const ADD_TO_CART_MUTATION = `
+  ${CART_FRAGMENT}
   mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
-        id
-        checkoutUrl
-        totalQuantity
+        ...CartDetails
       }
       userErrors {
         field
@@ -346,11 +416,7 @@ export async function addToShopifyCart(
 ): Promise<CartResult> {
     const data = await shopifyFetch<{
         cartLinesAdd: {
-            cart: {
-                id: string;
-                checkoutUrl: string;
-                totalQuantity: number;
-            };
+            cart: any;
             userErrors: { field: string; message: string }[];
         };
     }>({
@@ -370,9 +436,119 @@ export async function addToShopifyCart(
         throw new Error(data.cartLinesAdd.userErrors[0].message);
     }
 
-    return {
-        id: data.cartLinesAdd.cart.id,
-        checkoutUrl: data.cartLinesAdd.cart.checkoutUrl,
-        totalQuantity: data.cartLinesAdd.cart.totalQuantity,
-    };
+    return formatShopifyCart(data.cartLinesAdd.cart);
+}
+
+const REMOVE_CART_LINES_MUTATION = `
+  ${CART_FRAGMENT}
+  mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+    cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart {
+        ...CartDetails
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+/**
+ * Remove items from cart
+ */
+export async function removeFromShopifyCart(
+    cartId: string,
+    lineIds: string[]
+): Promise<CartResult> {
+    const data = await shopifyFetch<{
+        cartLinesRemove: {
+            cart: any;
+            userErrors: { field: string; message: string }[];
+        };
+    }>({
+        query: REMOVE_CART_LINES_MUTATION,
+        variables: {
+            cartId,
+            lineIds,
+        },
+    });
+
+    if (data.cartLinesRemove.userErrors && data.cartLinesRemove.userErrors.length > 0) {
+        throw new Error(data.cartLinesRemove.userErrors[0].message);
+    }
+
+    return formatShopifyCart(data.cartLinesRemove.cart);
+}
+
+const UPDATE_CART_LINES_MUTATION = `
+  ${CART_FRAGMENT}
+  mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+    cartLinesUpdate(cartId: $cartId, lines: $lines) {
+      cart {
+        ...CartDetails
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+/**
+ * Update quantity of an item in cart
+ */
+export async function updateShopifyCartLine(
+    cartId: string,
+    lineId: string,
+    quantity: number
+): Promise<CartResult> {
+    const data = await shopifyFetch<{
+        cartLinesUpdate: {
+            cart: any;
+            userErrors: { field: string; message: string }[];
+        };
+    }>({
+        query: UPDATE_CART_LINES_MUTATION,
+        variables: {
+            cartId,
+            lines: [{ id: lineId, quantity }],
+        },
+    });
+
+    if (data.cartLinesUpdate.userErrors && data.cartLinesUpdate.userErrors.length > 0) {
+        throw new Error(data.cartLinesUpdate.userErrors[0].message);
+    }
+
+    return formatShopifyCart(data.cartLinesUpdate.cart);
+}
+
+const GET_CART_QUERY = `
+  ${CART_FRAGMENT}
+  query getCart($cartId: ID!) {
+    cart(id: $cartId) {
+      ...CartDetails
+    }
+  }
+`;
+
+/**
+ * Get an existing cart by ID
+ */
+export async function getShopifyCart(cartId: string): Promise<CartResult | null> {
+    try {
+        const data = await shopifyFetch<{
+            cart: any;
+        }>({
+            query: GET_CART_QUERY,
+            variables: { cartId },
+        });
+
+        if (!data.cart) return null;
+        return formatShopifyCart(data.cart);
+    } catch (err) {
+        console.error('Failed to get Shopify cart:', err);
+        return null;
+    }
 }

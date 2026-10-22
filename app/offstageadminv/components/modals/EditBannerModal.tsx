@@ -9,7 +9,12 @@ interface EditBannerModalProps {
   setEditingBanner: (banner: ShopBanner | null) => void;
   editBannerUploading: boolean;
   editBannerPreview: string | null;
+  setEditBannerPreview?: (preview: string | null) => void;
   handleEditBannerUpload: (file: File) => void;
+  editMobileBannerUploading: boolean;
+  editMobileBannerPreview: string | null;
+  setEditMobileBannerPreview?: (preview: string | null) => void;
+  handleEditMobileBannerUpload: (file: File) => void;
   handleUpdateBanner: (e: React.FormEvent) => void;
 }
 
@@ -18,14 +23,21 @@ export default function EditBannerModal({
   setEditingBanner,
   editBannerUploading,
   editBannerPreview,
+  setEditBannerPreview,
   handleEditBannerUpload,
+  editMobileBannerUploading,
+  editMobileBannerPreview,
+  setEditMobileBannerPreview,
+  handleEditMobileBannerUpload,
   handleUpdateBanner,
 }: EditBannerModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mobileFileInputRef = useRef<HTMLInputElement>(null);
 
   if (!editingBanner) return null;
 
   const currentImage = editBannerPreview || editingBanner.image_url;
+  const currentMobileImage = editMobileBannerPreview !== null ? editMobileBannerPreview : (editingBanner.mobile_image_url || '');
 
   return (
     <div
@@ -51,55 +63,190 @@ export default function EditBannerModal({
         </div>
 
         <form onSubmit={handleUpdateBanner}>
-          {/* Banner Image Upload & Preview */}
-          <div className={styles.formGroup} style={{ marginBottom: 20 }}>
-            <label className={styles.formLabel}>Banner Image (Click to Upload / Replace)</label>
-            <div
-              className={styles.dropzoneContainer}
-              onClick={() => fileInputRef.current?.click()}
-              style={{ minHeight: 160 }}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className={styles.hiddenFileInput}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleEditBannerUpload(file);
-                }}
-              />
+          {/* VISUALLY DIVIDED: DESKTOP & MOBILE BANNER ASSETS */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: 16,
+            marginBottom: 20,
+          }}>
+            {/* BOX 1: DESKTOP BANNER */}
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 8,
+              padding: 14,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>🖥️</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: '#ffffff' }}>Banner Khusus Desktop</div>
+                    <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di PC / Laptop (&gt; 768px)</div>
+                  </div>
+                </div>
+                {currentImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingBanner({ ...editingBanner, image_url: '' });
+                      if (setEditBannerPreview) setEditBannerPreview(null);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ff453a',
+                      fontSize: 10,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
 
-              {editBannerUploading ? (
-                <div className={styles.dropzonePrompt}>Uploading optimized WebP image...</div>
-              ) : currentImage ? (
-                <div className={styles.dropzonePreview}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={currentImage}
-                    alt="Banner preview"
-                    className={styles.dropzonePreviewImg}
-                    style={{ maxHeight: 180, objectFit: 'cover', width: '100%', borderRadius: 6 }}
-                  />
-                  <div className={styles.dropzoneOverlay}>Click to change image</div>
-                </div>
-              ) : (
-                <div className={styles.dropzonePrompt}>
-                  <span>Click to choose banner photo (auto-converts to WebP)</span>
-                </div>
-              )}
+              <div
+                className={styles.dropzoneContainer}
+                onClick={() => fileInputRef.current?.click()}
+                style={{ minHeight: 140 }}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className={styles.hiddenFileInput}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleEditBannerUpload(file);
+                  }}
+                />
+
+                {editBannerUploading ? (
+                  <div className={styles.dropzonePrompt}>Uploading desktop WebP...</div>
+                ) : currentImage ? (
+                  <div className={styles.dropzonePreview}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={currentImage}
+                      alt="Desktop Banner preview"
+                      className={styles.dropzonePreviewImg}
+                      style={{ maxHeight: 140, objectFit: 'cover', width: '100%', borderRadius: 6 }}
+                    />
+                    <div className={styles.dropzoneOverlay}>Click to change desktop image</div>
+                  </div>
+                ) : (
+                  <div className={styles.dropzonePrompt}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 4, opacity: 0.7 }}>
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Upload Desktop (Landscape 16:9)</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 8 }}>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  placeholder="Or paste Desktop image URL"
+                  value={editingBanner.image_url || ''}
+                  onChange={(e) =>
+                    setEditingBanner({ ...editingBanner, image_url: e.target.value })
+                  }
+                />
+              </div>
             </div>
 
-            <div style={{ marginTop: 8 }}>
-              <input
-                type="url"
-                className={styles.formInput}
-                placeholder="Or paste external Image URL directly"
-                value={editingBanner.image_url}
-                onChange={(e) =>
-                  setEditingBanner({ ...editingBanner, image_url: e.target.value })
-                }
-              />
+            {/* BOX 2: MOBILE BANNER */}
+            <div style={{
+              background: 'rgba(226, 255, 50, 0.02)',
+              border: '1px solid rgba(226, 255, 50, 0.3)',
+              borderRadius: 8,
+              padding: 14,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>📱</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: '#e2ff32' }}>Banner Khusus Mobile</div>
+                    <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di Layar HP (&le; 768px)</div>
+                  </div>
+                </div>
+                {currentMobileImage && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingBanner({ ...editingBanner, mobile_image_url: '' });
+                      if (setEditMobileBannerPreview) setEditMobileBannerPreview(null);
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ff453a',
+                      fontSize: 10,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div
+                className={styles.dropzoneContainer}
+                onClick={() => mobileFileInputRef.current?.click()}
+                style={{ minHeight: 140 }}
+              >
+                <input
+                  ref={mobileFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className={styles.hiddenFileInput}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleEditMobileBannerUpload(file);
+                  }}
+                />
+
+                {editMobileBannerUploading ? (
+                  <div className={styles.dropzonePrompt}>Uploading mobile banner WebP...</div>
+                ) : currentMobileImage ? (
+                  <div className={styles.dropzonePreview}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={currentMobileImage}
+                      alt="Mobile banner preview"
+                      className={styles.dropzonePreviewImg}
+                      style={{ maxHeight: 140, objectFit: 'cover', width: '100%', borderRadius: 6 }}
+                    />
+                    <div className={styles.dropzoneOverlay}>Click to change mobile image</div>
+                  </div>
+                ) : (
+                  <div className={styles.dropzonePrompt}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 4, opacity: 0.7 }}>
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                      <line x1="12" y1="18" x2="12.01" y2="18" />
+                    </svg>
+                    <span>Upload Mobile (Portrait 9:16)</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 8 }}>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  placeholder="Or paste Mobile image URL"
+                  value={editingBanner.mobile_image_url || ''}
+                  onChange={(e) =>
+                    setEditingBanner({ ...editingBanner, mobile_image_url: e.target.value })
+                  }
+                />
+              </div>
             </div>
           </div>
 

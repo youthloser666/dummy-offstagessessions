@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 import { useReveal } from '@/hooks/useReveal';
 import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
 import styles from './shop.module.css';
@@ -29,16 +30,22 @@ interface StoreProduct {
     badge?: string;
 }
 
+interface CartItem {
+    id: string;
+    variantId?: string;
+    name: string;
+    size: string;
+    price: number;
+    quantity: number;
+    image: string;
+}
+
 interface CartState {
     id: string;
     checkoutUrl: string;
     totalQuantity: number;
-    lastItem?: {
-        name: string;
-        size: string;
-        price: number;
-        image: string;
-    };
+    subtotal?: number;
+    lines: CartItem[];
 }
 
 export default function ShopPage() {
@@ -49,13 +56,16 @@ export default function ShopPage() {
     const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
     const [banners, setBanners] = useState<any[]>([]);
+    const [bannersLoading, setBannersLoading] = useState(true);
     const [isGlitching, setIsGlitching] = useState(false);
     const isGlitchingRef = useRef(false);
 
     // Cart state
     const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
+    const [updatingLineId, setUpdatingLineId] = useState<string | null>(null);
     const [cart, setCart] = useState<CartState | null>(null);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isClientMounted, setIsClientMounted] = useState(false);
 
     // Fetch real Shopify products and custom Shop Banners
     useEffect(() => {
@@ -73,6 +83,8 @@ export default function ShopPage() {
                 }
             } catch (err) {
                 console.warn('Failed to load shop banners:', err);
+            } finally {
+                if (isMounted) setBannersLoading(false);
             }
         }
 
@@ -117,8 +129,85 @@ export default function ShopPage() {
 
     useReveal([currentPage, sortBy, allProducts, loading]);
 
-    // Hero carousel interval based on banners or products
-    const activeSlideCount = banners.length > 0 ? banners.length : Math.min(allProducts.length, 5);
+    // Restore cart from localStorage on mount & track mounting
+    useEffect(() => {
+        setIsClientMounted(true);
+        const savedCartId = typeof window !== 'undefined' ? localStorage.getItem('offstage_cart_id') : null;
+        if (savedCartId) {
+            fetch(`/api/shopify/cart?cartId=${encodeURIComponent(savedCartId)}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.success && data.cart && data.cart.totalQuantity > 0) {
+                        setCart({
+                            id: data.cart.id,
+                            checkoutUrl: data.cart.checkoutUrl,
+                            totalQuantity: data.cart.totalQuantity,
+                            subtotal: data.cart.subtotal,
+                            lines: (data.cart.lines || []).map((l: any) => ({
+                                id: l.id,
+                                variantId: l.variantId,
+                                name: l.productTitle,
+                                size: l.title,
+                                price: l.price,
+                                quantity: l.quantity,
+                                image: l.image,
+                            })),
+                        });
+                    }
+                })
+                .catch(() => {});
+        }
+    }, []);
+
+    // Lock body scroll when cart drawer is open
+    useEffect(() => {
+        if (isCartOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isCartOpen]);
+
+    // Responsive device detection for Shop Banner Carousel
+    const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobileScreen(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Filter banners strictly by device type (Desktop vs Mobile)
+    const activeBanners = useMemo(() => {
+        if (!banners || banners.length === 0) return [];
+
+        const desktopList = banners.filter(b => Boolean(b.image_url && b.image_url.trim()));
+        const mobileList = banners.filter(b => Boolean(b.mobile_image_url && b.mobile_image_url.trim()));
+
+        if (isMobileScreen) {
+            // On mobile: strictly use mobile banners; fallback to desktop only if zero mobile banners exist
+            return mobileList.length > 0 ? mobileList : desktopList;
+        } else {
+            // On desktop: strictly use desktop banners; fallback to mobile only if zero desktop banners exist
+            return desktopList.length > 0 ? desktopList : mobileList;
+        }
+    }, [banners, isMobileScreen]);
+
+    // Hero carousel interval based on device-specific banners only (product photos never used as banners)
+    const activeSlideCount = activeBanners.length;
+
+    // Reset current slide if count changes (e.g. on window resize)
+    useEffect(() => {
+        if (currentHeroIndex >= activeSlideCount && activeSlideCount > 0) {
+            setCurrentHeroIndex(0);
+        }
+    }, [activeSlideCount, currentHeroIndex]);
 
     const goToHeroSlide = (targetIdx: number) => {
         if (isGlitchingRef.current || targetIdx === currentHeroIndex) return;
@@ -200,16 +289,23 @@ export default function ShopPage() {
 
             const data = await res.json();
             if (data.success && data.cart) {
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('offstage_cart_id', data.cart.id);
+                }
                 setCart({
                     id: data.cart.id,
                     checkoutUrl: data.cart.checkoutUrl,
                     totalQuantity: data.cart.totalQuantity,
-                    lastItem: {
-                        name: product.name,
-                        size: variant.title,
-                        price: variant.price,
-                        image: product.image,
-                    },
+                    subtotal: data.cart.subtotal,
+                    lines: (data.cart.lines || []).map((l: any) => ({
+                        id: l.id,
+                        variantId: l.variantId,
+                        name: l.productTitle,
+                        size: l.title,
+                        price: l.price,
+                        quantity: l.quantity,
+                        image: l.image,
+                    })),
                 });
                 setIsCartOpen(true);
 
@@ -231,17 +327,101 @@ export default function ShopPage() {
         }
     };
 
+    const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
+        if (!cart?.id || updatingLineId) return;
+        setUpdatingLineId(lineId);
+
+        try {
+            const res = await fetch('/api/shopify/cart', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cartId: cart.id,
+                    lineId,
+                    quantity: newQuantity,
+                }),
+            });
+            const data = await res.json();
+            if (data.success && data.cart) {
+                setCart({
+                    id: data.cart.id,
+                    checkoutUrl: data.cart.checkoutUrl,
+                    totalQuantity: data.cart.totalQuantity,
+                    subtotal: data.cart.subtotal,
+                    lines: (data.cart.lines || []).map((l: any) => ({
+                        id: l.id,
+                        variantId: l.variantId,
+                        name: l.productTitle,
+                        size: l.title,
+                        price: l.price,
+                        quantity: l.quantity,
+                        image: l.image,
+                    })),
+                });
+            }
+        } catch (err) {
+            console.error('Failed to update item quantity:', err);
+        } finally {
+            setUpdatingLineId(null);
+        }
+    };
+
+    const handleRemoveItem = async (lineId: string) => {
+        if (!cart?.id || updatingLineId) return;
+        setUpdatingLineId(lineId);
+
+        try {
+            const res = await fetch('/api/shopify/cart', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cartId: cart.id,
+                    lineId,
+                }),
+            });
+            const data = await res.json();
+            if (data.success && data.cart) {
+                setCart({
+                    id: data.cart.id,
+                    checkoutUrl: data.cart.checkoutUrl,
+                    totalQuantity: data.cart.totalQuantity,
+                    subtotal: data.cart.subtotal,
+                    lines: (data.cart.lines || []).map((l: any) => ({
+                        id: l.id,
+                        variantId: l.variantId,
+                        name: l.productTitle,
+                        size: l.title,
+                        price: l.price,
+                        quantity: l.quantity,
+                        image: l.image,
+                    })),
+                });
+            }
+        } catch (err) {
+            console.error('Failed to remove item:', err);
+        } finally {
+            setUpdatingLineId(null);
+        }
+    };
+
     return (
         <div className="bg-transparent" style={{ background: 'transparent' }}>
             {/* Full-Width Hero Image Banner (Bleeding under transparent navbar on desktop & mobile) */}
             <div className={`${styles.heroBanner} relative ${isGlitching ? styles.stageGlitching : ''}`}>
-                {banners.length > 0 ? (
-                    banners.map((item, idx) => {
+                {activeBanners.length > 0 ? (
+                    activeBanners.map((item, idx) => {
                         const isCurrent = idx === currentHeroIndex;
                         const showTitleAndCat = !item.hide_title && Boolean(item.title || item.category);
                         const showPrice = !item.hide_price && Boolean(item.price);
                         const showButton = !item.hide_button && Boolean(item.link_url && item.button_text);
                         const hasAnyOverlay = showTitleAndCat || showPrice || showButton;
+
+                        const desktopImg = item.image_url?.trim() || '';
+                        const mobileImg = item.mobile_image_url?.trim() || '';
+                        const hasBoth = Boolean(desktopImg && mobileImg);
+                        const primaryImg = (isMobileScreen ? mobileImg : desktopImg) || desktopImg || mobileImg;
+
+                        if (!primaryImg) return null;
 
                         return (
                             <div
@@ -250,39 +430,112 @@ export default function ShopPage() {
                             >
                                 {/* Ambient Blur backdrop to softly blend letterbox on various aspect ratios */}
                                 <div className={styles.heroImgBlurWrap}>
-                                    <Image
-                                        src={item.image_url}
-                                        alt=""
-                                        fill
-                                        className={styles.heroImgBlur}
-                                        priority
-                                    />
+                                    {hasBoth ? (
+                                        <>
+                                            <Image
+                                                src={desktopImg}
+                                                alt=""
+                                                fill
+                                                className={`${styles.heroImgBlur} ${styles.heroDesktopOnly}`}
+                                                priority={idx === 0}
+                                            />
+                                            <Image
+                                                src={mobileImg}
+                                                alt=""
+                                                fill
+                                                className={`${styles.heroImgBlur} ${styles.heroMobileOnly}`}
+                                                priority={idx === 0}
+                                            />
+                                        </>
+                                    ) : (
+                                        <Image
+                                            src={primaryImg}
+                                            alt=""
+                                            fill
+                                            className={styles.heroImgBlur}
+                                            priority={idx === 0}
+                                        />
+                                    )}
                                 </div>
 
-                                {/* Main Hero Banner Image */}
-                                <Image
-                                    src={item.image_url}
-                                    alt={item.title || 'Shop Hero Banner'}
-                                    fill
-                                    className={styles.heroImg}
-                                    priority
-                                />
+                                {/* Main Hero Banner Image (Desktop vs Mobile Responsive) */}
+                                {hasBoth ? (
+                                    <>
+                                        <Image
+                                            src={desktopImg}
+                                            alt={item.title || 'Shop Hero Banner (Desktop)'}
+                                            fill
+                                            className={`${styles.heroImg} ${styles.heroDesktopOnly}`}
+                                            priority={idx === 0}
+                                        />
+                                        <Image
+                                            src={mobileImg}
+                                            alt={item.title || 'Shop Hero Banner (Mobile)'}
+                                            fill
+                                            className={`${styles.heroImg} ${styles.heroMobileOnly}`}
+                                            priority={idx === 0}
+                                        />
+                                    </>
+                                ) : (
+                                    <Image
+                                        src={primaryImg}
+                                        alt={item.title || 'Shop Hero Banner'}
+                                        fill
+                                        className={styles.heroImg}
+                                        priority={idx === 0}
+                                    />
+                                )}
 
                                 {/* Glitch Slice Layers (Red / Cyan chromatic channels) */}
-                                <Image
-                                    src={item.image_url}
-                                    alt=""
-                                    fill
-                                    aria-hidden="true"
-                                    className={styles.sliceA}
-                                />
-                                <Image
-                                    src={item.image_url}
-                                    alt=""
-                                    fill
-                                    aria-hidden="true"
-                                    className={styles.sliceB}
-                                />
+                                {hasBoth ? (
+                                    <>
+                                        <Image
+                                            src={desktopImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={`${styles.sliceA} ${styles.heroDesktopOnly}`}
+                                        />
+                                        <Image
+                                            src={mobileImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={`${styles.sliceA} ${styles.heroMobileOnly}`}
+                                        />
+                                        <Image
+                                            src={desktopImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={`${styles.sliceB} ${styles.heroDesktopOnly}`}
+                                        />
+                                        <Image
+                                            src={mobileImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={`${styles.sliceB} ${styles.heroMobileOnly}`}
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Image
+                                            src={primaryImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={styles.sliceA}
+                                        />
+                                        <Image
+                                            src={primaryImg}
+                                            alt=""
+                                            fill
+                                            aria-hidden="true"
+                                            className={styles.sliceB}
+                                        />
+                                    </>
+                                )}
 
                                 {/* Clickable banner link when CTA button is hidden/removed */}
                                 {item.link_url && (!showButton || !hasAnyOverlay) && (
@@ -339,54 +592,13 @@ export default function ShopPage() {
                             </div>
                         );
                     })
-                ) : allProducts.length > 0 ? (
-                    allProducts.slice(0, 5).map((item, idx) => (
-                        <div
-                            key={item.id}
-                            className={`${styles.heroSlide} ${idx === currentHeroIndex ? styles.activeSlide : ''}`}
-                        >
-                            <div className={styles.heroImgBlurWrap}>
-                                <Image
-                                    src={item.image}
-                                    alt=""
-                                    fill
-                                    className={styles.heroImgBlur}
-                                    priority
-                                />
-                            </div>
-                            <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                className={styles.heroImg}
-                                priority
-                            />
-                            <Image
-                                src={item.image}
-                                alt=""
-                                fill
-                                aria-hidden="true"
-                                className={styles.sliceA}
-                            />
-                            <Image
-                                src={item.image}
-                                alt=""
-                                fill
-                                aria-hidden="true"
-                                className={styles.sliceB}
-                            />
-                            <div className={styles.heroOverlay} />
-                            <div className={styles.heroInfo}>
-                                <span className={styles.heroCategory}>{item.category}</span>
-                                <h2 className={styles.heroTitle}>{item.name}</h2>
-                                <span className={styles.heroPrice}>
-                                    ${item.price.toFixed(2)}
-                                </span>
-                            </div>
-                        </div>
-                    ))
+                ) : bannersLoading ? (
+                    /* Subtle dark shimmer while shop banners load */
+                    <div className={`${styles.heroSlide} ${styles.activeSlide}`}>
+                        <div className={styles.heroBannerSkeleton} />
+                    </div>
                 ) : (
-                    /* Brand hero banner when store is loading or empty */
+                    /* Brand hero banner fallback when store banners list is empty */
                     <div className={`${styles.heroSlide} ${styles.activeSlide}`}>
                         <div
                             style={{
@@ -517,7 +729,9 @@ export default function ShopPage() {
                                 <div
                                     key={product.id}
                                     className={`${styles.productCard} reveal`}
+                                    data-hover={hoveredProduct === product.id ? 'true' : undefined}
                                     style={{ transitionDelay: `${Math.min(idx, 7) * 0.06}s` }}
+                                    onClick={() => setHoveredProduct(hoveredProduct === product.id ? null : product.id)}
                                     onMouseEnter={() => {
                                         setHoveredProduct(product.id);
                                         trackViewContent({
@@ -651,18 +865,48 @@ export default function ShopPage() {
                     onClick={() => setIsCartOpen(true)}
                     aria-label="View Shopping Bag"
                 >
-                    <span>Bag</span>
-                    <span className={styles.cartCountBadge}>{cart.totalQuantity}</span>
-                    <span>Checkout →</span>
+                    <span className={styles.cartIconWrapper}>
+                        <svg
+                            className={styles.trolleyIcon}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <circle cx="9" cy="21" r="1" />
+                            <circle cx="20" cy="21" r="1" />
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                        </svg>
+                        <span className={styles.cartCountBadgeResponsive}>{cart.totalQuantity}</span>
+                    </span>
+                    <span className={styles.cartCountBadgeDesktop}>{cart.totalQuantity}</span>
+                    <span className={styles.cartCheckoutText}>Checkout →</span>
                 </button>
             )}
 
-            {/* Cart Slide-Over Drawer */}
-            {isCartOpen && cart && (
+            {/* Cart Slide-Over Drawer mounted to body via Portal */}
+            {isClientMounted && isCartOpen && cart && createPortal(
                 <div className={styles.cartOverlay} onClick={() => setIsCartOpen(false)}>
                     <div className={styles.cartDrawer} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.cartHeader}>
-                            <h3 className={styles.cartTitle}>Your Bag ({cart.totalQuantity})</h3>
+                            <div className={styles.cartTitleWrap}>
+                                <svg
+                                    className={styles.cartDrawerIcon}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <circle cx="9" cy="21" r="1" />
+                                    <circle cx="20" cy="21" r="1" />
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                </svg>
+                                <h3 className={styles.cartTitle}>Your Bag ({cart.totalQuantity})</h3>
+                            </div>
                             <button
                                 className={styles.cartCloseBtn}
                                 onClick={() => setIsCartOpen(false)}
@@ -673,28 +917,79 @@ export default function ShopPage() {
                         </div>
 
                         <div className={styles.cartBody}>
-                            {cart.lastItem && (
-                                <div className={styles.cartItem}>
-                                    <div className={styles.cartItemImg}>
-                                        <Image
-                                            src={cart.lastItem.image}
-                                            alt={cart.lastItem.name}
-                                            fill
-                                            style={{ objectFit: 'cover' }}
-                                        />
-                                    </div>
-                                    <div className={styles.cartItemDetails}>
-                                        <div>
-                                            <p className={styles.cartItemTitle}>{cart.lastItem.name}</p>
-                                            <p className={styles.cartItemVariant}>Size: {cart.lastItem.size}</p>
+                            {cart.lines && cart.lines.length > 0 ? (
+                                cart.lines.map((item) => (
+                                    <div key={item.id} className={styles.cartItem}>
+                                        <div className={styles.cartItemImg}>
+                                            {item.image ? (
+                                                <Image
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                />
+                                            ) : (
+                                                <div className={styles.cartItemImgFallback} />
+                                            )}
                                         </div>
-                                        <p className={styles.cartItemPrice}>${cart.lastItem.price.toFixed(2)}</p>
+                                        <div className={styles.cartItemDetails}>
+                                            <div className={styles.cartItemMeta}>
+                                                <p className={styles.cartItemTitle}>{item.name}</p>
+                                                <p className={styles.cartItemVariant}>Size: {item.size}</p>
+                                            </div>
+                                            <div className={styles.cartItemBottom}>
+                                                <div className={styles.cartItemQtyControl}>
+                                                    <button
+                                                        className={styles.qtyBtn}
+                                                        disabled={updatingLineId === item.id}
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                                        aria-label="Decrease quantity"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className={styles.qtyValue}>{item.quantity}</span>
+                                                    <button
+                                                        className={styles.qtyBtn}
+                                                        disabled={updatingLineId === item.id}
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                                        aria-label="Increase quantity"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
+                                                <div className={styles.cartItemPriceAndRemove}>
+                                                    <p className={styles.cartItemPrice}>
+                                                        ${(item.price * item.quantity).toFixed(2)}
+                                                    </p>
+                                                    <button
+                                                        className={styles.cartItemRemoveBtn}
+                                                        disabled={updatingLineId === item.id}
+                                                        onClick={() => handleRemoveItem(item.id)}
+                                                        aria-label="Remove item"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className={styles.cartEmptyState}>
+                                    <p>Your bag is currently empty.</p>
                                 </div>
                             )}
                         </div>
 
                         <div className={styles.cartFooter}>
+                            {cart.subtotal !== undefined && cart.subtotal > 0 && (
+                                <div className={styles.cartSubtotalRow}>
+                                    <span className={styles.cartSubtotalLabel}>Subtotal</span>
+                                    <span className={styles.cartSubtotalValue}>
+                                        ${cart.subtotal.toFixed(2)}
+                                    </span>
+                                </div>
+                            )}
                             <p className={styles.checkoutNotice}>
                                 Secure checkout powered by Shopify. Taxes and shipping calculated at checkout.
                             </p>
@@ -705,9 +1000,9 @@ export default function ShopPage() {
                                 className={styles.checkoutBtn}
                                 onClick={() => {
                                     trackInitiateCheckout({
-                                        content_ids: cart.lastItem ? [cart.id] : [],
+                                        content_ids: cart.lines.map((l) => l.variantId || l.id),
                                         num_items: cart.totalQuantity,
-                                        value: cart.lastItem?.price,
+                                        value: cart.subtotal || 0,
                                         currency: 'USD',
                                     });
                                 }}
@@ -716,7 +1011,8 @@ export default function ShopPage() {
                             </a>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

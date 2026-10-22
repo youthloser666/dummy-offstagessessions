@@ -42,6 +42,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
     category: '',
     price: '',
     image_url: '',
+    mobile_image_url: '',
     link_url: '/shop',
     button_text: '',
     display_order: 1,
@@ -55,10 +56,16 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
   const [bannerUploadPreview, setBannerUploadPreview] = useState<string | null>(null);
   const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
+  const [mobileBannerUploading, setMobileBannerUploading] = useState<boolean>(false);
+  const [mobileBannerUploadPreview, setMobileBannerUploadPreview] = useState<string | null>(null);
+  const mobileBannerFileInputRef = useRef<HTMLInputElement>(null);
+
   // Edit banner modal state
   const [editingBanner, setEditingBanner] = useState<ShopBanner | null>(null);
   const [editBannerUploading, setEditBannerUploading] = useState<boolean>(false);
   const [editBannerPreview, setEditBannerPreview] = useState<string | null>(null);
+  const [editMobileBannerUploading, setEditMobileBannerUploading] = useState<boolean>(false);
+  const [editMobileBannerPreview, setEditMobileBannerPreview] = useState<string | null>(null);
 
   // =========================================================================
   // SHOPIFY PRODUCTS STATE
@@ -175,16 +182,83 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
     }
   };
 
+  const handleMobileBannerFileUpload = async (file: File) => {
+    if (!file) return;
+    setMobileBannerUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'shop-banners');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'x-admin-passkey': passkey },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setNewBanner((prev) => ({ ...prev, mobile_image_url: data.url }));
+      setMobileBannerUploadPreview(data.url);
+      if (notify) notify('success', 'Mobile banner image uploaded successfully (Optimized WebP)');
+    } catch (err: any) {
+      if (notify) notify('error', err.message || 'Failed to upload mobile banner image');
+    } finally {
+      setMobileBannerUploading(false);
+    }
+  };
+
+  const handleEditMobileBannerUpload = async (file: File) => {
+    if (!file || !editingBanner) return;
+    setEditMobileBannerUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'shop-banners');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'x-admin-passkey': passkey },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setEditingBanner((prev) => (prev ? { ...prev, mobile_image_url: data.url } : null));
+      setEditMobileBannerPreview(data.url);
+      if (notify) notify('success', 'New mobile banner image uploaded');
+    } catch (err: any) {
+      if (notify) notify('error', err.message || 'Failed to upload mobile banner image');
+    } finally {
+      setEditMobileBannerUploading(false);
+    }
+  };
+
   const handleCreateBanner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBanner.hide_title && !newBanner.title.trim()) {
       if (notify) notify('error', 'Please provide a banner title.');
       return;
     }
-    if (!newBanner.image_url.trim()) {
-      if (notify) notify('error', 'Please upload or provide a banner image URL.');
+    
+    const desktopImg = newBanner.image_url.trim();
+    const mobileImg = newBanner.mobile_image_url.trim();
+    if (!desktopImg && !mobileImg) {
+      if (notify) notify('error', 'Please upload or provide at least one banner image (Desktop or Mobile).');
       return;
     }
+
+    const bannerPayload = {
+      ...newBanner,
+      image_url: desktopImg,
+      mobile_image_url: mobileImg,
+    };
 
     try {
       const res = await fetch('/api/shop-banners', {
@@ -193,7 +267,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
           'Content-Type': 'application/json',
           'x-admin-passkey': passkey,
         },
-        body: JSON.stringify(newBanner),
+        body: JSON.stringify(bannerPayload),
       });
 
       const data = await res.json();
@@ -207,6 +281,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
         category: '',
         price: '',
         image_url: '',
+        mobile_image_url: '',
         link_url: '/shop',
         button_text: '',
         display_order: banners.length + 1,
@@ -216,6 +291,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
         hide_button: false,
       });
       setBannerUploadPreview(null);
+      setMobileBannerUploadPreview(null);
       setShowCreateBannerDrawer(false);
       loadBanners();
     } catch (err: any) {
@@ -227,6 +303,19 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
     e.preventDefault();
     if (!editingBanner) return;
 
+    const desktopImg = (editingBanner.image_url || '').trim();
+    const mobileImg = (editingBanner.mobile_image_url || '').trim();
+    if (!desktopImg && !mobileImg) {
+      if (notify) notify('error', 'Please upload or provide at least one banner image (Desktop or Mobile).');
+      return;
+    }
+
+    const bannerPayload = {
+      ...editingBanner,
+      image_url: desktopImg,
+      mobile_image_url: mobileImg,
+    };
+
     try {
       const res = await fetch('/api/shop-banners', {
         method: 'PUT',
@@ -234,7 +323,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
           'Content-Type': 'application/json',
           'x-admin-passkey': passkey,
         },
-        body: JSON.stringify(editingBanner),
+        body: JSON.stringify(bannerPayload),
       });
 
       const data = await res.json();
@@ -245,6 +334,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
       if (notify) notify('success', `Banner "${editingBanner.title}" updated successfully!`);
       setEditingBanner(null);
       setEditBannerPreview(null);
+      setEditMobileBannerPreview(null);
       loadBanners();
     } catch (err: any) {
       if (notify) notify('error', err.message || 'Error updating banner');
@@ -484,63 +574,196 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
               </div>
 
               <form onSubmit={handleCreateBanner}>
-                {/* Banner Image Upload Dropzone */}
-                <div className={styles.formGroup} style={{ marginBottom: 20 }}>
-                  <label className={styles.formLabel}>Banner Photo (Upload or Paste URL) *</label>
-                  <div
-                    className={styles.dropzoneContainer}
-                    onClick={() => bannerFileInputRef.current?.click()}
-                    style={{ minHeight: 180 }}
-                  >
-                    <input
-                      ref={bannerFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className={styles.hiddenFileInput}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleBannerFileUpload(file);
-                      }}
-                    />
+                {/* DUAL ASSET UPLOAD: DESKTOP & MOBILE DIVIDED */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: 16,
+                  marginBottom: 20,
+                }}>
+                  {/* BOX 1: DESKTOP BANNER */}
+                  <div style={{
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    borderRadius: 8,
+                    padding: 14,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>🖥️</span>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#ffffff' }}>Banner Khusus Desktop</div>
+                          <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di PC / Laptop (&gt; 768px)</div>
+                        </div>
+                      </div>
+                      {(bannerUploadPreview || newBanner.image_url) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewBanner({ ...newBanner, image_url: '' });
+                            setBannerUploadPreview(null);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#ff453a',
+                            fontSize: 10,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
 
-                    {bannerUploading ? (
-                      <div className={styles.dropzonePrompt}>
-                        <span>Uploading &amp; converting to WebP...</span>
-                      </div>
-                    ) : bannerUploadPreview || newBanner.image_url ? (
-                      <div className={styles.dropzonePreview}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={bannerUploadPreview || newBanner.image_url}
-                          alt="Banner preview"
-                          className={styles.dropzonePreviewImg}
-                          style={{ maxHeight: 200, objectFit: 'cover', width: '100%', borderRadius: 6 }}
-                        />
-                        <div className={styles.dropzoneOverlay}>Click to change photo</div>
-                      </div>
-                    ) : (
-                      <div className={styles.dropzonePrompt}>
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 6, opacity: 0.7 }}>
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                          <circle cx="8.5" cy="8.5" r="1.5"/>
-                          <polyline points="21 15 16 10 5 21"/>
-                        </svg>
-                        <span>Click or drag image to upload banner (Sharp WebP optimized)</span>
-                      </div>
-                    )}
+                    <div
+                      className={styles.dropzoneContainer}
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      style={{ minHeight: 140 }}
+                    >
+                      <input
+                        ref={bannerFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className={styles.hiddenFileInput}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleBannerFileUpload(file);
+                        }}
+                      />
+
+                      {bannerUploading ? (
+                        <div className={styles.dropzonePrompt}>
+                          <span>Uploading &amp; converting to WebP...</span>
+                        </div>
+                      ) : bannerUploadPreview || newBanner.image_url ? (
+                        <div className={styles.dropzonePreview}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={bannerUploadPreview || newBanner.image_url}
+                            alt="Desktop Banner preview"
+                            className={styles.dropzonePreviewImg}
+                            style={{ maxHeight: 140, objectFit: 'cover', width: '100%', borderRadius: 6 }}
+                          />
+                          <div className={styles.dropzoneOverlay}>Click to change desktop photo</div>
+                        </div>
+                      ) : (
+                        <div className={styles.dropzonePrompt}>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 4, opacity: 0.7 }}>
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                          </svg>
+                          <span>Upload Desktop (Landscape 16:9)</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: 8 }}>
+                      <input
+                        type="url"
+                        className={styles.formInput}
+                        placeholder="Or paste Desktop image URL"
+                        value={newBanner.image_url}
+                        onChange={(e) => {
+                          setNewBanner({ ...newBanner, image_url: e.target.value });
+                          setBannerUploadPreview(e.target.value);
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ marginTop: 8 }}>
-                    <input
-                      type="url"
-                      className={styles.formInput}
-                      placeholder="Or paste external image URL (e.g. Unsplash or Cloudinary)"
-                      value={newBanner.image_url}
-                      onChange={(e) => {
-                        setNewBanner({ ...newBanner, image_url: e.target.value });
-                        setBannerUploadPreview(e.target.value);
-                      }}
-                    />
+                  {/* BOX 2: MOBILE BANNER */}
+                  <div style={{
+                    background: 'rgba(226, 255, 50, 0.02)',
+                    border: '1px solid rgba(226, 255, 50, 0.3)',
+                    borderRadius: 8,
+                    padding: 14,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>📱</span>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#e2ff32' }}>Banner Khusus Mobile</div>
+                          <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di Layar HP (&le; 768px)</div>
+                        </div>
+                      </div>
+                      {(mobileBannerUploadPreview || newBanner.mobile_image_url) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewBanner({ ...newBanner, mobile_image_url: '' });
+                            setMobileBannerUploadPreview(null);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: '#ff453a',
+                            fontSize: 10,
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+
+                    <div
+                      className={styles.dropzoneContainer}
+                      onClick={() => mobileBannerFileInputRef.current?.click()}
+                      style={{ minHeight: 140 }}
+                    >
+                      <input
+                        ref={mobileBannerFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className={styles.hiddenFileInput}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleMobileBannerFileUpload(file);
+                        }}
+                      />
+
+                      {mobileBannerUploading ? (
+                        <div className={styles.dropzonePrompt}>
+                          <span>Uploading mobile WebP...</span>
+                        </div>
+                      ) : mobileBannerUploadPreview || newBanner.mobile_image_url ? (
+                        <div className={styles.dropzonePreview}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={mobileBannerUploadPreview || newBanner.mobile_image_url}
+                            alt="Mobile Banner preview"
+                            className={styles.dropzonePreviewImg}
+                            style={{ maxHeight: 140, objectFit: 'cover', width: '100%', borderRadius: 6 }}
+                          />
+                          <div className={styles.dropzoneOverlay}>Click to change mobile photo</div>
+                        </div>
+                      ) : (
+                        <div className={styles.dropzonePrompt}>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 4, opacity: 0.7 }}>
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                            <line x1="12" y1="18" x2="12.01" y2="18" />
+                          </svg>
+                          <span>Upload Mobile (Portrait 9:16)</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: 8 }}>
+                      <input
+                        type="url"
+                        className={styles.formInput}
+                        placeholder="Or paste Mobile image URL"
+                        value={newBanner.mobile_image_url}
+                        onChange={(e) => {
+                          setNewBanner({ ...newBanner, mobile_image_url: e.target.value });
+                          setMobileBannerUploadPreview(e.target.value);
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -756,18 +979,75 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                           #{banner.display_order ?? index + 1}
                         </td>
                         <td>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={banner.image_url}
-                            alt={banner.title}
-                            style={{
-                              width: 80,
-                              height: 48,
-                              objectFit: 'cover',
-                              borderRadius: 4,
-                              border: '1px solid rgba(255, 255, 255, 0.1)',
-                            }}
-                          />
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            {/* Desktop preview */}
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: 9, color: banner.image_url ? '#e2ff32' : '#86868b', marginBottom: 2 }}>🖥️ Desktop</div>
+                              {banner.image_url ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                  src={banner.image_url}
+                                  alt="Desktop Banner"
+                                  style={{
+                                    width: 72,
+                                    height: 42,
+                                    objectFit: 'cover',
+                                    borderRadius: 4,
+                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                                  }}
+                                />
+                              ) : (
+                                <div style={{
+                                  width: 72,
+                                  height: 42,
+                                  background: 'rgba(255,255,255,0.04)',
+                                  borderRadius: 4,
+                                  border: '1px dashed rgba(255,255,255,0.15)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 8,
+                                  color: '#666',
+                                }} title="No desktop image (Mobile only banner)">
+                                  Mobile Only
+                                </div>
+                              )}
+                            </div>
+                            {/* Mobile preview */}
+                            <div style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: 9, color: banner.mobile_image_url ? '#e2ff32' : '#86868b', marginBottom: 2 }}>📱 Mobile</div>
+                              {banner.mobile_image_url ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
+                                <img
+                                  src={banner.mobile_image_url}
+                                  alt="Mobile Banner"
+                                  style={{
+                                    width: 26,
+                                    height: 42,
+                                    objectFit: 'cover',
+                                    borderRadius: 4,
+                                    border: '1px solid rgba(226, 255, 50, 0.4)',
+                                  }}
+                                  title={`Mobile banner: ${banner.mobile_image_url}`}
+                                />
+                              ) : (
+                                <div style={{
+                                  width: 26,
+                                  height: 42,
+                                  background: 'rgba(255,255,255,0.04)',
+                                  borderRadius: 4,
+                                  border: '1px dashed rgba(255,255,255,0.15)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: 8,
+                                  color: '#666',
+                                }} title="No mobile image (Desktop only banner)">
+                                  Desktop Only
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </td>
                         <td>
                           {banner.hide_title ? (
@@ -844,6 +1124,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                               onClick={() => {
                                 setEditingBanner({ ...banner });
                                 setEditBannerPreview(banner.image_url);
+                                setEditMobileBannerPreview(banner.mobile_image_url || null);
                               }}
                               className={styles.btnEdit}
                               title="Edit banner"
@@ -1081,7 +1362,12 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
         setEditingBanner={setEditingBanner}
         editBannerUploading={editBannerUploading}
         editBannerPreview={editBannerPreview}
+        setEditBannerPreview={setEditBannerPreview}
         handleEditBannerUpload={handleEditBannerUpload}
+        editMobileBannerUploading={editMobileBannerUploading}
+        editMobileBannerPreview={editMobileBannerPreview}
+        setEditMobileBannerPreview={setEditMobileBannerPreview}
+        handleEditMobileBannerUpload={handleEditMobileBannerUpload}
         handleUpdateBanner={handleUpdateBanner}
       />
     </div>

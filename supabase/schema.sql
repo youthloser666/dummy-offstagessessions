@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS public.shop_banners (
     category TEXT DEFAULT 'Apparel',
     price TEXT,
     image_url TEXT NOT NULL,
+    mobile_image_url TEXT,
     link_url TEXT,
     button_text TEXT DEFAULT 'SHOP NOW',
     display_order INTEGER DEFAULT 1,
@@ -108,6 +109,9 @@ CREATE TABLE IF NOT EXISTS public.shop_banners (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration safety for existing tables
+ALTER TABLE public.shop_banners ADD COLUMN IF NOT EXISTS mobile_image_url TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_shop_banners_order ON public.shop_banners(display_order);
 

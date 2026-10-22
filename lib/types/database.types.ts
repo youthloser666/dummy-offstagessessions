@@ -207,6 +207,7 @@ export interface Database {
           category: string;
           price: string | null;
           image_url: string;
+          mobile_image_url: string | null;
           link_url: string | null;
           button_text: string | null;
           display_order: number;
@@ -220,6 +221,7 @@ export interface Database {
           category?: string;
           price?: string | null;
           image_url: string;
+          mobile_image_url?: string | null;
           link_url?: string | null;
           button_text?: string | null;
           display_order?: number;
@@ -233,6 +235,7 @@ export interface Database {
           category?: string;
           price?: string | null;
           image_url?: string;
+          mobile_image_url?: string | null;
           link_url?: string | null;
           button_text?: string | null;
           display_order?: number;

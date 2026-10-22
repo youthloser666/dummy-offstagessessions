@@ -114,6 +114,7 @@ export interface ShopBanner {
   category: string;
   price?: string;
   image_url: string;
+  mobile_image_url?: string;
   link_url?: string;
   button_text?: string;
   display_order: number;

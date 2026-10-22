@@ -6,6 +6,7 @@ export interface ShopBanner {
   category: string;
   price?: string;
   image_url: string;
+  mobile_image_url?: string;
   link_url?: string;
   button_text?: string;
   display_order: number;
@@ -24,6 +25,7 @@ export const defaultShopBanners: ShopBanner[] = [
     category: 'APPAREL',
     price: '$25.00',
     image_url: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=1600&q=80',
+    mobile_image_url: '',
     link_url: '/shop',
     button_text: 'SHOP NOW',
     display_order: 1,
@@ -39,6 +41,7 @@ export const defaultShopBanners: ShopBanner[] = [
     category: 'LIMITED DROP',
     price: '$45.00',
     image_url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1600&q=80',
+    mobile_image_url: '',
     link_url: '/shop',
     button_text: 'EXPLORE DROP',
     display_order: 2,
@@ -54,6 +57,7 @@ export const defaultShopBanners: ShopBanner[] = [
     category: 'MERCHANDISE',
     price: '$30.00',
     image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1600&q=80',
+    mobile_image_url: '',
     link_url: '/shop',
     button_text: 'VIEW COLLECTION',
     display_order: 3,
@@ -65,10 +69,17 @@ export const defaultShopBanners: ShopBanner[] = [
   },
 ];
 
+export interface ShopBannerMetaItem {
+  hide_title?: boolean;
+  hide_price?: boolean;
+  hide_button?: boolean;
+  mobile_image_url?: string;
+}
+
 /**
- * Fetch extra metadata (hide_title, hide_price, hide_button) from site_settings.
+ * Fetch extra metadata (hide_title, hide_price, hide_button, mobile_image_url) from site_settings.
  */
-async function getShopBannersMeta(): Promise<Record<string, { hide_title?: boolean; hide_price?: boolean; hide_button?: boolean }>> {
+async function getShopBannersMeta(): Promise<Record<string, ShopBannerMetaItem>> {
   try {
     const supabase = getSupabaseServerClient(true);
     if (!supabase) return {};
@@ -79,7 +90,7 @@ async function getShopBannersMeta(): Promise<Record<string, { hide_title?: boole
       .maybeSingle();
 
     if (data?.value && typeof data.value === 'object' && !Array.isArray(data.value)) {
-      return data.value as Record<string, { hide_title?: boolean; hide_price?: boolean; hide_button?: boolean }>;
+      return data.value as Record<string, ShopBannerMetaItem>;
     }
     return {};
   } catch {
@@ -90,7 +101,7 @@ async function getShopBannersMeta(): Promise<Record<string, { hide_title?: boole
 /**
  * Save extra metadata into site_settings.
  */
-async function saveShopBannersMeta(meta: Record<string, { hide_title?: boolean; hide_price?: boolean; hide_button?: boolean }>): Promise<void> {
+async function saveShopBannersMeta(meta: Record<string, ShopBannerMetaItem>): Promise<void> {
   try {
     const supabase = getSupabaseServerClient(true);
     if (!supabase) return;
@@ -98,7 +109,7 @@ async function saveShopBannersMeta(meta: Record<string, { hide_title?: boolean; 
       {
         key: 'shop_banners_meta',
         value: meta as any,
-        description: 'Metadata flags for shop hero banners (hide_title, hide_price, hide_button)',
+        description: 'Metadata flags for shop hero banners (hide_title, hide_price, hide_button, mobile_image_url)',
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'key' }
@@ -137,6 +148,7 @@ export async function getShopBanners(): Promise<ShopBanner[]> {
             category: b.category || '',
             price: b.price || '',
             image_url: b.image_url || b.imageUrl || '',
+            mobile_image_url: b.mobile_image_url || b.mobileImageUrl || bannerMeta.mobile_image_url || '',
             link_url: b.link_url || b.linkUrl || '',
             button_text: b.button_text || b.buttonText || '',
             display_order: Number(b.display_order ?? 0),
@@ -166,6 +178,7 @@ export async function getShopBanners(): Promise<ShopBanner[]> {
           const bannerMeta = meta[b.id] || {};
           return {
             ...b,
+            mobile_image_url: b.mobile_image_url || bannerMeta.mobile_image_url || '',
             hide_title: b.hide_title !== undefined ? Boolean(b.hide_title) : Boolean(bannerMeta.hide_title),
             hide_price: b.hide_price !== undefined ? Boolean(b.hide_price) : Boolean(bannerMeta.hide_price),
             hide_button: b.hide_button !== undefined ? Boolean(b.hide_button) : Boolean(bannerMeta.hide_button),
@@ -207,13 +220,15 @@ export async function createShopBanner(banner: Omit<ShopBanner, 'id'> & { id?: s
   const hideTitle = Boolean(banner.hide_title);
   const hidePrice = Boolean(banner.hide_price);
   const hideButton = Boolean(banner.hide_button);
+  const mobileImageUrl = (banner.mobile_image_url || '').trim();
 
   const newBanner: ShopBanner = {
     id: newId,
     title: (banner.title || '').trim(),
     category: banner.category?.trim() || '',
     price: banner.price?.trim() || '',
-    image_url: banner.image_url.trim(),
+    image_url: (banner.image_url || '').trim(),
+    mobile_image_url: mobileImageUrl,
     link_url: banner.link_url?.trim() || '',
     button_text: banner.button_text?.trim() || '',
     display_order: Number(banner.display_order ?? 1),
@@ -230,25 +245,38 @@ export async function createShopBanner(banner: Omit<ShopBanner, 'id'> & { id?: s
     throw new Error('Supabase client not configured.');
   }
 
-  // Save metadata to site_settings
+  // Save metadata to site_settings (including mobile_image_url)
   const meta = await getShopBannersMeta();
-  meta[newId] = { hide_title: hideTitle, hide_price: hidePrice, hide_button: hideButton };
+  meta[newId] = {
+    hide_title: hideTitle,
+    hide_price: hidePrice,
+    hide_button: hideButton,
+    mobile_image_url: mobileImageUrl,
+  };
   await saveShopBannersMeta(meta);
 
-  // Try dedicated table (pass base columns to avoid column mismatch)
-  await supabase
-    .from('shop_banners')
-    .insert({
-      id: newBanner.id,
-      title: newBanner.title || 'Banner',
-      category: newBanner.category,
-      price: newBanner.price,
-      image_url: newBanner.image_url,
-      link_url: newBanner.link_url,
-      button_text: newBanner.button_text,
-      display_order: newBanner.display_order,
-      active: newBanner.active,
-    });
+  // Try dedicated table (pass columns with fallback if column doesn't exist yet)
+  const tablePayload: any = {
+    id: newBanner.id,
+    title: newBanner.title || 'Banner',
+    category: newBanner.category,
+    price: newBanner.price,
+    image_url: newBanner.image_url,
+    link_url: newBanner.link_url,
+    button_text: newBanner.button_text,
+    display_order: newBanner.display_order,
+    active: newBanner.active,
+  };
+  if (mobileImageUrl) {
+    tablePayload.mobile_image_url = mobileImageUrl;
+  }
+
+  const { error: insertErr } = await supabase.from('shop_banners').insert(tablePayload);
+  if (insertErr && tablePayload.mobile_image_url) {
+    // If shop_banners table doesn't have mobile_image_url column yet, fallback without it
+    delete tablePayload.mobile_image_url;
+    await supabase.from('shop_banners').insert(tablePayload);
+  }
 
   // Also sync site_settings 'shop_banners'
   const current = await getShopBanners();
@@ -276,6 +304,7 @@ export async function updateShopBanner(id: string, updates: Partial<ShopBanner>)
   if (updates.hide_title !== undefined) currentMeta.hide_title = Boolean(updates.hide_title);
   if (updates.hide_price !== undefined) currentMeta.hide_price = Boolean(updates.hide_price);
   if (updates.hide_button !== undefined) currentMeta.hide_button = Boolean(updates.hide_button);
+  if (updates.mobile_image_url !== undefined) currentMeta.mobile_image_url = updates.mobile_image_url;
   meta[id] = currentMeta;
   await saveShopBannersMeta(meta);
 
@@ -286,16 +315,22 @@ export async function updateShopBanner(id: string, updates: Partial<ShopBanner>)
   if (updates.category !== undefined) payload.category = updates.category;
   if (updates.price !== undefined) payload.price = updates.price;
   if (updates.image_url !== undefined) payload.image_url = updates.image_url;
+  if (updates.mobile_image_url !== undefined) payload.mobile_image_url = updates.mobile_image_url;
   if (updates.link_url !== undefined) payload.link_url = updates.link_url;
   if (updates.button_text !== undefined) payload.button_text = updates.button_text;
   if (updates.display_order !== undefined) payload.display_order = Number(updates.display_order);
   if (updates.active !== undefined) payload.active = Boolean(updates.active);
 
   // Try dedicated table
-  await supabase
+  const { error: updateErr } = await supabase
     .from('shop_banners')
     .update(payload)
     .eq('id', id);
+
+  if (updateErr && payload.mobile_image_url !== undefined) {
+    delete payload.mobile_image_url;
+    await supabase.from('shop_banners').update(payload).eq('id', id);
+  }
 
   // Also sync in site_settings
   const current = await getShopBanners();
@@ -305,6 +340,7 @@ export async function updateShopBanner(id: string, updates: Partial<ShopBanner>)
     updatedBanner = {
       ...current[index],
       ...updates,
+      mobile_image_url: updates.mobile_image_url !== undefined ? updates.mobile_image_url : (current[index].mobile_image_url || currentMeta.mobile_image_url || ''),
       hide_title: currentMeta.hide_title,
       hide_price: currentMeta.hide_price,
       hide_button: currentMeta.hide_button,
@@ -319,6 +355,7 @@ export async function updateShopBanner(id: string, updates: Partial<ShopBanner>)
       category: updates.category || '',
       price: updates.price || '',
       image_url: updates.image_url || '',
+      mobile_image_url: updates.mobile_image_url || currentMeta.mobile_image_url || '',
       link_url: updates.link_url || '',
       button_text: updates.button_text || '',
       display_order: Number(updates.display_order ?? 0),
