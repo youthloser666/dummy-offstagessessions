@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { useReveal } from '@/hooks/useReveal';
 import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
@@ -12,6 +14,7 @@ const PRODUCTS_PER_PAGE = 8;
 interface StoreProduct {
     id: string;
     shopifyId: string;
+    handle?: string;
     name: string;
     price: number;
     currency: string;
@@ -49,6 +52,7 @@ interface CartState {
 }
 
 export default function ShopPage() {
+    const router = useRouter();
     const [allProducts, setAllProducts] = useState<StoreProduct[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('newest');
@@ -100,6 +104,7 @@ export default function ShopPage() {
                     const liveProducts: StoreProduct[] = data.products.map((p: any) => ({
                         id: p.id,
                         shopifyId: p.shopifyId,
+                        handle: p.handle || p.id,
                         name: p.name,
                         price: p.price,
                         currency: p.currency || 'USD',
@@ -731,7 +736,7 @@ export default function ShopPage() {
                                     className={`${styles.productCard} reveal`}
                                     data-hover={hoveredProduct === product.id ? 'true' : undefined}
                                     style={{ transitionDelay: `${Math.min(idx, 7) * 0.06}s` }}
-                                    onClick={() => setHoveredProduct(hoveredProduct === product.id ? null : product.id)}
+                                    onClick={() => router.push(`/shop/${product.handle || product.id}`)}
                                     onMouseEnter={() => {
                                         setHoveredProduct(product.id);
                                         trackViewContent({

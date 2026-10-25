@@ -39,6 +39,7 @@ export interface ShopifyProductNode {
     title: string;
     handle: string;
     description: string;
+    descriptionHtml?: string;
     availableForSale: boolean;
     tags: string[];
     priceRange: {
@@ -56,15 +57,25 @@ export interface ShopifyProductNode {
     };
 }
 
+export interface FormattedVariantItem {
+    id: string;
+    title: string;
+    price: number;
+    currency: string;
+    available: boolean;
+}
+
 export interface FormattedProduct {
     id: string;
     shopifyId: string;
     name: string;
     handle: string;
     description: string;
+    descriptionHtml?: string;
     price: number;
     currency: string;
     image: string;
+    images: string[];
     hoverImage?: string;
     category: string;
     sizes: string[];
@@ -76,9 +87,13 @@ export interface FormattedProduct {
             available: boolean;
         };
     };
+    variantsList: FormattedVariantItem[];
     defaultVariantId: string;
     availableForSale: boolean;
     badge?: string;
+    tags?: string[];
+    material?: string;
+    collection?: string;
 }
 
 export interface CartLine {
@@ -153,6 +168,7 @@ const PRODUCTS_QUERY = `
           title
           handle
           description
+          descriptionHtml
           availableForSale
           tags
           priceRange {
@@ -161,7 +177,7 @@ const PRODUCTS_QUERY = `
               currencyCode
             }
           }
-          images(first: 5) {
+          images(first: 10) {
             edges {
               node {
                 url
@@ -193,6 +209,91 @@ const PRODUCTS_QUERY = `
 `;
 
 /**
+ * Format a raw Shopify product node into FormattedProduct
+ */
+export function formatProductNode(node: ShopifyProductNode): FormattedProduct {
+    const images = (node.images?.edges || []).map((e) => e.node.url).filter(Boolean);
+    const mainImage =
+        images[0] ||
+        'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800';
+    const hoverImage = images.length > 1 ? images[1] : undefined;
+
+    const variants = (node.variants?.edges || []).map((e) => e.node);
+    const variantMap: FormattedProduct['variantMap'] = {};
+    const variantsList: FormattedVariantItem[] = [];
+    const sizes: string[] = [];
+
+    variants.forEach((v) => {
+        const displayTitle = v.title === 'Default Title' ? 'One Size' : v.title;
+        sizes.push(displayTitle);
+        const itemPrice = parseFloat(v.price.amount);
+        const itemCurrency = v.price.currencyCode || 'USD';
+        
+        variantMap[displayTitle] = {
+            id: v.id,
+            title: displayTitle,
+            price: itemPrice,
+            available: v.availableForSale,
+        };
+
+        variantsList.push({
+            id: v.id,
+            title: displayTitle,
+            price: itemPrice,
+            currency: itemCurrency,
+            available: v.availableForSale,
+        });
+    });
+
+    // Derive badge
+    let badge: string | undefined = undefined;
+    if (!node.availableForSale) {
+        badge = 'Sold Out';
+    } else if (node.tags?.some((t) => t.toLowerCase() === 'limited')) {
+        badge = 'Limited';
+    } else if (node.tags?.some((t) => t.toLowerCase() === 'new')) {
+        badge = 'New';
+    }
+
+    // Derive category from tags or default
+    const categoryTag = node.tags?.find((t) =>
+        ['Tees', 'Headwear', 'Sweatshirts', 'Accessories', 'Apparel'].includes(t)
+    );
+    const category = categoryTag || 'Apparel';
+
+    // Derive material and collection from tags if available (e.g. "material: 100% Cotton", "collection: Summer 2026")
+    const materialTag = node.tags?.find((t) => t.toLowerCase().startsWith('material:'));
+    const material = materialTag ? materialTag.split(':')[1]?.trim() : undefined;
+
+    const collectionTag = node.tags?.find((t) => t.toLowerCase().startsWith('collection:'));
+    const collection = collectionTag ? collectionTag.split(':')[1]?.trim() : undefined;
+
+    return {
+        id: node.id,
+        shopifyId: node.id,
+        name: node.title,
+        handle: node.handle,
+        description: node.description || '',
+        descriptionHtml: node.descriptionHtml || '',
+        price: parseFloat(node.priceRange.minVariantPrice.amount),
+        currency: node.priceRange.minVariantPrice.currencyCode,
+        image: mainImage,
+        images: images.length > 0 ? images : [mainImage],
+        hoverImage,
+        category,
+        sizes,
+        variantMap,
+        variantsList,
+        defaultVariantId: variants[0]?.id || '',
+        availableForSale: node.availableForSale,
+        badge,
+        tags: node.tags || [],
+        material,
+        collection,
+    };
+}
+
+/**
  * Fetch and format all products from Shopify
  */
 export async function getShopifyProducts(limit = 50): Promise<FormattedProduct[]> {
@@ -204,67 +305,151 @@ export async function getShopifyProducts(limit = 50): Promise<FormattedProduct[]
             variables: { first: limit },
         });
 
-        const products = data.products.edges.map(({ node }) => {
-            const images = node.images.edges.map((e) => e.node.url);
-            const mainImage =
-                images[0] ||
-                'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800';
-            const hoverImage = images.length > 1 ? images[1] : undefined;
-
-            const variants = node.variants.edges.map((e) => e.node);
-            const variantMap: FormattedProduct['variantMap'] = {};
-            const sizes: string[] = [];
-
-            variants.forEach((v) => {
-                const displayTitle = v.title === 'Default Title' ? 'One Size' : v.title;
-                sizes.push(displayTitle);
-                variantMap[displayTitle] = {
-                    id: v.id,
-                    title: displayTitle,
-                    price: parseFloat(v.price.amount),
-                    available: v.availableForSale,
-                };
-            });
-
-            // Derive badge
-            let badge: string | undefined = undefined;
-            if (!node.availableForSale) {
-                badge = 'Sold Out';
-            } else if (node.tags.includes('Limited') || node.tags.includes('limited')) {
-                badge = 'Limited';
-            } else if (node.tags.includes('New') || node.tags.includes('new')) {
-                badge = 'New';
-            }
-
-            // Derive category from tags or default
-            const categoryTag = node.tags.find((t) =>
-                ['Tees', 'Headwear', 'Sweatshirts', 'Accessories', 'Apparel'].includes(t)
-            );
-            const category = categoryTag || 'Apparel';
-
-            return {
-                id: node.id,
-                shopifyId: node.id,
-                name: node.title,
-                handle: node.handle,
-                description: node.description,
-                price: parseFloat(node.priceRange.minVariantPrice.amount),
-                currency: node.priceRange.minVariantPrice.currencyCode,
-                image: mainImage,
-                hoverImage,
-                category,
-                sizes,
-                variantMap,
-                defaultVariantId: variants[0]?.id || '',
-                availableForSale: node.availableForSale,
-                badge,
-            };
-        });
-
-        return products;
+        return data.products.edges.map(({ node }) => formatProductNode(node));
     } catch (error) {
         console.error('Failed to get Shopify products:', error);
         return [];
+    }
+}
+
+const SINGLE_PRODUCT_BY_HANDLE_QUERY = `
+  query getProductByHandle($handle: String!) {
+    product(handle: $handle) {
+      id
+      title
+      handle
+      description
+      descriptionHtml
+      availableForSale
+      tags
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+      images(first: 20) {
+        edges {
+          node {
+            url
+            altText
+          }
+        }
+      }
+      variants(first: 30) {
+        edges {
+          node {
+            id
+            title
+            availableForSale
+            price {
+              amount
+              currencyCode
+            }
+            selectedOptions {
+              name
+              value
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const SINGLE_PRODUCT_BY_ID_QUERY = `
+  query getProductById($id: ID!) {
+    node(id: $id) {
+      ... on Product {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        availableForSale
+        tags
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 20) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+        variants(first: 30) {
+          edges {
+            node {
+              id
+              title
+              availableForSale
+              price {
+                amount
+                currencyCode
+              }
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Fetch a single product from Shopify by handle or ID
+ */
+export async function getShopifyProduct(idOrHandle: string): Promise<FormattedProduct | null> {
+    try {
+        const decoded = decodeURIComponent(idOrHandle).trim();
+        if (!decoded) return null;
+
+        // If it looks like a GraphQL GID
+        if (decoded.startsWith('gid://shopify/Product/')) {
+            const data = await shopifyFetch<{ node: ShopifyProductNode | null }>({
+                query: SINGLE_PRODUCT_BY_ID_QUERY,
+                variables: { id: decoded },
+            });
+            if (data?.node) return formatProductNode(data.node);
+        }
+
+        // Try querying by handle
+        const handleData = await shopifyFetch<{ product: ShopifyProductNode | null }>({
+            query: SINGLE_PRODUCT_BY_HANDLE_QUERY,
+            variables: { handle: decoded },
+        });
+        if (handleData?.product) return formatProductNode(handleData.product);
+
+        // If not found and is all digits, query by GID
+        if (/^\d+$/.test(decoded)) {
+            const gidData = await shopifyFetch<{ node: ShopifyProductNode | null }>({
+                query: SINGLE_PRODUCT_BY_ID_QUERY,
+                variables: { id: `gid://shopify/Product/${decoded}` },
+            });
+            if (gidData?.node) return formatProductNode(gidData.node);
+        }
+
+        // Fallback: search across all products
+        const all = await getShopifyProducts(50);
+        const match = all.find(
+            (p) =>
+                p.handle === decoded ||
+                p.id === decoded ||
+                p.shopifyId === decoded ||
+                p.id.endsWith(`/${decoded}`)
+        );
+        return match || null;
+    } catch (err) {
+        console.error('Failed to get Shopify product:', err);
+        return null;
     }
 }
 
