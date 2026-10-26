@@ -6,7 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
-import type { FormattedProduct, FormattedVariantItem } from '@/lib/shopify';
+import { sortVariantsBySize, type FormattedProduct, type FormattedVariantItem } from '@/lib/shopify';
+import { useReveal } from '@/hooks/useReveal';
 import styles from './product-detail.module.css';
 import cartStyles from '../shop.module.css';
 
@@ -410,6 +411,34 @@ export default function ProductDetailPage() {
     // Status Badge check
     const isSoldOut = product?.badge === 'Sold Out' || !product?.availableForSale;
 
+    // Attach scroll reveal observer so footer and page elements reveal smoothly
+    useReveal([product, loading]);
+
+    // Recalculate Lenis scroll bounds once product finishes loading
+    useEffect(() => {
+        if (!loading) {
+            requestAnimationFrame(() => {
+                if (typeof window !== 'undefined' && (window as any).__lenis) {
+                    (window as any).__lenis.resize();
+                }
+            });
+        }
+    }, [loading]);
+
+    // Sorted variants list: S at the top down to XL at the bottom
+    const sortedVariantsList = useMemo(() => {
+        if (!product?.variantsList) return [];
+        return sortVariantsBySize(product.variantsList);
+    }, [product?.variantsList]);
+
+    // Sorted size list for specs
+    const sortedSizes = useMemo(() => {
+        if (sortedVariantsList.length > 0) {
+            return sortedVariantsList.map((v) => v.title);
+        }
+        return product?.sizes || [];
+    }, [sortedVariantsList, product?.sizes]);
+
     if (loading) {
         return (
             <div className={styles.pageWrapper}>
@@ -554,10 +583,10 @@ export default function ProductDetailPage() {
                             </button>
                         )}
 
-                        {/* Variants List / Size rows */}
+                        {/* Variants List / Size rows (Ordered S to XL) */}
                         <div className={styles.variantsList}>
-                            {product.variantsList && product.variantsList.length > 0 ? (
-                                product.variantsList.map((variant) => {
+                            {sortedVariantsList && sortedVariantsList.length > 0 ? (
+                                sortedVariantsList.map((variant) => {
                                     const isAvailable = variant.available && !isSoldOut;
                                     const isAdding = addingVariantId === variant.id;
 
@@ -671,9 +700,9 @@ export default function ProductDetailPage() {
                                         <strong>Category :</strong> {product.category}
                                     </div>
                                 )}
-                                {product.sizes && product.sizes.length > 0 && (
+                                {sortedSizes && sortedSizes.length > 0 && (
                                     <div>
-                                        <strong>Sizes :</strong> {product.sizes.join(', ')}
+                                        <strong>Sizes :</strong> {sortedSizes.join(', ')}
                                     </div>
                                 )}
                                 <div>

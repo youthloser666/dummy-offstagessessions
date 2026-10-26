@@ -588,6 +588,12 @@ footer {
   z-index: 20;
 }
 
+/* Ensure footer reveal content is completely visible and never stuck in an exit/hidden state */
+footer .reveal.visible {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) !important;
+}
+
 .footer-top {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -209,6 +209,76 @@ const PRODUCTS_QUERY = `
 `;
 
 /**
+ * Size ordering map to ensure sizes are listed starting from S up to XL (and smaller/larger extensions)
+ */
+export const STANDARD_SIZE_RANKS: Record<string, number> = {
+    'XXXS': 5,
+    '3XS': 5,
+    'XXS': 10,
+    '2XS': 10,
+    'XS': 20,
+    'EXTRA SMALL': 20,
+    'S': 30,
+    'SMALL': 30,
+    'M': 40,
+    'MEDIUM': 40,
+    'L': 50,
+    'LARGE': 50,
+    'XL': 60,
+    '1XL': 60,
+    'X-LARGE': 60,
+    'EXTRA LARGE': 60,
+    'XXL': 70,
+    '2XL': 70,
+    'XXXL': 80,
+    '3XL': 80,
+    'XXXXL': 90,
+    '4XL': 90,
+    '5XL': 100,
+    'ONE SIZE': 900,
+    'OS': 900,
+    'ALL SIZE': 900,
+    'DEFAULT TITLE': 900,
+};
+
+export function getSizeSortRank(sizeTitle: string): number {
+    if (!sizeTitle) return 500;
+    const clean = sizeTitle.trim().toUpperCase();
+
+    // 1. Direct exact match
+    if (STANDARD_SIZE_RANKS[clean] !== undefined) {
+        return STANDARD_SIZE_RANKS[clean];
+    }
+
+    // 2. Token split by slash, hyphen, space, comma, colon (e.g. "S / Black", "Black - M", "Size: L")
+    const tokens = clean.split(/[\s\/\-,_|:]+/).map((t) => t.trim());
+    for (const token of tokens) {
+        if (STANDARD_SIZE_RANKS[token] !== undefined) {
+            return STANDARD_SIZE_RANKS[token];
+        }
+    }
+
+    // 3. Numeric sizes (e.g. waist sizes 28, 30, 32 or shoe sizes 8, 9, 10)
+    const num = parseFloat(clean);
+    if (!isNaN(num) && /^\d+(\.\d+)?$/.test(clean)) {
+        return 200 + num;
+    }
+
+    return 500;
+}
+
+export function sortVariantsBySize<T extends { title: string }>(items: T[]): T[] {
+    return [...items].sort((a, b) => {
+        const rankA = getSizeSortRank(a.title);
+        const rankB = getSizeSortRank(b.title);
+        if (rankA !== rankB) {
+            return rankA - rankB;
+        }
+        return a.title.localeCompare(b.title, undefined, { numeric: true });
+    });
+}
+
+/**
  * Format a raw Shopify product node into FormattedProduct
  */
 export function formatProductNode(node: ShopifyProductNode): FormattedProduct {
@@ -220,12 +290,10 @@ export function formatProductNode(node: ShopifyProductNode): FormattedProduct {
 
     const variants = (node.variants?.edges || []).map((e) => e.node);
     const variantMap: FormattedProduct['variantMap'] = {};
-    const variantsList: FormattedVariantItem[] = [];
-    const sizes: string[] = [];
+    const rawVariantsList: FormattedVariantItem[] = [];
 
     variants.forEach((v) => {
         const displayTitle = v.title === 'Default Title' ? 'One Size' : v.title;
-        sizes.push(displayTitle);
         const itemPrice = parseFloat(v.price.amount);
         const itemCurrency = v.price.currencyCode || 'USD';
         
@@ -236,7 +304,7 @@ export function formatProductNode(node: ShopifyProductNode): FormattedProduct {
             available: v.availableForSale,
         };
 
-        variantsList.push({
+        rawVariantsList.push({
             id: v.id,
             title: displayTitle,
             price: itemPrice,
@@ -244,6 +312,10 @@ export function formatProductNode(node: ShopifyProductNode): FormattedProduct {
             available: v.availableForSale,
         });
     });
+
+    // Sort variantsList so that S is first at the top down to XL
+    const variantsList = sortVariantsBySize(rawVariantsList);
+    const sizes = variantsList.map((v) => v.title);
 
     // Derive badge
     let badge: string | undefined = undefined;

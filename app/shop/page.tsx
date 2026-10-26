@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 import { useReveal } from '@/hooks/useReveal';
 import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
+import { getSizeSortRank } from '@/lib/shopify';
 import styles from './shop.module.css';
 
 const PRODUCTS_PER_PAGE = 8;
@@ -786,7 +787,9 @@ export default function ShopPage() {
                                                         Quick Add
                                                     </span>
                                                     <div className={styles.sizeButtons}>
-                                                        {product.sizes.map((size) => {
+                                                        {[...product.sizes]
+                                                            .sort((a, b) => getSizeSortRank(a) - getSizeSortRank(b))
+                                                            .map((size) => {
                                                             const isVariantAdding =
                                                                 addingVariantId === product.variantMap[size]?.id;
 

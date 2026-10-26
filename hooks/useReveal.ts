@@ -18,14 +18,16 @@ export function useReveal(dependencies: any[] = []) {
                     if (entry.isIntersecting) {
                         entry.target.classList.remove('exit');
                         entry.target.classList.add('visible');
-                        // On mobile: reveal once to avoid repeated style recalculations & transitions during rapid scroll
-                        if (isMobileTouch) {
+                        const isFooter = entry.target.closest('footer') || entry.target.closest('#contact');
+                        // On mobile or for footer: reveal once and stay visible
+                        if (isMobileTouch || isFooter) {
                             observer.unobserve(entry.target);
                         }
                     } else if (!isMobileTouch && entry.boundingClientRect.bottom < 0) {
-                        // Desktop only: trigger exit if scrolled past top
+                        // Desktop only: trigger exit if scrolled past top (never for footer or pinned containers)
                         const isPinned = entry.target.closest('[class*="hScrollContainer"]');
-                        if (!isPinned) {
+                        const isFooter = entry.target.closest('footer') || entry.target.closest('#contact');
+                        if (!isPinned && !isFooter) {
                             entry.target.classList.remove('visible');
                             entry.target.classList.add('exit');
                         }

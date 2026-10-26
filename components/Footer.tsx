@@ -35,6 +35,54 @@ export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterPr
             .catch(() => {});
     }, []);
 
+    // Self-contained observer to ensure footer reveal items become visible and STAY visible
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const footerEl = document.getElementById('contact');
+        if (!footerEl) return;
+
+        const revealEls = footerEl.querySelectorAll('.reveal');
+        if (!revealEls.length) return;
+
+        // Clean any leftover exit class from route transitions
+        revealEls.forEach((el) => {
+            el.classList.remove('exit');
+        });
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('exit');
+                        entry.target.classList.add('visible');
+                        // Stay visible once revealed
+                        observer.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.02, rootMargin: '100px 0px 100px 0px' }
+        );
+
+        revealEls.forEach((el) => observer.observe(el));
+
+        // Safety fallback: after a short delay, if elements are in/near viewport, ensure visible
+        const timer = setTimeout(() => {
+            revealEls.forEach((el) => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight + 250) {
+                    el.classList.remove('exit');
+                    el.classList.add('visible');
+                }
+            });
+        }, 350);
+
+        return () => {
+            clearTimeout(timer);
+            observer.disconnect();
+        };
+    }, [pathname]);
+
     if (pathname?.startsWith('/offstageadminv')) return null;
 
     const handleScrollToTop = () => {
