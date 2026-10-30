@@ -69,8 +69,8 @@ export default function SocialsTab({
             gap: 10,
           }}
         >
-          <div style={{ color: '#e2ff32', fontWeight: 600, fontSize: 14 }}>
-            ⚡ Supabase Table Setup Notice:
+          <div style={{ color: '#ffffff', fontWeight: 600, fontSize: 13 }}>
+            Supabase Table Setup Notice:
           </div>
           <div style={{ color: '#c0c0c0', fontSize: 13, lineHeight: 1.5 }}>
             Tabel <code>site_settings</code> belum dibuat di Supabase kamu. Supaya link social media bisa tersimpan permanen di cloud database, silakan buka <strong>Supabase Dashboard &gt; SQL Editor</strong> dan jalankan kode SQL di bawah ini:
@@ -109,7 +109,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
             className={styles.btnSecondary}
             style={{ alignSelf: 'flex-start', fontSize: 12 }}
           >
-            📋 Copy SQL to Clipboard
+            Copy SQL Code
           </button>
         </div>
       )}
@@ -259,7 +259,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                 rel="noreferrer"
                 className={styles.channelPreviewItem}
               >
-                <span>📸 Instagram</span>
+                <span>Instagram</span>
                 <span>Open ↗</span>
               </a>
 
@@ -269,7 +269,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                 rel="noreferrer"
                 className={styles.channelPreviewItem}
               >
-                <span>🎵 TikTok</span>
+                <span>TikTok</span>
                 <span>Open ↗</span>
               </a>
 
@@ -279,7 +279,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                 rel="noreferrer"
                 className={styles.channelPreviewItem}
               >
-                <span>📘 Facebook</span>
+                <span>Facebook</span>
                 <span>Open ↗</span>
               </a>
 
@@ -287,7 +287,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                 href={`mailto:${socialForm.email}`}
                 className={styles.channelPreviewItem}
               >
-                <span>✉️ Direct Email</span>
+                <span>Direct Email</span>
                 <span>Send ↗</span>
               </a>
 
@@ -298,7 +298,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                   rel="noreferrer"
                   className={styles.channelPreviewItem}
                 >
-                  <span>🎧 Spotify</span>
+                  <span>Spotify</span>
                   <span>Open ↗</span>
                 </a>
               )}
@@ -310,7 +310,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                   rel="noreferrer"
                   className={styles.channelPreviewItem}
                 >
-                  <span>☁️ SoundCloud</span>
+                  <span>SoundCloud</span>
                   <span>Open ↗</span>
                 </a>
               )}
@@ -322,7 +322,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
                   rel="noreferrer"
                   className={styles.channelPreviewItem}
                 >
-                  <span>▶️ YouTube</span>
+                  <span>YouTube</span>
                   <span>Open ↗</span>
                 </a>
               )}
@@ -330,8 +330,7 @@ CREATE POLICY "Admin write site_settings" ON public.site_settings FOR ALL USING 
           </div>
 
           <div className={styles.card}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span className={styles.trafficLiveDot} />
+            <div style={{ marginBottom: 8 }}>
               <h4 className={styles.cardTitle} style={{ fontSize: 13 }}>Automatic Live Sync</h4>
             </div>
             <p style={{ color: '#888', fontSize: 12, lineHeight: 1.5, margin: 0 }}>

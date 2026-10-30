@@ -4,30 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { createPortal } from 'react-dom';
-import { trackAddToCart, trackInitiateCheckout, trackViewContent } from '@/lib/analytics';
+import { trackViewContent } from '@/lib/analytics';
 import { sortVariantsBySize, type FormattedProduct, type FormattedVariantItem } from '@/lib/shopify';
 import { useReveal } from '@/hooks/useReveal';
+import { useCart } from '@/hooks/useCart';
+import CartDrawer from '@/components/shop/CartDrawer';
 import styles from './product-detail.module.css';
-import cartStyles from '../shop.module.css';
-
-interface CartItem {
-    id: string;
-    variantId?: string;
-    name: string;
-    size: string;
-    price: number;
-    quantity: number;
-    image: string;
-}
-
-interface CartState {
-    id: string;
-    checkoutUrl: string;
-    totalQuantity: number;
-    subtotal?: number;
-    lines: CartItem[];
-}
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -58,12 +40,19 @@ export default function ProductDetailPage() {
     // Copy link toast
     const [copyToast, setCopyToast] = useState(false);
 
-    // Cart state
-    const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
-    const [updatingLineId, setUpdatingLineId] = useState<string | null>(null);
-    const [cart, setCart] = useState<CartState | null>(null);
-    const [isCartOpen, setIsCartOpen] = useState(false);
-    const [isClientMounted, setIsClientMounted] = useState(false);
+    // Cart hook
+    const {
+        cart,
+        isCartOpen,
+        openCart,
+        closeCart,
+        addingVariantId,
+        updatingLineId,
+        isClientMounted,
+        addToCart,
+        updateQuantity,
+        removeItem,
+    } = useCart();
 
     // Fetch product details & catalog
     useEffect(() => {
@@ -111,37 +100,8 @@ export default function ProductDetailPage() {
         };
     }, [rawId]);
 
-    // Restore cart & wishlist on mount
+    // Check wishlist on mount / product change
     useEffect(() => {
-        setIsClientMounted(true);
-
-        const savedCartId = typeof window !== 'undefined' ? localStorage.getItem('offstage_cart_id') : null;
-        if (savedCartId) {
-            fetch(`/api/shopify/cart?cartId=${encodeURIComponent(savedCartId)}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.success && data.cart && data.cart.totalQuantity > 0) {
-                        setCart({
-                            id: data.cart.id,
-                            checkoutUrl: data.cart.checkoutUrl,
-                            totalQuantity: data.cart.totalQuantity,
-                            subtotal: data.cart.subtotal,
-                            lines: (data.cart.lines || []).map((l: any) => ({
-                                id: l.id,
-                                variantId: l.variantId,
-                                name: l.productTitle,
-                                size: l.title,
-                                price: l.price,
-                                quantity: l.quantity,
-                                image: l.image,
-                            })),
-                        });
-                    }
-                })
-                .catch(() => {});
-        }
-
-        // Check wishlist
         if (product && typeof window !== 'undefined') {
             try {
                 const list = JSON.parse(localStorage.getItem('offstage_wishlist') || '[]');
@@ -152,9 +112,9 @@ export default function ProductDetailPage() {
         }
     }, [product]);
 
-    // Lock body scroll when cart or modal is open
+    // Lock body scroll when modal is open
     useEffect(() => {
-        if (isCartOpen || isShippingOpen || isRestockOpen || isInquiryOpen) {
+        if (isShippingOpen || isRestockOpen || isInquiryOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
@@ -162,7 +122,7 @@ export default function ProductDetailPage() {
         return () => {
             document.body.style.overflow = '';
         };
-    }, [isCartOpen, isShippingOpen, isRestockOpen, isInquiryOpen]);
+    }, [isShippingOpen, isRestockOpen, isInquiryOpen]);
 
     // Wishlist Toggle
     const handleToggleWishlist = () => {
@@ -199,154 +159,13 @@ export default function ProductDetailPage() {
 
     // Add to cart handler
     const handleAddToCart = async (variant: FormattedVariantItem) => {
-        if (addingVariantId) return;
-        setAddingVariantId(variant.id);
-
-        try {
-            const endpoint = '/api/shopify/cart';
-            let res;
-
-            if (cart?.id) {
-                res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cartId: cart.id,
-                        variantId: variant.id,
-                        quantity: 1,
-                    }),
-                });
-            } else {
-                res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        variantId: variant.id,
-                        quantity: 1,
-                    }),
-                });
-            }
-
-            const data = await res.json();
-            if (data.success && data.cart) {
-                const updatedCart: CartState = {
-                    id: data.cart.id,
-                    checkoutUrl: data.cart.checkoutUrl,
-                    totalQuantity: data.cart.totalQuantity,
-                    subtotal: data.cart.subtotal,
-                    lines: (data.cart.lines || []).map((l: any) => ({
-                        id: l.id,
-                        variantId: l.variantId,
-                        name: l.productTitle,
-                        size: l.title,
-                        price: l.price,
-                        quantity: l.quantity,
-                        image: l.image,
-                    })),
-                };
-
-                setCart(updatedCart);
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('offstage_cart_id', data.cart.id);
-                }
-
-                trackAddToCart({
-                    content_name: product?.name || 'Product',
-                    content_ids: [variant.id],
-                    content_type: 'product',
-                    value: variant.price,
-                    currency: variant.currency || 'USD',
-                });
-
-                setIsCartOpen(true);
-            }
-        } catch (err) {
-            console.error('Failed to add to cart:', err);
-        } finally {
-            setAddingVariantId(null);
-        }
-    };
-
-    // Cart Line Quantity Update
-    const handleUpdateQuantity = async (lineId: string, newQuantity: number) => {
-        if (!cart?.id || updatingLineId) return;
-        setUpdatingLineId(lineId);
-
-        try {
-            let res;
-            if (newQuantity <= 0) {
-                res = await fetch('/api/shopify/cart', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cartId: cart.id, lineId }),
-                });
-            } else {
-                res = await fetch('/api/shopify/cart', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cartId: cart.id, lineId, quantity: newQuantity }),
-                });
-            }
-
-            const data = await res.json();
-            if (data.success && data.cart) {
-                setCart({
-                    id: data.cart.id,
-                    checkoutUrl: data.cart.checkoutUrl,
-                    totalQuantity: data.cart.totalQuantity,
-                    subtotal: data.cart.subtotal,
-                    lines: (data.cart.lines || []).map((l: any) => ({
-                        id: l.id,
-                        variantId: l.variantId,
-                        name: l.productTitle,
-                        size: l.title,
-                        price: l.price,
-                        quantity: l.quantity,
-                        image: l.image,
-                    })),
-                });
-            }
-        } catch (err) {
-            console.error('Failed to update quantity:', err);
-        } finally {
-            setUpdatingLineId(null);
-        }
-    };
-
-    // Remove cart item
-    const handleRemoveItem = async (lineId: string) => {
-        if (!cart?.id || updatingLineId) return;
-        setUpdatingLineId(lineId);
-
-        try {
-            const res = await fetch('/api/shopify/cart', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cartId: cart.id, lineId }),
-            });
-            const data = await res.json();
-            if (data.success && data.cart) {
-                setCart({
-                    id: data.cart.id,
-                    checkoutUrl: data.cart.checkoutUrl,
-                    totalQuantity: data.cart.totalQuantity,
-                    subtotal: data.cart.subtotal,
-                    lines: (data.cart.lines || []).map((l: any) => ({
-                        id: l.id,
-                        variantId: l.variantId,
-                        name: l.productTitle,
-                        size: l.title,
-                        price: l.price,
-                        quantity: l.quantity,
-                        image: l.image,
-                    })),
-                });
-            }
-        } catch (err) {
-            console.error('Failed to remove item:', err);
-        } finally {
-            setUpdatingLineId(null);
-        }
+        if (!product || addingVariantId) return;
+        await addToCart(variant.id, {
+            name: product.name,
+            shopifyId: product.id,
+            price: variant.price,
+            currency: variant.currency,
+        });
     };
 
     // Social Sharing
@@ -989,162 +808,17 @@ export default function ProductDetailPage() {
                 </div>
             )}
 
-            {/* Floating Bag Pill */}
-            {cart && cart.totalQuantity > 0 && (
-                <button
-                    className={cartStyles.cartFloatBtn}
-                    onClick={() => setIsCartOpen(true)}
-                    aria-label="View Shopping Bag"
-                >
-                    <span className={cartStyles.cartIconWrapper}>
-                        <svg
-                            className={cartStyles.trolleyIcon}
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="9" cy="21" r="1" />
-                            <circle cx="20" cy="21" r="1" />
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                        </svg>
-                        <span className={cartStyles.cartCountBadgeResponsive}>{cart.totalQuantity}</span>
-                    </span>
-                    <span className={cartStyles.cartCountBadgeDesktop}>{cart.totalQuantity}</span>
-                    <span className={cartStyles.cartCheckoutText}>Checkout →</span>
-                </button>
-            )}
-
-            {/* Cart Slide-Over Drawer mounted to body via Portal */}
-            {isClientMounted && isCartOpen && cart && createPortal(
-                <div className={cartStyles.cartOverlay} onClick={() => setIsCartOpen(false)}>
-                    <div className={cartStyles.cartDrawer} onClick={(e) => e.stopPropagation()}>
-                        <div className={cartStyles.cartHeader}>
-                            <div className={cartStyles.cartTitleWrap}>
-                                <svg
-                                    className={cartStyles.cartDrawerIcon}
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <circle cx="9" cy="21" r="1" />
-                                    <circle cx="20" cy="21" r="1" />
-                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                </svg>
-                                <h3 className={cartStyles.cartTitle}>Your Bag ({cart.totalQuantity})</h3>
-                            </div>
-                            <button
-                                className={cartStyles.cartCloseBtn}
-                                onClick={() => setIsCartOpen(false)}
-                                aria-label="Close cart"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className={cartStyles.cartBody}>
-                            {cart.lines && cart.lines.length > 0 ? (
-                                cart.lines.map((item) => (
-                                    <div key={item.id} className={cartStyles.cartItem}>
-                                        <div className={cartStyles.cartItemImg}>
-                                            {item.image ? (
-                                                <Image
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    fill
-                                                    style={{ objectFit: 'cover' }}
-                                                />
-                                            ) : (
-                                                <div className={cartStyles.cartItemImgFallback} />
-                                            )}
-                                        </div>
-                                        <div className={cartStyles.cartItemDetails}>
-                                            <div className={cartStyles.cartItemMeta}>
-                                                <p className={cartStyles.cartItemTitle}>{item.name}</p>
-                                                <p className={cartStyles.cartItemVariant}>Size: {item.size}</p>
-                                            </div>
-                                            <div className={cartStyles.cartItemBottom}>
-                                                <div className={cartStyles.cartItemQtyControl}>
-                                                    <button
-                                                        className={cartStyles.qtyBtn}
-                                                        disabled={updatingLineId === item.id}
-                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        aria-label="Decrease quantity"
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <span className={cartStyles.qtyValue}>{item.quantity}</span>
-                                                    <button
-                                                        className={cartStyles.qtyBtn}
-                                                        disabled={updatingLineId === item.id}
-                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        aria-label="Increase quantity"
-                                                    >
-                                                        +
-                                                    </button>
-                                                </div>
-                                                <div className={cartStyles.cartItemPriceAndRemove}>
-                                                    <p className={cartStyles.cartItemPrice}>
-                                                        ${(item.price * item.quantity).toFixed(2)}
-                                                    </p>
-                                                    <button
-                                                        className={cartStyles.cartItemRemoveBtn}
-                                                        disabled={updatingLineId === item.id}
-                                                        onClick={() => handleRemoveItem(item.id)}
-                                                        aria-label="Remove item"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className={cartStyles.cartEmptyState}>
-                                    <p>Your bag is currently empty.</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className={cartStyles.cartFooter}>
-                            {cart.subtotal !== undefined && cart.subtotal > 0 && (
-                                <div className={cartStyles.cartSubtotalRow}>
-                                    <span className={cartStyles.cartSubtotalLabel}>Subtotal</span>
-                                    <span className={cartStyles.cartSubtotalValue}>
-                                        ${cart.subtotal.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
-                            <p className={cartStyles.checkoutNotice}>
-                                Secure checkout powered by Shopify. Taxes and shipping calculated at checkout.
-                            </p>
-                            <a
-                                href={cart.checkoutUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={cartStyles.checkoutBtn}
-                                onClick={() => {
-                                    trackInitiateCheckout({
-                                        content_ids: cart.lines.map((l) => l.variantId || l.id),
-                                        num_items: cart.totalQuantity,
-                                        value: cart.subtotal || 0,
-                                        currency: 'USD',
-                                    });
-                                }}
-                            >
-                                Checkout on Shopify →
-                            </a>
-                        </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+            {/* Cart Drawer & Floating Bag Pill */}
+            <CartDrawer
+                cart={cart}
+                isOpen={isCartOpen}
+                onClose={closeCart}
+                onOpen={openCart}
+                updatingLineId={updatingLineId}
+                onUpdateQuantity={updateQuantity}
+                onRemoveItem={removeItem}
+                isMounted={isClientMounted}
+            />
         </div>
     );
 }

@@ -47,7 +47,7 @@ export default function MobileTopBar({
           />
         </div>
         <div style={{ fontSize: 12, color: '#86868b', textTransform: 'capitalize' }}>
-          {activeTab}
+          {activeTab === 'admins' ? 'Admin Access (2FA)' : activeTab}
         </div>
       </div>
 

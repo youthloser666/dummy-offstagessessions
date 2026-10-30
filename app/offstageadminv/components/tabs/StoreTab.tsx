@@ -482,7 +482,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
           className={activeSubTab === 'banners' ? styles.btnPrimary : styles.btnSecondary}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '8px 18px' }}
         >
-          <span>🖼️ Shop Hero Banners</span>
+          <span>Hero Banners</span>
           <span
             style={{
               fontSize: 11,
@@ -501,7 +501,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
           className={activeSubTab === 'products' ? styles.btnPrimary : styles.btnSecondary}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '8px 18px' }}
         >
-          <span>👕 Shopify Products</span>
+          <span>Shopify Products</span>
           <span
             style={{
               fontSize: 11,
@@ -589,10 +589,14 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                     padding: 14,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>🖥️</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#86868b' }}>
+                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                          <line x1="8" y1="21" x2="16" y2="21"/>
+                          <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#ffffff' }}>Banner Khusus Desktop</div>
+                          <div style={{ fontWeight: 600, fontSize: 12, color: '#ffffff' }}>Banner Khusus Desktop</div>
                           <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di PC / Laptop (&gt; 768px)</div>
                         </div>
                       </div>
@@ -682,10 +686,13 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                     padding: 14,
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>📱</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#e2ff32' }}>
+                          <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                          <line x1="12" y1="18" x2="12.01" y2="18"/>
+                        </svg>
                         <div>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#e2ff32' }}>Banner Khusus Mobile</div>
+                          <div style={{ fontWeight: 600, fontSize: 12, color: '#e2ff32' }}>Banner Khusus Mobile</div>
                           <div style={{ fontSize: 10, color: '#86868b' }}>Tampil di Layar HP (&le; 768px)</div>
                         </div>
                       </div>
@@ -982,7 +989,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                             {/* Desktop preview */}
                             <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: 9, color: banner.image_url ? '#e2ff32' : '#86868b', marginBottom: 2 }}>🖥️ Desktop</div>
+                              <div style={{ fontSize: 9, color: banner.image_url ? '#ffffff' : '#86868b', marginBottom: 2 }}>Desktop</div>
                               {banner.image_url ? (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
@@ -1015,7 +1022,7 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                             </div>
                             {/* Mobile preview */}
                             <div style={{ textAlign: 'center' }}>
-                              <div style={{ fontSize: 9, color: banner.mobile_image_url ? '#e2ff32' : '#86868b', marginBottom: 2 }}>📱 Mobile</div>
+                              <div style={{ fontSize: 9, color: banner.mobile_image_url ? '#e2ff32' : '#86868b', marginBottom: 2 }}>Mobile</div>
                               {banner.mobile_image_url ? (
                                 /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
@@ -1093,12 +1100,8 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                                 style={{
                                   backgroundColor: 'rgba(85, 243, 133, 0.15)',
                                   color: '#55f385',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 5,
                                 }}
                               >
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#55f385' }} />
                                 Active
                               </span>
                             ) : (
@@ -1107,12 +1110,8 @@ export default function StoreTab({ passkey = 'offstage-session-admin-2026', noti
                                 style={{
                                   backgroundColor: 'rgba(255, 255, 255, 0.08)',
                                   color: '#86868b',
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: 5,
                                 }}
                               >
-                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#86868b' }} />
                                 Hidden
                               </span>
                             )}

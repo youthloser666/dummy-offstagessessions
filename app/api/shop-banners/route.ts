@@ -5,6 +5,7 @@ import {
   updateShopBanner,
   deleteShopBanner,
 } from '@/lib/services/shopBanners';
+import { verifyAdminRequest, unauthorizedResponse } from '@/lib/auth/adminAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -30,14 +31,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
-    const adminPass = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
-
-    if (authHeader !== adminPass && authHeader !== `Bearer ${adminPass}`) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid admin passkey' },
-        { status: 401 }
-      );
+    const auth = verifyAdminRequest(request);
+    if (!auth.authorized) {
+      return unauthorizedResponse();
     }
 
     const body = await request.json();
@@ -90,14 +86,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
-    const adminPass = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
-
-    if (authHeader !== adminPass && authHeader !== `Bearer ${adminPass}`) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid admin passkey' },
-        { status: 401 }
-      );
+    const auth = verifyAdminRequest(request);
+    if (!auth.authorized) {
+      return unauthorizedResponse();
     }
 
     const body = await request.json();
@@ -127,14 +118,9 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
-    const adminPass = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
-
-    if (authHeader !== adminPass && authHeader !== `Bearer ${adminPass}`) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized: Invalid admin passkey' },
-        { status: 401 }
-      );
+    const auth = verifyAdminRequest(request);
+    if (!auth.authorized) {
+      return unauthorizedResponse();
     }
 
     const { searchParams } = new URL(request.url);

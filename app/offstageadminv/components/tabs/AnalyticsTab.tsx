@@ -49,16 +49,15 @@ export default function AnalyticsTab({
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 8,
+              gap: 6,
               fontSize: 12,
-              color: '#55f385',
-              backgroundColor: 'rgba(85, 243, 133, 0.1)',
+              color: '#ffffff',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
               padding: '6px 12px',
-              borderRadius: 20,
-              border: '1px solid rgba(85, 243, 133, 0.25)',
+              borderRadius: 6,
+              border: '1px solid rgba(255, 255, 255, 0.1)',
             }}
           >
-            <span className={styles.trafficLiveDot} />
             <span>Tracking Active</span>
           </div>
 
@@ -209,7 +208,7 @@ export default function AnalyticsTab({
                 <div key={dev.device} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#fff', marginBottom: 4 }}>
                     <span style={{ textTransform: 'capitalize' }}>
-                      {dev.device === 'desktop' ? '💻 Desktop' : dev.device === 'mobile' ? '📱 Mobile' : '📟 Tablet'}
+                      {dev.device}
                     </span>
                     <strong>{dev.count} ({dev.percentage}%)</strong>
                   </div>
@@ -263,10 +262,9 @@ export default function AnalyticsTab({
 
       {/* Live Real-Time Visitor Stream */}
       <div className={styles.card} style={{ marginTop: 24, padding: 0 }}>
-        <div className={styles.cardHeader} style={{ padding: '18px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
+        <div className={styles.cardHeader} style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
           <div>
-            <h3 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className={styles.trafficLiveDot} />
+            <h3 className={styles.cardTitle}>
               Live Visitor Activity Stream
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: 12, color: '#86868b' }}>
@@ -312,12 +310,12 @@ export default function AnalyticsTab({
                           textTransform: 'capitalize',
                           backgroundColor:
                             visit.device === 'mobile'
-                              ? 'rgba(100, 181, 246, 0.15)'
-                              : 'rgba(85, 243, 133, 0.15)',
-                          color: visit.device === 'mobile' ? '#64b5f6' : '#55f385',
+                              ? 'rgba(100, 181, 246, 0.12)'
+                              : 'rgba(255, 255, 255, 0.08)',
+                          color: visit.device === 'mobile' ? '#64b5f6' : '#ffffff',
                         }}
                       >
-                        {visit.device === 'mobile' ? '📱 Mobile' : '💻 Desktop'}
+                        {visit.device || 'desktop'}
                       </span>
                     </td>
                     <td style={{ color: '#d1d1d6', fontSize: 12 }}>

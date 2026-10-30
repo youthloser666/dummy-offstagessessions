@@ -2,13 +2,14 @@
 
 import React from 'react';
 import styles from '../../admin.module.css';
+import AdminImageUploader from '../AdminImageUploader';
 
 interface EditMediaModalProps {
   editingMedia: any;
   setEditingMedia: (media: any) => void;
   editMediaUploading: boolean;
   editMediaPreview: string | null;
-  editMediaFileInputRef: React.RefObject<HTMLInputElement>;
+  editMediaFileInputRef?: React.RefObject<HTMLInputElement>;
   handleEditFileUpload: (file: File, target: 'show' | 'media') => void;
   handleUpdateMedia: (e: React.FormEvent) => void;
 }
@@ -18,7 +19,6 @@ export default function EditMediaModal({
   setEditingMedia,
   editMediaUploading,
   editMediaPreview,
-  editMediaFileInputRef,
   handleEditFileUpload,
   handleUpdateMedia,
 }: EditMediaModalProps) {
@@ -44,51 +44,14 @@ export default function EditMediaModal({
         </div>
 
         <form onSubmit={handleUpdateMedia}>
-          {/* Direct Thumbnail Upload */}
-          <div className={styles.formGroup} style={{ marginBottom: 20 }}>
-            <label className={styles.formLabel}>Gallery Thumbnail (Click to Replace via Cloudinary)</label>
-            <div
-              className={styles.dropzoneContainer}
-              onClick={() => editMediaFileInputRef.current?.click()}
-            >
-              <input
-                ref={editMediaFileInputRef}
-                type="file"
-                accept="image/*"
-                className={styles.hiddenFileInput}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleEditFileUpload(file, 'media');
-                }}
-              />
-
-              {editMediaUploading ? (
-                <div className={styles.dropzonePrompt}>Uploading new thumbnail to Cloudinary...</div>
-              ) : editMediaPreview || editingMedia.thumbnail_url ? (
-                <div className={styles.dropzonePreview}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={editMediaPreview || editingMedia.thumbnail_url}
-                    alt="Thumbnail preview"
-                    className={styles.dropzoneImg}
-                  />
-                  <div className={styles.dropzoneInfo}>
-                    <div className={styles.dropzoneFileName}>Thumbnail Ready</div>
-                    <div className={styles.dropzoneStatus}>Click to replace image file</div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
-                    Click to upload gallery thumbnail
-                  </div>
-                  <div className={styles.dropzonePrompt}>
-                    Instant upload to Cloudinary media storage
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdminImageUploader
+            label="Gallery Thumbnail (Click to Replace via Cloudinary)"
+            value={editMediaPreview || editingMedia.thumbnail_url}
+            uploading={editMediaUploading}
+            readyText="Thumbnail Ready"
+            uploadPrompt="Instant upload to Cloudinary media storage"
+            onFileSelect={(file) => handleEditFileUpload(file, 'media')}
+          />
 
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>

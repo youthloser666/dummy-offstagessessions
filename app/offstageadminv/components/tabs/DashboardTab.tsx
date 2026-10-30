@@ -84,50 +84,35 @@ export default function DashboardTab({
       <div className={styles.connectionCard}>
         <div className={styles.connectionItems}>
           <div className={styles.connectionItem}>
-            <span
-              className={`${styles.statusDot} ${
-                connStatus?.supabase?.connected ? styles.dotConnected : styles.dotOffline
-              }`}
-            />
-            <span>
-              Supabase:{' '}
+            <span className={styles.serviceName}>Supabase</span>
+            <span className={connStatus?.supabase?.connected ? styles.serviceStatusOk : styles.serviceStatusMuted}>
               {connStatus
                 ? connStatus.supabase?.connected
-                  ? `Connected (${connStatus.supabase.showsCount} shows in DB)`
+                  ? 'Connected'
                   : 'Disconnected'
-                : 'Checking...'}
+                : 'Checking'}
             </span>
           </div>
 
           <div className={styles.connectionItem}>
-            <span
-              className={`${styles.statusDot} ${
-                connStatus?.cloudinary?.configured ? styles.dotConnected : styles.dotWarning
-              }`}
-            />
-            <span>
-              Cloudinary:{' '}
+            <span className={styles.serviceName}>Cloudinary</span>
+            <span className={connStatus?.cloudinary?.configured ? styles.serviceStatusOk : styles.serviceStatusMuted}>
               {connStatus
                 ? connStatus.cloudinary?.configured
-                  ? `Connected (${connStatus.cloudinary.cloudName})`
-                  : 'Fallback Active'
-                : 'Checking...'}
+                  ? 'Ready'
+                  : 'Fallback'
+                : 'Checking'}
             </span>
           </div>
 
           <div className={styles.connectionItem}>
-            <span
-              className={`${styles.statusDot} ${
-                connStatus?.shopify?.connected ? styles.dotConnected : styles.dotWarning
-              }`}
-            />
-            <span>
-              Shopify:{' '}
+            <span className={styles.serviceName}>Shopify</span>
+            <span className={connStatus?.shopify?.connected ? styles.serviceStatusOk : styles.serviceStatusMuted}>
               {connStatus
                 ? connStatus.shopify?.connected
-                  ? `Connected (${connStatus.shopify.productsCount} products)`
+                  ? 'Connected'
                   : 'Disconnected'
-                : 'Checking...'}
+                : 'Checking'}
             </span>
           </div>
 
@@ -135,14 +120,10 @@ export default function DashboardTab({
             className={styles.connectionItem}
             onClick={() => setActiveTab('metapixel')}
             style={{ cursor: 'pointer' }}
-            title="Click to open Meta Pixel & Ads dashboard"
+            title="Open Meta Pixel & Ads dashboard"
           >
-            <span
-              className={`${styles.statusDot} ${styles.dotConnected}`}
-            />
-            <span>
-              Meta Pixel: Active (435764085453303)
-            </span>
+            <span className={styles.serviceName}>Meta Pixel</span>
+            <span className={styles.serviceStatusOk}>Active</span>
           </div>
         </div>
 
@@ -152,7 +133,7 @@ export default function DashboardTab({
           className={styles.btnSecondary}
           style={{ fontSize: 11, padding: '4px 10px' }}
         >
-          {testingConn ? 'Testing...' : 'Test Connection'}
+          {testingConn ? 'Testing...' : 'Check Status'}
         </button>
       </div>
 
@@ -162,7 +143,7 @@ export default function DashboardTab({
           <div className={styles.metricLabel}>Total Sessions</div>
           <div className={styles.metricValue}>{showsList.length}</div>
           <div className={styles.metricSubtitle}>
-            {upcomingShows.length} Upcoming · {showsList.filter((s) => s.status === 'past').length} Past
+            {upcomingShows.length} Upcoming / {showsList.filter((s) => s.status === 'past').length} Past
           </div>
         </div>
 
@@ -170,7 +151,7 @@ export default function DashboardTab({
           <div className={styles.metricLabel}>Next Upcoming</div>
           <div
             className={styles.metricValue}
-            style={{ fontSize: 20, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+            style={{ fontSize: 18, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
             {nextShow ? nextShow.name : 'None'}
           </div>
@@ -184,13 +165,13 @@ export default function DashboardTab({
         <div className={styles.metricCard}>
           <div className={styles.metricLabel}>Media Galleries</div>
           <div className={styles.metricValue}>{mediaList.length}</div>
-          <div className={styles.metricSubtitle}>Synced with Facebook Albums</div>
+          <div className={styles.metricSubtitle}>Facebook Synced Albums</div>
         </div>
 
         <div className={styles.metricCard}>
           <div className={styles.metricLabel}>Active Ticketing</div>
           <div className={styles.metricValue}>{ticketLinksCount}</div>
-          <div className={styles.metricSubtitle}>Active Ticket Outlets</div>
+          <div className={styles.metricSubtitle}>Ticket Outlets</div>
         </div>
 
         <div className={styles.metricCard}>
@@ -198,11 +179,11 @@ export default function DashboardTab({
           <div className={styles.metricValue}>{inquiriesList.length}</div>
           <div className={styles.metricSubtitle}>
             {unreadInquiriesCount > 0 ? (
-              <span style={{ color: '#e2ff32', fontWeight: 600 }}>{unreadInquiriesCount} Unread</span>
+              <span style={{ color: '#ffffff', fontWeight: 600 }}>{unreadInquiriesCount} Unread</span>
             ) : (
               '0 Unread'
             )}{' '}
-            · {inquiriesList.filter((i) => i.category === 'Booking').length} Bookings
+            / {inquiriesList.filter((i) => i.category === 'Booking').length} Bookings
           </div>
         </div>
       </div>
@@ -211,11 +192,10 @@ export default function DashboardTab({
       <div className={styles.trafficChartCard}>
         <div className={styles.trafficChartHeader}>
           <div className={styles.trafficChartTitleGroup}>
-            <span className={styles.trafficLiveDot} />
             <div>
-              <h3 className={styles.cardTitle}>Traffic &amp; Visitor Activity Diagram</h3>
+              <h3 className={styles.cardTitle}>Traffic &amp; Visitor Activity</h3>
               <p style={{ margin: '2px 0 0 0', fontSize: 12, color: '#86868b' }}>
-                Real-time 7-day page views and unique audience volume
+                7-day page views and unique audience volume
               </p>
             </div>
           </div>
@@ -314,12 +294,12 @@ export default function DashboardTab({
                 </div>
 
                 <div className={styles.trafficLegend}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className={styles.legendDot} style={{ background: '#e2ff32' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 12, height: 3, background: '#e2ff32', borderRadius: 2 }} />
                     <span>Total Page Views</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <span className={styles.legendDot} style={{ background: '#55f385' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 12, height: 3, background: '#55f385', borderRadius: 2 }} />
                     <span>Unique Audience</span>
                   </div>
                 </div>

@@ -253,7 +253,6 @@ export default function MetaPixelTab({
 
         <div className={styles.headerActions}>
           <div className={styles.metaLivePill}>
-            <span className={styles.metaLiveDot} />
             <span>Pixel Active</span>
           </div>
 
@@ -342,9 +341,8 @@ export default function MetaPixelTab({
       <div className={styles.metricsGrid}>
         <div className={styles.metricCard}>
           <div className={styles.metricLabel}>Pixel Status</div>
-          <div className={styles.metricValue} style={{ color: '#55f385', fontSize: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className={styles.metaLiveDot} />
-            <span>Active</span>
+          <div className={styles.metricValue} style={{ color: '#55f385' }}>
+            Active
           </div>
           <div className={styles.metricSubtitle}>
             Meta Pixel Helper Compatible
@@ -439,7 +437,7 @@ export default function MetaPixelTab({
           <div className={styles.cardHeader}>
             <div>
               <h3 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>⚡ Interactive Pixel Event Simulator</span>
+                <span>Pixel Event Simulator</span>
               </h3>
               <p style={{ margin: '4px 0 0', fontSize: 12, color: '#86868b' }}>
                 Test-fire real Meta Pixel events directly in your browser. Verify with your <strong>Meta Pixel Helper</strong> extension!
@@ -454,7 +452,6 @@ export default function MetaPixelTab({
           <div className={styles.pixelSimulatorGrid}>
             <button onClick={handleTestPageView} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>📄</span>
                 <span>PageView</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>General route visit</div>
@@ -462,7 +459,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestViewContent} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>👁️</span>
                 <span>ViewContent</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>Warehouse Session #12</div>
@@ -470,7 +466,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestAddToCart} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>🛒</span>
                 <span>AddToCart</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>Club Hoodie ($45)</div>
@@ -478,7 +473,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestInitiateCheckout} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>💳</span>
                 <span>InitiateCheckout</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>2 Items ($75)</div>
@@ -486,7 +480,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestLead} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>📩</span>
                 <span>Lead</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>VIP Table Booking</div>
@@ -494,7 +487,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestContact} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>📞</span>
                 <span>Contact</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>Artist Outreach</div>
@@ -502,7 +494,6 @@ export default function MetaPixelTab({
 
             <button onClick={handleTestSearch} className={styles.pixelTestBtn}>
               <div className={styles.pixelTestBtnTitle}>
-                <span>🔍</span>
                 <span>Search</span>
               </div>
               <div className={styles.pixelTestBtnDesc}>&quot;Techno Baltimore&quot;</div>
@@ -548,7 +539,6 @@ export default function MetaPixelTab({
           <div className={styles.cardHeader}>
             <div>
               <h3 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className={styles.trafficLiveDot} />
                 <span>Live Event Stream &amp; Diagnostics</span>
               </h3>
               <span style={{ fontSize: 11, color: '#86868b' }}>
@@ -635,7 +625,7 @@ export default function MetaPixelTab({
                     <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <div className={styles.consoleTime}>{log.timestamp}</div>
                       <div style={{ fontSize: 10, color: '#55f385', marginTop: 2 }}>
-                        ● Dispatched
+                        Dispatched
                       </div>
                     </div>
                   </div>
@@ -686,7 +676,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Traffic Campaigns, Custom Audiences</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -704,7 +694,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Catalog Sales, Dynamic Retargeting</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -722,7 +712,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Abandoned Cart Retargeting, E-commerce ROAS</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -740,7 +730,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>High-Intent Conversion Ads</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -758,7 +748,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Lead Generation Campaigns, Value Optimization</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -776,7 +766,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Audience Engagement, DM / Message Ads</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>
@@ -794,7 +784,7 @@ export default function MetaPixelTab({
                 <td style={{ color: '#a1a1a6', fontSize: 12 }}>Genre-specific Ad Personalization</td>
                 <td>
                   <span className={styles.statusBadge} style={{ backgroundColor: 'rgba(85, 243, 133, 0.15)', color: '#55f385' }}>
-                    ● Active
+                    Active
                   </span>
                 </td>
               </tr>

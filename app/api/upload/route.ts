@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { uploadMedia, isCloudinaryConfigured } from '@/lib/cloudinary';
+import { verifyAdminRequest, unauthorizedResponse } from '@/lib/auth/adminAuth';
 import sharp from 'sharp';
 
 /**
@@ -34,14 +35,9 @@ async function optimizeImageToWebP(inputBuffer: Buffer): Promise<{ buffer: Buffe
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('x-admin-passkey') || request.headers.get('authorization');
-    const adminPass = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
-
-    if (authHeader !== adminPass && authHeader !== `Bearer ${adminPass}`) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const auth = verifyAdminRequest(request);
+    if (!auth.authorized) {
+      return unauthorizedResponse();
     }
 
     const contentType = request.headers.get('content-type') || '';

@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'metapixel' | 'socials' | 'store';
+export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'metapixel' | 'socials' | 'store' | 'admins';
 
 export interface Show {
   id: string;
@@ -124,4 +124,23 @@ export interface ShopBanner {
   hide_button?: boolean;
   created_at?: string;
   updated_at?: string;
+}
+
+export type AdminRole = 'admin' | 'superadmin' | 'manager';
+
+export interface AdminUserPublic {
+  id: string;
+  username: string;
+  name: string;
+  role: AdminRole;
+  status: 'active' | 'suspended';
+  created_at: string;
+  last_login_at?: string | null;
+}
+
+export interface AdminUser extends AdminUserPublic {
+  password_hash: string;
+  password_salt: string;
+  pin_hash: string;
+  pin_salt: string;
 }

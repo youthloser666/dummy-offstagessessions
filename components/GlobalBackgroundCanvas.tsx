@@ -28,11 +28,11 @@ export default function GlobalBackgroundCanvas() {
         return isMobileTouch ? 1.0 : 1.5;
     }, []);
 
-    if (!mounted) {
+    if (!mounted || pathname?.startsWith('/offstageadminv')) {
         return (
-            <div 
-                className="fixed inset-0 w-full h-full pointer-events-none z-0" 
-                suppressHydrationWarning 
+            <div
+                className="fixed inset-0 w-full h-full pointer-events-none z-0"
+                suppressHydrationWarning
             />
         );
     }

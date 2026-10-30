@@ -2,7 +2,7 @@
 
 import React from 'react';
 import styles from '../admin.module.css';
-import { TabType } from '../types';
+import { TabType, AdminUserPublic } from '../types';
 
 interface AdminSidebarProps {
   activeTab: TabType;
@@ -15,6 +15,8 @@ interface AdminSidebarProps {
   storeCount?: number;
   inquiriesCount: number;
   unreadInquiriesCount: number;
+  currentUser?: AdminUserPublic | null;
+  onLogout?: () => void;
 }
 
 export default function AdminSidebar({
@@ -28,6 +30,8 @@ export default function AdminSidebar({
   storeCount,
   inquiriesCount,
   unreadInquiriesCount,
+  currentUser,
+  onLogout,
 }: AdminSidebarProps) {
   const handleNavClick = (tab: TabType) => {
     setActiveTab(tab);
@@ -106,7 +110,6 @@ export default function AdminSidebar({
               </span>
               <span>Shows</span>
             </div>
-            <span className={styles.navBadge}>{showsCount}</span>
           </button>
 
           <button
@@ -123,7 +126,6 @@ export default function AdminSidebar({
               </span>
               <span>Media Archives</span>
             </div>
-            <span className={styles.navBadge}>{mediaCount}</span>
           </button>
 
           <button
@@ -140,9 +142,6 @@ export default function AdminSidebar({
               </span>
               <span>Shopify Store</span>
             </div>
-            {storeCount !== undefined && storeCount > 0 && (
-              <span className={styles.navBadge}>{storeCount}</span>
-            )}
           </button>
 
           <button
@@ -158,12 +157,10 @@ export default function AdminSidebar({
               </span>
               <span>Track Emails</span>
             </div>
-            {unreadInquiriesCount > 0 ? (
-              <span className={styles.navBadge} style={{ backgroundColor: 'rgba(226, 255, 50, 0.2)', color: '#e2ff32', fontWeight: 700 }}>
+            {unreadInquiriesCount > 0 && (
+              <span className={styles.navBadge} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', fontWeight: 600 }}>
                 {unreadInquiriesCount} new
               </span>
-            ) : (
-              <span className={styles.navBadge}>{inquiriesCount}</span>
             )}
           </button>
 
@@ -188,7 +185,7 @@ export default function AdminSidebar({
             onClick={() => handleNavClick('metapixel')}
           >
             <div className={styles.navItemLeft}>
-              <span className={styles.navIcon} style={{ color: activeTab === 'metapixel' ? '#60a5fa' : undefined }}>
+              <span className={styles.navIcon}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <circle cx="12" cy="12" r="6" />
@@ -197,17 +194,6 @@ export default function AdminSidebar({
               </span>
               <span>Meta Pixel &amp; Ads</span>
             </div>
-            <span
-              className={styles.navBadge}
-              style={{
-                backgroundColor: 'rgba(24, 119, 242, 0.2)',
-                color: '#60a5fa',
-                fontWeight: 600,
-                fontSize: 10,
-              }}
-            >
-              Active
-            </span>
           </button>
 
           <button
@@ -227,11 +213,70 @@ export default function AdminSidebar({
               <span>Social Media</span>
             </div>
           </button>
+
+          <button
+            className={`${styles.navItem} ${activeTab === 'admins' ? styles.navItemActive : ''}`}
+            onClick={() => handleNavClick('admins')}
+          >
+            <div className={styles.navItemLeft}>
+              <span className={styles.navIcon}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+              </span>
+              <span>Admin Access</span>
+            </div>
+            <span
+              className={styles.navBadge}
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#d1d1d6',
+                fontWeight: 600,
+                fontSize: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              2FA
+            </span>
+          </button>
         </div>
       </div>
 
       {/* Sidebar Footer */}
       <div className={styles.sidebarFooter}>
+        {currentUser && (
+          <div className={styles.userProfileFooter}>
+            <div className={styles.userProfileInfo}>
+              <div className={styles.userProfileAvatarMini}>
+                {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className={styles.userProfileNameMini} title={currentUser.name}>
+                  {currentUser.name}
+                </div>
+                <div className={styles.userProfileRoleMini}>
+                  ADMIN
+                </div>
+              </div>
+            </div>
+
+            {onLogout && (
+              <button
+                className={styles.logoutBtnMini}
+                onClick={onLogout}
+                title="Log out from console"
+                aria-label="Log Out"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
+
         <div className={styles.passkeyBadge}>
           <span>Passkey</span>
           <span className={styles.passkeyVal}>active</span>

@@ -1,57 +1,238 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import styles from '../../admin.module.css';
 import { MediaItem } from '../../types';
+import AdminImageUploader from '../AdminImageUploader';
+import EditMediaModal from '../modals/EditMediaModal';
 
 interface MediaTabProps {
-  mediaList: MediaItem[];
-  loadingMedia: boolean;
-  loadMedia: () => void;
-  showCreateDrawer: boolean;
-  setShowCreateDrawer: (open: boolean) => void;
-  newMedia: any;
-  setNewMedia: React.Dispatch<React.SetStateAction<any>>;
-  mediaUploading: boolean;
-  mediaUploadPreview: string | null;
-  mediaFileInputRef: React.RefObject<HTMLInputElement>;
-  handleFileUpload: (file: File, target: 'show' | 'media') => void;
-  handleCreateMedia: (e: React.FormEvent) => void;
-  openEditMedia: (media: MediaItem) => void;
-  handleDeleteMedia: (id: string | number, name: string) => void;
+  passkey?: string;
+  notify: (type: 'success' | 'error', message: string) => void;
+  onMediaCountChange?: (count: number) => void;
 }
 
 export default function MediaTab({
-  mediaList,
-  loadingMedia,
-  loadMedia,
-  showCreateDrawer,
-  setShowCreateDrawer,
-  newMedia,
-  setNewMedia,
-  mediaUploading,
-  mediaUploadPreview,
-  mediaFileInputRef,
-  handleFileUpload,
-  handleCreateMedia,
-  openEditMedia,
-  handleDeleteMedia,
+  passkey = 'offstage-session-admin-2026',
+  notify,
+  onMediaCountChange,
 }: MediaTabProps) {
+  const [mediaList, setMediaList] = useState<MediaItem[]>([]);
+  const [loadingMedia, setLoadingMedia] = useState(true);
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+
+  // New Media Form State
+  const [newMedia, setNewMedia] = useState({
+    name: '',
+    date: '',
+    thumbnail_url: '',
+    facebook_url: 'https://www.facebook.com/offstagesessions',
+    category: 'photo',
+  });
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaUploadPreview, setMediaUploadPreview] = useState<string | null>(null);
+
+  // Edit Media Modal State
+  const [editingMedia, setEditingMedia] = useState<any | null>(null);
+  const [editMediaUploading, setEditMediaUploading] = useState(false);
+  const [editMediaPreview, setEditMediaPreview] = useState<string | null>(null);
+
+  // Keep callback ref to avoid recreating loadMedia when parent re-renders
+  const countCallbackRef = React.useRef(onMediaCountChange);
+  countCallbackRef.current = onMediaCountChange;
+
+  const loadMedia = useCallback(async () => {
+    setLoadingMedia(true);
+    try {
+      const res = await fetch('/api/media');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setMediaList(json.data);
+        countCallbackRef.current?.(json.data.length);
+      }
+    } catch (err) {
+      console.error('Failed to load media:', err);
+      notify('error', 'Failed to load media archives');
+    } finally {
+      setLoadingMedia(false);
+    }
+  }, [notify]);
+
+  useEffect(() => {
+    loadMedia();
+  }, [loadMedia]);
+
+  // Upload handler for adding new media
+  const handleFileUpload = async (file: File) => {
+    setMediaUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'media');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'x-admin-passkey': passkey },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setNewMedia((prev) => ({ ...prev, thumbnail_url: data.url }));
+      setMediaUploadPreview(data.url);
+      notify('success', 'Thumbnail uploaded successfully');
+    } catch (err: any) {
+      notify('error', err.message || 'Failed to upload image');
+    } finally {
+      setMediaUploading(false);
+    }
+  };
+
+  // Upload handler for editing media
+  const handleEditFileUpload = async (file: File) => {
+    setEditMediaUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'media');
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'x-admin-passkey': passkey },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Upload failed');
+      }
+
+      setEditingMedia((prev: any) => ({ ...prev, thumbnail_url: data.url }));
+      setEditMediaPreview(data.url);
+      notify('success', 'New thumbnail uploaded');
+    } catch (err: any) {
+      notify('error', err.message || 'Failed to upload image');
+    } finally {
+      setEditMediaUploading(false);
+    }
+  };
+
+  const handleCreateMedia = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMedia.thumbnail_url) {
+      notify('error', 'Please upload a thumbnail image first.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/media', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passkey': passkey,
+        },
+        body: JSON.stringify(newMedia),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to add media');
+      }
+
+      notify('success', 'Media archive item added');
+      setNewMedia({
+        name: '',
+        date: '',
+        thumbnail_url: '',
+        facebook_url: 'https://www.facebook.com/offstagesessions',
+        category: 'photo',
+      });
+      setMediaUploadPreview(null);
+      setShowCreateDrawer(false);
+      loadMedia();
+    } catch (err: any) {
+      notify('error', err.message);
+    }
+  };
+
+  const openEditMedia = (media: MediaItem) => {
+    setEditingMedia({
+      id: media.id,
+      name: media.name || '',
+      date: media.date || '',
+      thumbnail_url: media.thumbnail_url || media.thumbnail || media.image_url || media.image || '',
+      facebook_url: media.facebook_url || media.facebookUrl || '',
+      category: media.category || 'photo',
+      display_order: media.display_order !== undefined ? media.display_order : 0,
+    });
+    setEditMediaPreview(media.thumbnail_url || media.thumbnail || media.image_url || null);
+  };
+
+  const handleUpdateMedia = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMedia) return;
+
+    try {
+      const res = await fetch('/api/media', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-passkey': passkey,
+        },
+        body: JSON.stringify(editingMedia),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update media archive');
+      }
+
+      notify('success', `Media item "${editingMedia.name}" updated`);
+      setEditingMedia(null);
+      setEditMediaPreview(null);
+      loadMedia();
+    } catch (err: any) {
+      notify('error', err.message);
+    }
+  };
+
+  const handleDeleteMedia = async (id: string | number, name: string) => {
+    if (!window.confirm(`Delete "${name}" from media archives?`)) return;
+    try {
+      const res = await fetch(`/api/media?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-passkey': passkey },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete media');
+      }
+      notify('success', `Media item "${name}" deleted`);
+      loadMedia();
+    } catch (err: any) {
+      notify('error', err.message);
+    }
+  };
+
   return (
     <div>
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Media Archives</h1>
           <p className={styles.pageDesc}>
-            Manage photo galleries and Facebook album destinations.
+            Manage photo and video galleries linked to social coverage and recap posts.
           </p>
         </div>
 
         <div className={styles.headerActions}>
           <button
-            onClick={() => loadMedia()}
+            onClick={loadMedia}
             disabled={loadingMedia}
             className={styles.btnSecondary}
+            title="Reload archives"
           >
             {loadingMedia ? 'Loading...' : 'Refresh'}
           </button>
@@ -59,7 +240,7 @@ export default function MediaTab({
             onClick={() => setShowCreateDrawer(!showCreateDrawer)}
             className={styles.btnPrimary}
           >
-            {showCreateDrawer ? 'Cancel' : '+ New Gallery'}
+            {showCreateDrawer ? 'Cancel' : '+ Add Gallery'}
           </button>
         </div>
       </div>
@@ -72,51 +253,14 @@ export default function MediaTab({
           </div>
 
           <form onSubmit={handleCreateMedia}>
-            {/* Direct Thumbnail Upload */}
-            <div className={styles.formGroup} style={{ marginBottom: 20 }}>
-              <label className={styles.formLabel}>Gallery Thumbnail (Direct Upload)</label>
-              <div
-                className={styles.dropzoneContainer}
-                onClick={() => mediaFileInputRef.current?.click()}
-              >
-                <input
-                  ref={mediaFileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className={styles.hiddenFileInput}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileUpload(file, 'media');
-                  }}
-                />
-
-                {mediaUploading ? (
-                  <div className={styles.dropzonePrompt}>Uploading thumbnail...</div>
-                ) : mediaUploadPreview || newMedia.thumbnail_url ? (
-                  <div className={styles.dropzonePreview}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={mediaUploadPreview || newMedia.thumbnail_url}
-                      alt="Thumbnail preview"
-                      className={styles.dropzoneImg}
-                    />
-                    <div className={styles.dropzoneInfo}>
-                      <div className={styles.dropzoneFileName}>Thumbnail Ready</div>
-                      <div className={styles.dropzoneStatus}>Click to replace image</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
-                      Click to upload gallery thumbnail
-                    </div>
-                    <div className={styles.dropzonePrompt}>
-                      Instant preview &amp; upload to media storage
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AdminImageUploader
+              label="Gallery Thumbnail (Direct Upload)"
+              value={mediaUploadPreview || newMedia.thumbnail_url}
+              uploading={mediaUploading}
+              readyText="Thumbnail Ready"
+              uploadPrompt="Instant preview & upload to media storage"
+              onFileSelect={handleFileUpload}
+            />
 
             <div className={styles.formGrid}>
               <div className={styles.formGroup}>
@@ -259,6 +403,16 @@ export default function MediaTab({
           </table>
         </div>
       </div>
+
+      {/* Edit Media Modal */}
+      <EditMediaModal
+        editingMedia={editingMedia}
+        setEditingMedia={setEditingMedia}
+        editMediaUploading={editMediaUploading}
+        editMediaPreview={editMediaPreview}
+        handleEditFileUpload={handleEditFileUpload}
+        handleUpdateMedia={handleUpdateMedia}
+      />
     </div>
   );
 }

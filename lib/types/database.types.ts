@@ -244,6 +244,51 @@ export interface Database {
         };
         Relationships: [];
       };
+      admin_users: {
+        Row: {
+          id: string;
+          username: string;
+          name: string;
+          role: 'admin' | 'superadmin' | 'manager';
+          password_hash: string;
+          password_salt: string;
+          pin_hash: string;
+          pin_salt: string;
+          status: 'active' | 'suspended';
+          last_login_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          username: string;
+          name: string;
+          role?: 'admin' | 'superadmin' | 'manager';
+          password_hash: string;
+          password_salt: string;
+          pin_hash: string;
+          pin_salt: string;
+          status?: 'active' | 'suspended';
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          username?: string;
+          name?: string;
+          role?: 'admin' | 'superadmin' | 'manager';
+          password_hash?: string;
+          password_salt?: string;
+          pin_hash?: string;
+          pin_salt?: string;
+          status?: 'active' | 'suspended';
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -258,3 +303,4 @@ export type DbInquiry = Database['public']['Tables']['contact_inquiries']['Row']
 export type DbPageView = Database['public']['Tables']['page_views']['Row'];
 export type DbSiteSetting = Database['public']['Tables']['site_settings']['Row'];
 export type DbShopBanner = Database['public']['Tables']['shop_banners']['Row'];
+export type DbAdminUser = Database['public']['Tables']['admin_users']['Row'];

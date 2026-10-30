@@ -2,13 +2,14 @@
 
 import React from 'react';
 import styles from '../../admin.module.css';
+import AdminImageUploader from '../AdminImageUploader';
 
 interface EditShowModalProps {
   editingShow: any;
   setEditingShow: (show: any) => void;
   editShowUploading: boolean;
   editShowPreview: string | null;
-  editShowFileInputRef: React.RefObject<HTMLInputElement>;
+  editShowFileInputRef?: React.RefObject<HTMLInputElement>;
   handleEditFileUpload: (file: File, target: 'show' | 'media') => void;
   handleUpdateShow: (e: React.FormEvent) => void;
 }
@@ -18,7 +19,6 @@ export default function EditShowModal({
   setEditingShow,
   editShowUploading,
   editShowPreview,
-  editShowFileInputRef,
   handleEditFileUpload,
   handleUpdateShow,
 }: EditShowModalProps) {
@@ -44,51 +44,14 @@ export default function EditShowModal({
         </div>
 
         <form onSubmit={handleUpdateShow}>
-          {/* Direct Image Upload Dropzone */}
-          <div className={styles.formGroup} style={{ marginBottom: 20 }}>
-            <label className={styles.formLabel}>Event Poster (Click to Replace via Cloudinary)</label>
-            <div
-              className={styles.dropzoneContainer}
-              onClick={() => editShowFileInputRef.current?.click()}
-            >
-              <input
-                ref={editShowFileInputRef}
-                type="file"
-                accept="image/*"
-                className={styles.hiddenFileInput}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleEditFileUpload(file, 'show');
-                }}
-              />
-
-              {editShowUploading ? (
-                <div className={styles.dropzonePrompt}>Uploading new poster to Cloudinary...</div>
-              ) : editShowPreview || editingShow.poster_url ? (
-                <div className={styles.dropzonePreview}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={editShowPreview || editingShow.poster_url}
-                    alt="Poster preview"
-                    className={styles.dropzoneImg}
-                  />
-                  <div className={styles.dropzoneInfo}>
-                    <div className={styles.dropzoneFileName}>Poster Ready</div>
-                    <div className={styles.dropzoneStatus}>Click to replace with another image</div>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ color: '#ffffff', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>
-                    Click to upload poster image
-                  </div>
-                  <div className={styles.dropzonePrompt}>
-                    Supports WebP, PNG, JPG (automatically uploaded to Cloudinary)
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <AdminImageUploader
+            label="Event Poster (Click to Replace via Cloudinary)"
+            value={editShowPreview || editingShow.poster_url}
+            uploading={editShowUploading}
+            readyText="Poster Ready"
+            uploadPrompt="Supports WebP, PNG, JPG (automatically uploaded to Cloudinary)"
+            onFileSelect={(file) => handleEditFileUpload(file, 'show')}
+          />
 
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>

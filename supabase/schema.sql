@@ -116,6 +116,26 @@ ALTER TABLE public.shop_banners ADD COLUMN IF NOT EXISTS mobile_image_url TEXT;
 CREATE INDEX IF NOT EXISTS idx_shop_banners_order ON public.shop_banners(display_order);
 
 -- ============================================================================
+-- 5C. ADMIN USERS TABLE (Two-Factor Admin Authentication & Access Control)
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    role TEXT DEFAULT 'admin' CHECK (role IN ('admin', 'superadmin', 'manager')),
+    password_hash TEXT NOT NULL,
+    password_salt TEXT NOT NULL,
+    pin_hash TEXT NOT NULL,
+    pin_salt TEXT NOT NULL,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
+    last_login_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_users_username ON public.admin_users(username);
+
+-- ============================================================================
 -- 6. ROW-LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 ALTER TABLE public.shows ENABLE ROW LEVEL SECURITY;
@@ -124,6 +144,7 @@ ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.page_views ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shop_banners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Anonymous public read access for shows, media archives, site settings, and shop banners
 CREATE POLICY "Public shows are viewable by everyone" 
@@ -165,6 +186,10 @@ USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
 
 CREATE POLICY "Admin full access on site_settings" 
 ON public.site_settings FOR ALL 
+USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
+
+CREATE POLICY "Admin full access on admin_users" 
+ON public.admin_users FOR ALL 
 USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
 
 -- ============================================================================
