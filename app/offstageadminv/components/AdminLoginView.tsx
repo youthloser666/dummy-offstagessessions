@@ -308,9 +308,8 @@ export default function AdminLoginView({ onLoginSuccess, notify }: AdminLoginVie
                 return (
                   <div
                     key={index}
-                    className={`${styles.pinSlot} ${char ? styles.pinSlotFilled : ''} ${
-                      isCurrent ? styles.pinSlotActive : ''
-                    }`}
+                    className={`${styles.pinSlot} ${char ? styles.pinSlotFilled : ''} ${isCurrent ? styles.pinSlotActive : ''
+                      }`}
                   >
                     {char ? '•' : ''}
                   </div>
@@ -381,36 +380,6 @@ export default function AdminLoginView({ onLoginSuccess, notify }: AdminLoginVie
             </button>
           </div>
         )}
-
-        {/* Minimalist Credentials Hint */}
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <button
-            type="button"
-            onClick={() => setShowCredentialsHint(!showCredentialsHint)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#86868b',
-              fontSize: '11px',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
-          >
-            {showCredentialsHint ? 'Hide initial credentials' : 'Initial credentials hint'}
-          </button>
-
-          {showCredentialsHint && (
-            <div className={styles.loginNoticeBox}>
-              <div>Username: <span className={styles.loginNoticeCode}>admin</span></div>
-              <div style={{ marginTop: '3px' }}>
-                Password (1st): <span className={styles.loginNoticeCode}>offstageadmin2026</span>
-              </div>
-              <div style={{ marginTop: '3px' }}>
-                PIN (2nd): <span className={styles.loginNoticeCode}>260899</span>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

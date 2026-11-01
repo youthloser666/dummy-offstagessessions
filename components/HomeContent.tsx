@@ -109,7 +109,12 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
 
           const formatted = targetPosts.map((item: any, idx: number) => ({
             id: item.id || idx,
-            image: item.sizes?.medium?.mediaUrl || item.thumbnailUrl || item.mediaUrl || '/image/tobehonest_web.webp',
+            image:
+              item.sizes?.large?.mediaUrl ||
+              item.sizes?.full?.mediaUrl ||
+              item.mediaUrl ||
+              item.sizes?.medium?.mediaUrl ||
+              '/image/tobehonest_web.webp',
             caption: item.prunedCaption || item.caption || '@offstagesession',
             url: item.permalink || 'https://instagram.com/offstagesession',
           }));
@@ -320,9 +325,9 @@ export default function HomeContent({ initialShows = [] }: HomeContentProps) {
               <Image
                 src={post.image}
                 alt={post.caption}
-                width={300}
-                height={300}
-                unoptimized
+                width={500}
+                height={625}
+                sizes="(max-width: 600px) 200px, 280px"
                 className={styles.instagramPostImg}
               />
               <div className={styles.instagramPostOverlay}>

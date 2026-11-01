@@ -297,6 +297,8 @@ export default function ShopPage() {
                                             src={desktopImg}
                                             alt={item.title || 'Shop Hero Banner (Desktop)'}
                                             fill
+                                            sizes="100vw"
+                                            quality={90}
                                             className={`${styles.heroImg} ${styles.heroDesktopOnly}`}
                                             priority={idx === 0}
                                         />
@@ -304,6 +306,8 @@ export default function ShopPage() {
                                             src={mobileImg}
                                             alt={item.title || 'Shop Hero Banner (Mobile)'}
                                             fill
+                                            sizes="100vw"
+                                            quality={90}
                                             className={`${styles.heroImg} ${styles.heroMobileOnly}`}
                                             priority={idx === 0}
                                         />
@@ -313,6 +317,8 @@ export default function ShopPage() {
                                         src={primaryImg}
                                         alt={item.title || 'Shop Hero Banner'}
                                         fill
+                                        sizes="100vw"
+                                        quality={90}
                                         className={styles.heroImg}
                                         priority={idx === 0}
                                     />

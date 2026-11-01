@@ -946,8 +946,17 @@
     }
 
     .instagramPost {
-        width: 180px;
-        height: 225px;
+        width: 200px;
+        height: 250px;
+        border-radius: 6px;
+    }
+
+    .instagramMarquee {
+        gap: 16px;
+    }
+
+    .instagramPostImg {
+        filter: grayscale(0.15) brightness(0.85);
     }
 
     .instagramSection {

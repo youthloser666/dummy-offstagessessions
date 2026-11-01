@@ -18,14 +18,11 @@ export default function GlobalBackgroundCanvas() {
         setMounted(true);
     }, []);
 
-    // Mobile touch devices: cap DPR at 1.0 to halve GPU pixel shading cost
-    // Desktop: retain full 1.5x DPR for crisp rendering on high-DPI displays
+    // Crisp Retina & High-DPI rendering for both mobile and desktop (capped at 2.0 for maximum HD clarity without GPU lag)
     const maxDpr = useMemo(() => {
         if (typeof window === 'undefined') return 1.5;
-        const isMobileTouch =
-            window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
-            (window.innerWidth < 840 && ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0));
-        return isMobileTouch ? 1.0 : 1.5;
+        const deviceDpr = window.devicePixelRatio || 1.5;
+        return Math.min(Math.max(deviceDpr, 1.5), 2.0);
     }, []);
 
     if (!mounted || pathname?.startsWith('/offstageadminv')) {
@@ -41,7 +38,7 @@ export default function GlobalBackgroundCanvas() {
         <div className="fixed inset-0 w-full h-full pointer-events-none z-0" suppressHydrationWarning>
             <Canvas
                 camera={{ position: [0, 0, 5], fov: 60 }}
-                gl={{ antialias: maxDpr > 1.0, alpha: true, powerPreference: 'high-performance' }}
+                gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
                 dpr={[1, maxDpr]}
                 style={{
                     position: 'absolute',

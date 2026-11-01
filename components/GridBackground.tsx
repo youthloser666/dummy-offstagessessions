@@ -17,13 +17,13 @@ const IS_MOBILE_TOUCH =
     (window.matchMedia('(hover: none) and (pointer: coarse)').matches ||
         (window.innerWidth < 840 && ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0)));
 
-// Mobile: only preload textures needed for the grid (35 max) to save ~4MB GPU memory
+// Mobile: preload 48 high-quality photos for a vibrant, diverse collage without exhausting mobile memory
 // Desktop: preload all 134 photos for the full infinite collage
-const PHOTO_URLS = IS_MOBILE_TOUCH ? ALL_PHOTO_URLS.slice(0, 35) : ALL_PHOTO_URLS;
+const PHOTO_URLS = IS_MOBILE_TOUCH ? ALL_PHOTO_URLS.slice(0, 48) : ALL_PHOTO_URLS;
 
 export default function GridBackground({ isHome = true }: { isHome?: boolean }) {
     const groupRef = useRef<THREE.Group>(null);
-    const { viewport } = useThree();
+    const { viewport, gl } = useThree();
     const heroDimUniform = useMemo(() => ({ value: 1.0 }), []);
     const dimRef = useRef(1.0);
 
@@ -41,9 +41,9 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
     let cols = Math.ceil(viewport.width / TILE_SIZE) + 2;
     let rows = Math.ceil(viewport.height / TILE_SIZE) + 2;
 
-    // Expand grid so all photos get slots on desktop, but keep mobile lean & smooth (35 tiles max)
+    // Expand grid so all photos get slots on desktop, but keep mobile lean & smooth (42 tiles buffer)
     const isMobileViewport = viewport.width < 5.0 || visibleCols <= 3;
-    const maxTargetTiles = isMobileViewport ? 35 : PHOTO_URLS.length;
+    const maxTargetTiles = isMobileViewport ? 42 : PHOTO_URLS.length;
 
     while (cols * rows < maxTargetTiles) {
         if (cols <= rows) cols++;
@@ -58,12 +58,17 @@ export default function GridBackground({ isHome = true }: { isHome?: boolean }) 
     // 2. Preload textures with R3F useLoader & Suspense
     const textures = useLoader(THREE.TextureLoader, PHOTO_URLS);
 
-    // Configure texture color space, filtering, and CENTER COVER-FIT (mencegah gambar gepeng)
+    // Configure texture color space, anisotropic HD filtering, and CENTER COVER-FIT (mencegah gambar gepeng/pecah)
     useMemo(() => {
+        const maxAniso = gl?.capabilities?.getMaxAnisotropy?.() || 4;
+        const anisoLevel = Math.min(maxAniso, 8);
+
         textures.forEach((tex) => {
             tex.colorSpace = THREE.SRGBColorSpace;
+            tex.anisotropy = anisoLevel;
             tex.generateMipmaps = true;
             tex.minFilter = THREE.LinearMipmapLinearFilter;
+            tex.magFilter = THREE.LinearFilter;
 
             // Center Cover-Fit: crop tepi foto agar pas 1:1 di dalam balok tanpa distorsi/gepeng
             if (tex.image && tex.image.width && tex.image.height) {
