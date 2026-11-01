@@ -14,6 +14,18 @@ export const metadata: Metadata = {
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
   description:
     'House. Techno. Bass. And everything in between. The underground scene of the DMV.',
+  icons: {
+    icon: [
+      { url: '/favicon_io/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon_io/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon_io/favicon.ico', sizes: 'any' },
+    ],
+    shortcut: '/favicon_io/favicon.ico',
+    apple: [
+      { url: '/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/favicon_io/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -24,6 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
       <head>
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png" />
+        <link rel="manifest" href="/favicon_io/site.webmanifest" />
         {/* Synchronous 0ms*/}
         <script
           dangerouslySetInnerHTML={{
