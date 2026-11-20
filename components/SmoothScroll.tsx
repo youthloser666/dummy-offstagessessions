@@ -20,6 +20,18 @@ export default function SmoothScroll({ children }: SmoothScrollProps) {
 
     const isAdmin = pathname?.startsWith('/offstageadminv');
 
+    // Use pure native browser scrolling inside the /offstageadminv console (FR-011 / FR-012)
+    if (isAdmin) {
+      if (lenisRef.current) {
+        lenisRef.current.destroy();
+        lenisRef.current = null;
+      }
+      if (typeof window !== 'undefined' && (window as any).__lenis) {
+        delete (window as any).__lenis;
+      }
+      return;
+    }
+
     // Detect touch-first mobile & tablet devices
     const isMobileTouch =
       typeof window !== 'undefined' &&

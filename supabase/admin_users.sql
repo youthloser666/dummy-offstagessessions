@@ -42,11 +42,6 @@ ON public.admin_users FOR ALL
 USING (auth.jwt() ->> 'role' = 'service_role' OR auth.role() = 'service_role');
 
 -- ============================================================================
--- 4. INITIAL SEED: DEFAULT ADMIN ACCOUNT
--- Username       : admin
--- Role           : admin
--- Password (1st) : offstageadmin2026
--- PIN (2nd)      : 260899
 -- ============================================================================
 INSERT INTO public.admin_users (
     id,

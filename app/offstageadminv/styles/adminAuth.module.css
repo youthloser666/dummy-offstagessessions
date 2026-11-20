@@ -1,0 +1,309 @@
+/* Flat DESIGN.md stylesheet for two-step Admin authentication & session verification. */
+
+.loginWrapper {
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--os-surface-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.sessionSplash {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sessionSplashLabel {
+  color: var(--os-ink-secondary);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--os-surface-tile-1);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-lg);
+  padding: 32px 28px;
+}
+
+.loginHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.loginLogoWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginLogoImg {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.loginLogoImgLarge {
+  height: 32px;
+}
+
+.loginBrandSubtitle {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--os-ink-secondary);
+}
+
+.loginErrorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--os-radius-sm);
+  background-color: var(--os-status-danger-soft);
+  border: 1px solid var(--os-status-danger-border);
+  color: var(--os-status-danger);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.loginStepTitle {
+  font-family: var(--os-font-display);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.224px;
+  color: var(--os-ink-primary);
+  margin-bottom: 4px;
+}
+
+.loginStepDesc {
+  font-size: 13px;
+  color: var(--os-ink-secondary);
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.formLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--os-ink-secondary);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--os-ink-secondary);
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.loginInput {
+  width: 100%;
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-strong);
+  border-radius: var(--os-radius-sm);
+  padding: 10px 38px 10px 36px;
+  color: var(--os-ink-primary);
+  font-family: var(--os-font-text);
+  font-size: 13px;
+  font-weight: 400;
+  transition: border-color 0.15s ease;
+}
+
+.loginInput:focus {
+  border-color: var(--os-accent-lime);
+}
+
+.loginInput:focus-visible {
+  outline: 2px solid var(--os-accent-lime);
+  outline-offset: 2px;
+}
+
+.togglePassBtn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--os-ink-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.togglePassBtn:hover {
+  color: var(--os-ink-primary);
+}
+
+.loginSubmitBtn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 20px;
+  border-radius: var(--os-radius-pill);
+  border: 1px solid var(--os-cta-bg);
+  background-color: var(--os-cta-bg);
+  color: var(--os-cta-ink);
+  font-family: var(--os-font-text);
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.loginSubmitBtn:hover:not(:disabled) {
+  background-color: var(--os-login-cta-hover-bg);
+  border-color: var(--os-login-cta-hover-bg);
+}
+
+.loginSubmitBtn:active:not(:disabled) {
+  transform: var(--os-press-scale);
+}
+
+.loginSubmitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.loginSubmitBtn:focus-visible {
+  outline: 2px solid var(--os-accent-lime);
+  outline-offset: 2px;
+}
+
+/* Step 2 Security PIN Slots & Keypad */
+.hiddenPinInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  width: 0;
+}
+
+.pinSlotsWrap {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.pinSlot {
+  height: 46px;
+  border-radius: var(--os-radius-md);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--os-ink-primary);
+}
+
+.pinSlotFilled {
+  border-color: var(--os-accent-lime-border);
+  background-color: var(--os-surface-tile-2);
+  color: var(--os-accent-lime);
+}
+
+.pinSlotActive {
+  border-color: var(--os-accent-lime);
+}
+
+.keypadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.keypadBtn {
+  height: 46px;
+  border-radius: var(--os-radius-md);
+  background-color: var(--os-surface-tile-2);
+  border: 1px solid var(--os-hairline-subtle);
+  color: var(--os-ink-primary);
+  font-family: var(--os-font-display);
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.keypadBtn:hover:not(:disabled) {
+  background-color: var(--os-surface-tile-3);
+  border-color: var(--os-hairline-strong);
+}
+
+.keypadBtn:active:not(:disabled) {
+  transform: var(--os-press-scale);
+}
+
+.keypadBtn:focus-visible {
+  outline: 2px solid var(--os-accent-lime);
+  outline-offset: 2px;
+}
+
+.keypadActionBtn {
+  font-family: var(--os-font-text);
+  font-size: 12px;
+  color: var(--os-ink-secondary);
+}
+
+.loginBackBtn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 14px;
+  border-radius: var(--os-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--os-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loginBackBtn:hover {
+  color: var(--os-ink-primary);
+  background-color: var(--os-surface-tile-2);
+}
+
+@media (max-width: 480px) {
+  .loginCard {
+    padding: 24px 18px;
+  }
+}
+

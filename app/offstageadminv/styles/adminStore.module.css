@@ -1,0 +1,427 @@
+/* Domain stylesheet for Store & Merch management (Shop Banners & Shopify Catalog) */
+
+.subTabsNav {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 24px;
+  max-width: 100%;
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-md);
+}
+
+.subTabBtn {
+  padding: 8px 16px;
+  border-radius: var(--os-radius-sm);
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: var(--os-ink-secondary);
+  font-family: var(--os-font-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.subTabBtn:hover {
+  color: var(--os-ink-primary);
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.subTabBtn:active {
+  transform: var(--os-press-scale);
+}
+
+.subTabBtn:focus-visible {
+  outline: 2px solid var(--os-accent-lime);
+  outline-offset: 2px;
+}
+
+.subTabBtnActive {
+  background-color: var(--os-surface-tile-1);
+  border-color: var(--os-hairline-strong);
+  color: var(--os-accent-lime);
+}
+
+.bannerDualGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.bannerUploadBox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px;
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-md);
+}
+
+.bannerUploadHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bannerUploadTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+}
+
+.bannerUploadSpec {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+}
+
+.bannerPreviewFrame {
+  width: 100%;
+  height: 140px;
+  border-radius: var(--os-radius-sm);
+  overflow: hidden;
+  background-color: var(--os-surface-black);
+  border: 1px solid var(--os-hairline-subtle);
+}
+
+.bannerPreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bannerPreviewActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bannerUploadStatusOk {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--os-status-success);
+}
+
+.bannerDropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--os-surface-tile-1);
+  border: 1px dashed var(--os-hairline-strong);
+  border-radius: var(--os-radius-sm);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.bannerDropzone:hover {
+  border-color: var(--os-accent-lime-border);
+  background-color: var(--os-surface-tile-2);
+}
+
+.bannerUploadPromptTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+}
+
+.bannerUploadPromptSub {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+  margin-top: 4px;
+}
+
+.toggleCheckboxesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-sm);
+}
+
+.bannerTableThumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bannerDesktopThumb {
+  width: 96px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: var(--os-radius-xs);
+  border: 1px solid var(--os-hairline-subtle);
+  background-color: var(--os-surface-tile-3);
+}
+
+.bannerNoDesktopThumb {
+  width: 96px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--os-radius-xs);
+  border: 1px dashed var(--os-hairline-strong);
+  background-color: var(--os-surface-tile-3);
+  color: var(--os-ink-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bannerMobileThumb {
+  width: 30px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--os-radius-xs);
+  border: 1px solid var(--os-hairline-subtle);
+  background-color: var(--os-surface-tile-3);
+}
+
+.bannerActiveToggleBtn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.editBannerModalContent {
+  max-width: 740px;
+}
+
+/* Shopify Catalog Section */
+.catalogToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.catalogSearchInputWrap {
+  flex: 1;
+  min-width: 220px;
+  max-width: 380px;
+}
+
+.catalogFilterButtons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.catalogFilterBtn {
+  padding: 7px 13px;
+  border-radius: var(--os-radius-sm);
+  border: 1px solid var(--os-hairline-subtle);
+  background-color: var(--os-surface-tile-3);
+  color: var(--os-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.catalogFilterBtn:hover {
+  color: var(--os-ink-primary);
+  border-color: var(--os-hairline-strong);
+}
+
+.catalogFilterBtn:active {
+  transform: var(--os-press-scale);
+}
+
+.catalogFilterBtnActive {
+  background-color: var(--os-accent-lime-soft);
+  border-color: var(--os-accent-lime-border);
+  color: var(--os-accent-lime);
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.productCard {
+  background-color: var(--os-surface-tile-1);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease;
+}
+
+.productCard:hover {
+  border-color: var(--os-hairline-strong);
+}
+
+.productImageBox {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: var(--os-surface-tile-3);
+  border-bottom: 1px solid var(--os-hairline-subtle);
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.productNoImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--os-ink-secondary);
+}
+
+.productStockBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-surface-black);
+  border: 1px solid var(--os-hairline-strong);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.productStockBadgeIn {
+  color: var(--os-status-success);
+  border-color: var(--os-status-success-border);
+}
+
+.productStockBadgeOut {
+  color: var(--os-status-danger);
+  border-color: var(--os-status-danger-border);
+}
+
+.productStockDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--os-radius-pill);
+}
+
+.productStockDotIn {
+  background-color: var(--os-status-success);
+}
+
+.productStockDotOut {
+  background-color: var(--os-status-danger);
+}
+
+.productCardBody {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.productTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+  line-height: 1.35;
+}
+
+.productMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.productPrice {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--os-accent-lime);
+}
+
+.productVariantsLabel {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+}
+
+.productCardFooter {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--os-hairline-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.productEmptyBox {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--os-ink-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .bannerDualGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .subTabsNav {
+    display: flex;
+    width: 100%;
+  }
+
+  .subTabBtn {
+    flex: 1 1 auto;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  .catalogSearchInputWrap {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .productGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+

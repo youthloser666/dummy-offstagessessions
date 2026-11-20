@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySessionToken } from '@/lib/services/adminUsers';
-import { AdminUserPublic } from '@/app/offstageadminv/types';
+import { AdminUserPublic } from '@/lib/types/admin';
 
 export interface AdminAuthResult {
   authorized: boolean;

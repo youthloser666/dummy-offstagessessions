@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
-import { AdminUser, AdminUserPublic, AdminRole } from '@/app/offstageadminv/types';
+import { AdminUser, AdminUserPublic, AdminRole } from '@/lib/types/admin';
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET_PASSKEY || 'offstage-session-admin-2026';
 const SETTINGS_KEY = 'admin_accounts';

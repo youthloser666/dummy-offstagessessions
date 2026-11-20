@@ -1,0 +1,311 @@
+/* Domain stylesheet for Meta Pixel & Events Manager sub-system */
+
+.pixelHeaderCard {
+  margin-bottom: 24px;
+}
+
+.pixelHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pixelIdentityCluster {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pixelLogoBadge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--os-radius-md);
+  background-color: #1877f2;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pixelTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pixelHeading {
+  margin: 0;
+  font-family: var(--os-font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.224px;
+  color: var(--os-ink-primary);
+}
+
+.pixelIdBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pixelIdCode {
+  font-family: var(--os-font-mono);
+  font-size: 12px;
+  color: var(--os-accent-lime);
+  padding: 2px 8px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+}
+
+.pixelStatusCluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.pixelLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-status-success-soft);
+  border: 1px solid var(--os-status-success-border);
+  color: var(--os-status-success);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pixelSimBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-status-warning-soft);
+  border: 1px solid rgba(255, 214, 10, 0.35);
+  color: var(--os-status-warning);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pixelStatusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--os-radius-pill);
+  background-color: currentColor;
+}
+
+.pixelGaMeta {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+  font-family: var(--os-font-mono);
+}
+
+.pixelMainGrid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.simulatorButtonsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.simulatorEventBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--os-radius-md);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-strong);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.simulatorEventBtn:hover {
+  background-color: var(--os-surface-tile-2);
+  border-color: var(--os-accent-lime-border);
+}
+
+.simulatorEventBtn:active {
+  transform: var(--os-press-scale);
+}
+
+.simulatorEventBtn:focus-visible {
+  outline: 2px solid var(--os-accent-lime);
+  outline-offset: 2px;
+}
+
+.simulatorEventName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+}
+
+.simulatorEventHint {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+  margin-top: 3px;
+}
+
+.customEventDivider {
+  padding-top: 16px;
+  border-top: 1px solid var(--os-hairline-subtle);
+}
+
+.customEventHeading {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--os-ink-secondary);
+  margin: 0 0 12px 0;
+}
+
+.consoleFilterGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.consoleFilterBtn {
+  padding: 5px 10px;
+  border-radius: var(--os-radius-sm);
+  border: 1px solid var(--os-hairline-subtle);
+  background-color: var(--os-surface-tile-3);
+  color: var(--os-ink-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.consoleFilterBtn:hover {
+  color: var(--os-ink-primary);
+}
+
+.consoleFilterBtn:active {
+  transform: var(--os-press-scale);
+}
+
+.consoleFilterBtnActive {
+  background-color: var(--os-accent-lime-soft);
+  border-color: var(--os-accent-lime-border);
+  color: var(--os-accent-lime);
+}
+
+.consoleLogList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 460px;
+  overflow-y: auto;
+}
+
+.consoleLogEntry {
+  padding: 12px 14px;
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  border-radius: var(--os-radius-md);
+}
+
+.consoleLogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.consoleLogIdentity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.consoleEventName {
+  font-family: var(--os-font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+}
+
+.consoleTimestamp {
+  font-family: var(--os-font-mono);
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+}
+
+.consolePayloadPre {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-surface-black);
+  border: 1px solid var(--os-hairline-subtle);
+  font-family: var(--os-font-mono);
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+  overflow-x: auto;
+}
+
+.consoleEmptyState {
+  padding: 36px 16px;
+  text-align: center;
+  color: var(--os-ink-secondary);
+  font-size: 13px;
+}
+
+.auditCodeTag {
+  font-family: var(--os-font-mono);
+  font-size: 11px;
+  color: var(--os-accent-lime);
+  padding: 2px 6px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+}
+
+.auditNoticeWell {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: var(--os-radius-md);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  font-size: 12px;
+  color: var(--os-ink-secondary);
+  line-height: 1.65;
+}
+
+@media (max-width: 900px) {
+  .pixelMainGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pixelStatusCluster {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 500px) {
+  .simulatorButtonsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

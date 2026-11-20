@@ -1,179 +1,220 @@
 'use client';
 
 import React from 'react';
-import styles from '../../admin.module.css';
-import AdminImageUploader from '../AdminImageUploader';
+import type { ShowEditDraft } from '../../types';
+import overviewStyles from '../../styles/adminOverview.module.css';
+import shellStyles from '../../styles/adminShell.module.css';
+import { AdminImageUploader } from '../shared/AdminImageUploader';
 
 interface EditShowModalProps {
-  editingShow: any;
-  setEditingShow: (show: any) => void;
-  editShowUploading: boolean;
-  editShowPreview: string | null;
-  editShowFileInputRef?: React.RefObject<HTMLInputElement>;
-  handleEditFileUpload: (file: File, target: 'show' | 'media') => void;
-  handleUpdateShow: (e: React.FormEvent) => void;
+  editingShow: ShowEditDraft | null;
+  onClose: () => void;
+  onSubmit: (event: React.FormEvent) => void;
+  onChange: (updatedShow: ShowEditDraft) => void;
+  onUploadPoster: (file: File) => void;
+  isUploadingPoster: boolean;
+  posterPreviewUrl: string | null;
 }
 
-export default function EditShowModal({
+export function EditShowModal({
   editingShow,
-  setEditingShow,
-  editShowUploading,
-  editShowPreview,
-  handleEditFileUpload,
-  handleUpdateShow,
+  onClose,
+  onSubmit,
+  onChange,
+  onUploadPoster,
+  isUploadingPoster,
+  posterPreviewUrl,
 }: EditShowModalProps) {
-  if (!editingShow) return null;
+  if (!editingShow) {
+    return null;
+  }
 
   return (
-    <div className={styles.modalBackdrop} onClick={() => setEditingShow(null)} data-lenis-prevent="true">
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <div>
-            <h2 className={styles.modalTitle}>Edit Show Details</h2>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#86868b' }}>
-              Updating event: <strong style={{ color: '#ffffff' }}>{editingShow.name}</strong>
-            </p>
-          </div>
+    <div
+      className={shellStyles.modalBackdrop}
+      data-lenis-prevent="true"
+      onClick={onClose}
+    >
+      <div
+        className={shellStyles.modalContent}
+        data-lenis-prevent="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={shellStyles.modalHeader}>
+          <h3 className={shellStyles.modalTitle}>Edit Event / Session</h3>
           <button
-            className={styles.modalCloseBtn}
-            onClick={() => setEditingShow(null)}
-            aria-label="Close"
+            type="button"
+            className={shellStyles.modalCloseBtn}
+            onClick={onClose}
+            aria-label="Close modal"
           >
-            ✕
+            &times;
           </button>
         </div>
 
-        <form onSubmit={handleUpdateShow}>
-          <AdminImageUploader
-            label="Event Poster (Click to Replace via Cloudinary)"
-            value={editShowPreview || editingShow.poster_url}
-            uploading={editShowUploading}
-            readyText="Poster Ready"
-            uploadPrompt="Supports WebP, PNG, JPG (automatically uploaded to Cloudinary)"
-            onFileSelect={(file) => handleEditFileUpload(file, 'show')}
-          />
-
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Artist / Event Title *</label>
+        <form onSubmit={onSubmit}>
+          <div className={shellStyles.formGrid2}>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Event Name *</label>
               <input
                 type="text"
-                className={styles.formInput}
+                required
+                className={shellStyles.formInput}
                 value={editingShow.name}
-                onChange={(e) => setEditingShow({ ...editingShow, name: e.target.value })}
-                required
+                onChange={(event) => onChange({ ...editingShow, name: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Subtitle / Tagline</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Lineup / Subtitle</label>
               <input
                 type="text"
-                className={styles.formInput}
+                className={shellStyles.formInput}
                 value={editingShow.subtitle}
-                onChange={(e) => setEditingShow({ ...editingShow, subtitle: e.target.value })}
+                onChange={(event) => onChange({ ...editingShow, subtitle: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Venue *</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Date Code</label>
               <input
                 type="text"
-                className={styles.formInput}
-                value={editingShow.venue}
-                onChange={(e) => setEditingShow({ ...editingShow, venue: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Time</label>
-              <input
-                type="text"
-                className={styles.formInput}
-                value={editingShow.time}
-                onChange={(e) => setEditingShow({ ...editingShow, time: e.target.value })}
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Date Code (e.g. 07.25)</label>
-              <input
-                type="text"
-                className={styles.formInput}
+                className={shellStyles.formInput}
                 value={editingShow.date_code}
-                onChange={(e) => setEditingShow({ ...editingShow, date_code: e.target.value })}
+                onChange={(event) => onChange({ ...editingShow, date_code: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Date Formatted (e.g. Fri Aug 25)</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Date Formatted</label>
               <input
                 type="text"
-                className={styles.formInput}
+                className={shellStyles.formInput}
                 value={editingShow.date_formatted}
-                onChange={(e) => setEditingShow({ ...editingShow, date_formatted: e.target.value })}
+                onChange={(event) =>
+                  onChange({ ...editingShow, date_formatted: event.target.value })
+                }
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Ticket / Event URL</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Event Calendar Date</label>
+              <input
+                type="date"
+                className={shellStyles.formInput}
+                value={editingShow.event_date}
+                onChange={(event) => onChange({ ...editingShow, event_date: event.target.value })}
+              />
+            </div>
+
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Month Group</label>
+              <input
+                type="text"
+                className={shellStyles.formInput}
+                value={editingShow.month}
+                onChange={(event) => onChange({ ...editingShow, month: event.target.value })}
+              />
+            </div>
+
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Venue *</label>
+              <input
+                type="text"
+                required
+                className={shellStyles.formInput}
+                value={editingShow.venue}
+                onChange={(event) => onChange({ ...editingShow, venue: event.target.value })}
+              />
+            </div>
+
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Time</label>
+              <input
+                type="text"
+                className={shellStyles.formInput}
+                value={editingShow.time}
+                onChange={(event) => onChange({ ...editingShow, time: event.target.value })}
+              />
+            </div>
+
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Posh Ticket URL</label>
               <input
                 type="url"
-                className={styles.formInput}
-                placeholder="https://... (e.g. Eventbrite, Posh, RA, etc.)"
+                className={shellStyles.formInput}
                 value={editingShow.posh_url}
-                onChange={(e) => setEditingShow({ ...editingShow, posh_url: e.target.value })}
+                onChange={(event) => onChange({ ...editingShow, posh_url: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Music Tags (comma-separated)</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Tags (comma separated)</label>
               <input
                 type="text"
-                className={styles.formInput}
-                placeholder="House, Techno, Bass"
+                className={shellStyles.formInput}
                 value={editingShow.tags}
-                onChange={(e) => setEditingShow({ ...editingShow, tags: e.target.value })}
+                onChange={(event) => onChange({ ...editingShow, tags: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Event Status</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Status</label>
               <select
-                className={styles.formSelect}
+                className={shellStyles.formSelect}
                 value={editingShow.status}
-                onChange={(e) => setEditingShow({ ...editingShow, status: e.target.value })}
+                onChange={(event) => onChange({ ...editingShow, status: event.target.value })}
               >
                 <option value="upcoming">Upcoming</option>
                 <option value="past">Past</option>
-                <option value="cancelled">Cancelled</option>
               </select>
+            </div>
+
+            <div className={`${shellStyles.formGroup} ${overviewStyles.rowGapMd}`}>
+              <label className={shellStyles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={editingShow.featured}
+                  onChange={(event) =>
+                    onChange({ ...editingShow, featured: event.target.checked })
+                  }
+                />
+                <span>Featured Show</span>
+              </label>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16 }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#a1a1a6', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={editingShow.featured}
-                onChange={(e) => setEditingShow({ ...editingShow, featured: e.target.checked })}
-              />
-              Mark as Featured Event
-            </label>
+          <div className={shellStyles.formGroup}>
+            <label className={shellStyles.formLabel}>Event Poster Image</label>
+            <AdminImageUploader
+              previewUrl={posterPreviewUrl || editingShow.poster_url || null}
+              isUploading={isUploadingPoster}
+              onFileSelect={onUploadPoster}
+              emptyTitle="Click to replace poster"
+              emptySubtitle="WebP auto-optimization enabled"
+              uploadedStatusText="Poster ready"
+              previewAlt="Poster preview"
+            />
+          </div>
 
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                className={styles.btnSecondary}
-                onClick={() => setEditingShow(null)}
-              >
-                Cancel
-              </button>
-              <button type="submit" className={styles.btnPrimary}>
-                Save Changes
-              </button>
-            </div>
+          <div className={shellStyles.formGroup}>
+            <label className={shellStyles.formLabel}>Or Poster Image URL</label>
+            <input
+              type="text"
+              className={shellStyles.formInput}
+              placeholder="https://..."
+              value={editingShow.poster_url}
+              onChange={(event) => onChange({ ...editingShow, poster_url: event.target.value })}
+            />
+          </div>
+
+          <div className={shellStyles.modalFooter}>
+            <button type="button" className={shellStyles.btnSecondary} onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className={shellStyles.btnPrimary} disabled={isUploadingPoster}>
+              Save Changes
+            </button>
           </div>
         </form>
       </div>

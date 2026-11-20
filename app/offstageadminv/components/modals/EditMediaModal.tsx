@@ -1,102 +1,154 @@
 'use client';
 
 import React from 'react';
-import styles from '../../admin.module.css';
-import AdminImageUploader from '../AdminImageUploader';
+import type { MediaEditDraft } from '../../types';
+import shellStyles from '../../styles/adminShell.module.css';
+import { AdminImageUploader } from '../shared/AdminImageUploader';
 
 interface EditMediaModalProps {
-  editingMedia: any;
-  setEditingMedia: (media: any) => void;
-  editMediaUploading: boolean;
-  editMediaPreview: string | null;
-  editMediaFileInputRef?: React.RefObject<HTMLInputElement>;
-  handleEditFileUpload: (file: File, target: 'show' | 'media') => void;
-  handleUpdateMedia: (e: React.FormEvent) => void;
+  editingMedia: MediaEditDraft | null;
+  onClose: () => void;
+  onSubmit: (event: React.FormEvent) => void;
+  onChange: (updatedMedia: MediaEditDraft) => void;
+  onUploadThumbnail: (file: File) => void;
+  isUploadingThumbnail: boolean;
+  thumbnailPreviewUrl: string | null;
 }
 
-export default function EditMediaModal({
+export function EditMediaModal({
   editingMedia,
-  setEditingMedia,
-  editMediaUploading,
-  editMediaPreview,
-  handleEditFileUpload,
-  handleUpdateMedia,
+  onClose,
+  onSubmit,
+  onChange,
+  onUploadThumbnail,
+  isUploadingThumbnail,
+  thumbnailPreviewUrl,
 }: EditMediaModalProps) {
-  if (!editingMedia) return null;
+  if (!editingMedia) {
+    return null;
+  }
 
   return (
-    <div className={styles.modalBackdrop} onClick={() => setEditingMedia(null)} data-lenis-prevent="true">
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <div>
-            <h2 className={styles.modalTitle}>Edit Media Archive</h2>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#86868b' }}>
-              Updating gallery: <strong style={{ color: '#ffffff' }}>{editingMedia.name}</strong>
-            </p>
-          </div>
+    <div
+      className={shellStyles.modalBackdrop}
+      data-lenis-prevent="true"
+      onClick={onClose}
+    >
+      <div
+        className={shellStyles.modalContent}
+        data-lenis-prevent="true"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className={shellStyles.modalHeader}>
+          <h3 className={shellStyles.modalTitle}>Edit Media Archive</h3>
           <button
-            className={styles.modalCloseBtn}
-            onClick={() => setEditingMedia(null)}
-            aria-label="Close"
+            type="button"
+            className={shellStyles.modalCloseBtn}
+            onClick={onClose}
+            aria-label="Close modal"
           >
-            ✕
+            &times;
           </button>
         </div>
 
-        <form onSubmit={handleUpdateMedia}>
-          <AdminImageUploader
-            label="Gallery Thumbnail (Click to Replace via Cloudinary)"
-            value={editMediaPreview || editingMedia.thumbnail_url}
-            uploading={editMediaUploading}
-            readyText="Thumbnail Ready"
-            uploadPrompt="Instant upload to Cloudinary media storage"
-            onFileSelect={(file) => handleEditFileUpload(file, 'media')}
-          />
-
-          <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Show / Artist Title *</label>
+        <form onSubmit={onSubmit}>
+          <div className={shellStyles.formGrid2}>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Gallery / Recap Name *</label>
               <input
                 type="text"
-                className={styles.formInput}
+                required
+                className={shellStyles.formInput}
                 value={editingMedia.name}
-                onChange={(e) => setEditingMedia({ ...editingMedia, name: e.target.value })}
-                required
+                onChange={(event) => onChange({ ...editingMedia, name: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Date & Venue String *</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Event Date *</label>
               <input
                 type="text"
-                className={styles.formInput}
-                value={editingMedia.date}
-                onChange={(e) => setEditingMedia({ ...editingMedia, date: e.target.value })}
                 required
+                className={shellStyles.formInput}
+                value={editingMedia.date}
+                onChange={(event) => onChange({ ...editingMedia, date: event.target.value })}
               />
             </div>
 
-            <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
-              <label className={styles.formLabel}>Facebook Album URL *</label>
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Category</label>
+              <select
+                className={shellStyles.formSelect}
+                value={editingMedia.category}
+                onChange={(event) => onChange({ ...editingMedia, category: event.target.value })}
+              >
+                <option value="photo">Photo Album</option>
+                <option value="video">Video Recap</option>
+              </select>
+            </div>
+
+            <div className={shellStyles.formGroup}>
+              <label className={shellStyles.formLabel}>Display Order</label>
               <input
-                type="url"
-                className={styles.formInput}
-                value={editingMedia.facebook_url}
-                onChange={(e) => setEditingMedia({ ...editingMedia, facebook_url: e.target.value })}
-                required
+                type="number"
+                className={shellStyles.formInput}
+                value={editingMedia.display_order ?? 0}
+                onChange={(event) =>
+                  onChange({
+                    ...editingMedia,
+                    display_order: Number.parseInt(event.target.value, 10) || 0,
+                  })
+                }
               />
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 16 }}>
-            <button
-              type="button"
-              className={styles.btnSecondary}
-              onClick={() => setEditingMedia(null)}
-            >
+          <div className={shellStyles.formGroup}>
+            <label className={shellStyles.formLabel}>Facebook / Gallery Link URL *</label>
+            <input
+              type="url"
+              required
+              className={shellStyles.formInput}
+              value={editingMedia.facebook_url}
+              onChange={(event) => onChange({ ...editingMedia, facebook_url: event.target.value })}
+            />
+          </div>
+
+          <div className={shellStyles.formGroup}>
+            <label className={shellStyles.formLabel}>Thumbnail Image</label>
+            <AdminImageUploader
+              previewUrl={thumbnailPreviewUrl || editingMedia.thumbnail_url || null}
+              isUploading={isUploadingThumbnail}
+              onFileSelect={onUploadThumbnail}
+              emptyTitle="Click to replace thumbnail"
+              emptySubtitle="PNG, JPG, WEBP auto-converted"
+              uploadedStatusText="Thumbnail ready"
+              previewAlt="Thumbnail preview"
+            />
+          </div>
+
+          <div className={shellStyles.formGroup}>
+            <label className={shellStyles.formLabel}>Or Thumbnail Image URL</label>
+            <input
+              type="text"
+              className={shellStyles.formInput}
+              placeholder="https://..."
+              value={editingMedia.thumbnail_url}
+              onChange={(event) =>
+                onChange({ ...editingMedia, thumbnail_url: event.target.value })
+              }
+            />
+          </div>
+
+          <div className={shellStyles.modalFooter}>
+            <button type="button" className={shellStyles.btnSecondary} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={styles.btnPrimary}>
+            <button
+              type="submit"
+              className={shellStyles.btnPrimary}
+              disabled={isUploadingThumbnail}
+            >
               Save Changes
             </button>
           </div>

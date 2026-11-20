@@ -37,3 +37,9 @@ Thumbs.db
 #other
 new.txt
 rencana-3d-glass-grid-diagonal.md
+.agents
+.specify
+specs
+DESIGN.md
+supabase/admin_users.sql
+/supabase

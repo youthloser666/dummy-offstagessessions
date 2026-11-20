@@ -1,0 +1,68 @@
+/* Scoped DESIGN.md dark-theme design tokens for Offstage Sessions Admin Console.
+   Applied exclusively via `.consoleThemeRoot` inside app/offstageadminv/page.tsx
+   to avoid polluting public visitor pages or app/globals.css. */
+
+.consoleThemeRoot {
+  /* Dark layered surfaces (DESIGN.md) */
+  --os-surface-black: #000000;
+  --os-surface-tile-3: #252527;
+  --os-surface-tile-1: #272729;
+  --os-surface-tile-2: #2a2a2c;
+  --os-ink-primary: #ffffff;
+  --os-ink-secondary: #cccccc;
+  --os-hairline-subtle: rgba(255, 255, 255, 0.08);
+  --os-hairline-strong: rgba(255, 255, 255, 0.16);
+
+  /* Preserved administrative accent & status palette */
+  --os-cta-bg: #ffffff;
+  --os-cta-ink: #000000;
+  --os-cta-hover-bg: #e2ff32;
+  --os-login-cta-hover-bg: #e8e8ed;
+  --os-accent-lime: #e2ff32;
+  --os-accent-lime-soft: rgba(226, 255, 50, 0.12);
+  --os-accent-lime-border: rgba(226, 255, 50, 0.35);
+  --os-status-success: #55f385;
+  --os-status-success-strong: #34c759;
+  --os-status-success-soft: rgba(85, 243, 133, 0.14);
+  --os-status-success-border: rgba(85, 243, 133, 0.32);
+  --os-status-danger: #ff6b6b;
+  --os-status-danger-strong: #ff453a;
+  --os-status-danger-soft: rgba(255, 69, 58, 0.14);
+  --os-status-danger-border: rgba(255, 69, 58, 0.35);
+  --os-status-warning: #ffd60a;
+  --os-status-warning-soft: rgba(255, 214, 10, 0.14);
+  --os-status-info: #60a5fa;
+  --os-status-info-soft: rgba(96, 165, 250, 0.14);
+  --os-status-info-border: rgba(96, 165, 250, 0.36);
+
+  /* Shape geometry (DESIGN.md) */
+  --os-radius-lg: 18px;
+  --os-radius-md: 11px;
+  --os-radius-sm: 8px;
+  --os-radius-xs: 5px;
+  --os-radius-pill: 9999px;
+
+  /* 8px base spacing rhythm */
+  --os-space-1: 4px;
+  --os-space-2: 8px;
+  --os-space-3: 12px;
+  --os-space-4: 16px;
+  --os-space-5: 17px;
+  --os-space-6: 24px;
+  --os-space-8: 32px;
+
+  /* Typography & press feedback (weights strictly 300/400/600/700; 500 forbidden) */
+  --os-font-display: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --os-font-text: 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --os-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --os-press-scale: scale(0.95);
+
+  min-height: 100vh;
+  background-color: var(--os-surface-black);
+  color: var(--os-ink-primary);
+  font-family: var(--os-font-text);
+  font-weight: 400;
+  cursor: auto !important;
+  -webkit-font-smoothing: antialiased;
+}
+

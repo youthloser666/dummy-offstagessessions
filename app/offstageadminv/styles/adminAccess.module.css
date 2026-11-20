@@ -1,0 +1,102 @@
+/* Domain stylesheet for Admin Access Management (AdminsTab & AddAdminModal) */
+
+.roleBadgeOwner {
+  background-color: var(--os-accent-lime-soft);
+  color: var(--os-accent-lime);
+  border: 1px solid var(--os-accent-lime-border);
+}
+
+.roleBadgeAdmin {
+  background-color: var(--os-surface-tile-3);
+  color: var(--os-ink-secondary);
+  border: 1px solid var(--os-hairline-strong);
+}
+
+.selfAccountTag {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: var(--os-radius-xs);
+  background-color: var(--os-status-info-soft);
+  color: var(--os-status-info);
+  border: 1px solid var(--os-status-info-border);
+}
+
+.protectedAccountNote {
+  font-size: 11px;
+  color: var(--os-ink-secondary);
+}
+
+.addAdminModalContent {
+  max-width: 520px;
+}
+
+.passwordInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWithToggle {
+  padding-right: 64px;
+}
+
+.passwordToggleBtn {
+  position: absolute;
+  right: 8px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--os-ink-secondary);
+  font-family: var(--os-font-text);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.passwordToggleBtn:hover {
+  color: var(--os-ink-primary);
+}
+
+.pinInputField {
+  font-family: var(--os-font-mono);
+  letter-spacing: 0.25em;
+}
+
+.formErrorBanner {
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border-radius: var(--os-radius-sm);
+  background-color: var(--os-status-danger-soft);
+  border: 1px solid var(--os-status-danger-border);
+  color: var(--os-status-danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.securityGuidelinesWell {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: var(--os-radius-md);
+  background-color: var(--os-surface-tile-3);
+  border: 1px solid var(--os-hairline-subtle);
+  font-size: 12px;
+  color: var(--os-ink-secondary);
+  line-height: 1.6;
+}
+
+.securityGuidelinesHeading {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-ink-primary);
+}
+
+.securityGuidelinesList {
+  margin: 0;
+  padding-left: 18px;
+}
+

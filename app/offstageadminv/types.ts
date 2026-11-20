@@ -1,146 +1,154 @@
-export type TabType = 'dashboard' | 'shows' | 'media' | 'inquiries' | 'analytics' | 'metapixel' | 'socials' | 'store' | 'admins';
+export type {
+  AdminRole,
+  AdminUserPublic,
+  AdminUser,
+  SupabaseConnectionDiagnostic,
+  CloudinaryConnectionDiagnostic,
+  ShopifyConnectionDiagnostic,
+  MetaPixelConnectionDiagnostic,
+  Ga4ConnectionDiagnostic,
+  ServiceConnectionDiagnostics,
+  Show,
+  MediaItem,
+  ShopBanner,
+  ShopifyProductVariantItem,
+  ShopifyProductItem,
+  Inquiry,
+  DailyTrendPoint,
+  TopPageMetric,
+  DeviceMetric,
+  TrafficSourceMetric,
+  OsBreakdownMetric,
+  BrowserMetric,
+  RecentVisitEntry,
+  AnalyticsData,
+  SocialForm,
+} from '@/lib/types/admin';
 
-export interface Show {
-  id: string;
-  name: string;
-  subtitle?: string;
-  date?: string;
-  date_code?: string;
-  dateCode?: string;
-  date_formatted?: string;
-  dateFormatted?: string;
-  event_date?: string;
-  eventDate?: string;
-  venue: string;
-  time?: string;
-  poster?: string;
-  poster_url?: string;
-  posterUrl?: string;
-  tags?: string[] | string;
-  featured?: boolean;
-  month?: string;
-  posh_url?: string;
-  poshUrl?: string;
-  ticket_url?: string;
-  ticketUrl?: string;
-  status: 'upcoming' | 'past' | 'cancelled' | string;
-}
+import type { AdminRole } from '@/lib/types/admin';
 
-export interface MediaItem {
-  id: string | number;
-  name: string;
-  date: string;
-  thumbnail?: string;
-  thumbnail_url?: string;
-  image?: string;
-  image_url?: string;
-  facebook_url?: string;
-  facebookUrl?: string;
-  category?: string;
-  display_order?: number;
-}
-
-export interface Inquiry {
-  id: string | number;
-  subject?: string;
-  email?: string;
-  message?: string;
-  category?: string;
-  status?: string;
-  created_at?: string;
-  ip_address?: string;
-}
-
-export interface AnalyticsData {
-  hasData?: boolean;
-  totalViews?: number;
-  viewsToday?: number;
-  uniqueVisitors?: number;
-  uniqueVisitorsToday?: number;
-  dailyTrend?: Array<{
-    date?: string;
-    shortDay: string;
-    label: string;
-    views: number;
-    uniqueVisitors: number;
-  }>;
-  topPages?: Array<{
-    path: string;
-    count: number;
-    percentage: number;
-  }>;
-  devices?: Array<{
-    device: string;
-    count: number;
-    percentage: number;
-  }>;
-  sources?: Array<{
-    source: string;
-    count: number;
-  }>;
-  osBreakdown?: Array<{
-    os: string;
-    count: number;
-  }>;
-  recentVisits?: Array<{
-    id?: string;
-    path?: string;
-    device?: string;
-    browser?: string;
-    os?: string;
-    referrer?: string;
-    created_at?: string;
-  }>;
-}
-
-export interface SocialForm {
-  instagram: string;
-  tiktok: string;
-  facebook: string;
-  email: string;
-  spotify: string;
-  soundcloud: string;
-  youtube: string;
-}
+export type TabType =
+  | 'dashboard'
+  | 'shows'
+  | 'media'
+  | 'inquiries'
+  | 'analytics'
+  | 'metapixel'
+  | 'socials'
+  | 'store'
+  | 'admins';
 
 export interface NotificationState {
   type: 'success' | 'error';
   message: string;
 }
 
-export interface ShopBanner {
-  id: string;
-  title: string;
-  category: string;
-  price?: string;
-  image_url: string;
-  mobile_image_url?: string;
-  link_url?: string;
-  button_text?: string;
-  display_order: number;
-  active: boolean;
-  hide_title?: boolean;
-  hide_price?: boolean;
-  hide_button?: boolean;
-  created_at?: string;
-  updated_at?: string;
+export type NotifyHandler = (type: 'success' | 'error', message: string) => void;
+
+export interface ShowFormDraft {
+  name: string;
+  subtitle: string;
+  date_code: string;
+  date_formatted: string;
+  event_date: string;
+  venue: string;
+  time: string;
+  poster_url: string;
+  tags: string;
+  featured: boolean;
+  month: string;
+  posh_url: string;
+  status: string;
 }
 
-export type AdminRole = 'admin' | 'superadmin' | 'manager';
-
-export interface AdminUserPublic {
+export interface ShowEditDraft {
   id: string;
+  name: string;
+  subtitle: string;
+  date_code: string;
+  date_formatted: string;
+  event_date: string;
+  venue: string;
+  time: string;
+  poster_url: string;
+  tags: string;
+  featured: boolean;
+  month: string;
+  posh_url: string;
+  status: string;
+}
+
+export interface MediaFormDraft {
+  name: string;
+  date: string;
+  thumbnail_url: string;
+  facebook_url: string;
+  category: string;
+}
+
+export interface MediaEditDraft {
+  id: string | number;
+  name: string;
+  date: string;
+  thumbnail_url: string;
+  facebook_url: string;
+  category: string;
+  display_order?: number;
+}
+
+export interface ShopBannerFormDraft {
+  title: string;
+  category: string;
+  price: string;
+  image_url: string;
+  mobile_image_url: string;
+  link_url: string;
+  button_text: string;
+  display_order: number;
+  active: boolean;
+  hide_title: boolean;
+  hide_price: boolean;
+  hide_button: boolean;
+}
+
+export interface IdentifiedAdminPreview {
   username: string;
   name: string;
   role: AdminRole;
-  status: 'active' | 'suspended';
-  created_at: string;
-  last_login_at?: string | null;
 }
 
-export interface AdminUser extends AdminUserPublic {
-  password_hash: string;
-  password_salt: string;
-  pin_hash: string;
-  pin_salt: string;
+export interface PixelEventLogEntry {
+  id: string;
+  name: string;
+  type: 'standard' | 'custom';
+  timestamp: string;
+  date: string;
+  params?: Record<string, unknown>;
+  status: 'sent' | 'simulated';
+}
+
+export type PixelEventFilter = 'all' | 'standard' | 'custom';
+
+export type StoreSubTab = 'banners' | 'products';
+
+export type ProductStockFilter = 'all' | 'in_stock' | 'sold_out';
+
+export type InquiryFilterCriterion =
+  | 'all'
+  | 'unread'
+  | 'Booking'
+  | 'Collaboration'
+  | 'Press'
+  | 'General'
+  | 'replied'
+  | string;
+
+export interface AdminCreationDraft {
+  username: string;
+  name: string;
+  role: AdminRole;
+  password: string;
+  confirmPassword: string;
+  pin: string;
+  confirmPin: string;
 }
