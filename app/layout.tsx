@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { getSiteUrl } from '@/lib/utils/siteUrl';
 import CustomCursor from '@/components/CustomCursor';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
@@ -11,21 +12,22 @@ import TrafficTracker from '@/components/TrafficTracker';
 import Analytics from '@/components/Analytics';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: 'Offstage Sessions — Home of Baltimore & DC Dance Music',
   description:
     'House. Techno. Bass. And everything in between. The underground scene of the DMV.',
   icons: {
     icon: [
-      { url: '/favicon_io/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon_io/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon_io/favicon.ico', sizes: 'any' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
     ],
-    shortcut: '/favicon_io/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: [
-      { url: '/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
-  manifest: '/favicon_io/site.webmanifest',
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -36,10 +38,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black text-white">
       <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png" />
-        <link rel="manifest" href="/favicon_io/site.webmanifest" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
         {/* Synchronous 0ms*/}
         <script
           dangerouslySetInnerHTML={{

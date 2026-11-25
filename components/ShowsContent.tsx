@@ -1,38 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import { motion, useMotionValue, useSpring, useVelocity, useTransform, AnimatePresence } from 'framer-motion';
 import { useReveal } from '@/hooks/useReveal';
+import { useShowsFilter, SHOW_FILTERS } from '@/hooks/useShowsFilter';
 import { Show } from '@/lib/data';
 import { trackViewContent } from '@/lib/analytics';
 import styles from '@/app/shows/shows.module.css';
-
-const FILTERS = ['All', 'House', 'Techno', 'Bass'];
 
 interface ShowsContentProps {
     initialShows?: Show[];
 }
 
 export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
-    const [showsList, setShowsList] = useState<Show[]>(initialShows);
-    const [loading, setLoading] = useState(initialShows.length === 0);
-    const [activeFilter, setActiveFilter] = useState('All');
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [hoveredShow, setHoveredShow] = useState<Show | null>(null);
-
-    // Sync with live shows if client navigates without full page reload
-    useEffect(() => {
-        fetch('/api/shows', { cache: 'no-store' })
-            .then((res) => res.json())
-            .then((json) => {
-                if (json.success && Array.isArray(json.data)) {
-                    setShowsList(json.data);
-                }
-            })
-            .catch((err) => console.warn('Shows live fetch failed:', err))
-            .finally(() => setLoading(false));
-    }, []);
+    const {
+        showsList,
+        filteredShows,
+        loading,
+        activeFilter,
+        setActiveFilter,
+        viewMode,
+        setViewMode,
+        hoveredShow,
+        setHoveredShow,
+    } = useShowsFilter(initialShows);
 
     useReveal([activeFilter, viewMode, showsList]);
 
@@ -63,17 +55,11 @@ export default function ShowsContent({ initialShows = [] }: ShowsContentProps) {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, [viewMode, mouseX, mouseY]);
 
-    // Filter shows based on activeFilter
-    const filteredShows = showsList.filter((show) => {
-        if (activeFilter === 'All') return true;
-        return Array.isArray(show.tags) && show.tags.includes(activeFilter);
-    });
-
     return (
         <div className="bg-transparent" style={{ background: 'transparent' }}>
             <div className={`${styles.filterBar} reveal`}>
                 <div className={styles.filterGroup}>
-                    {FILTERS.map((filter) => (
+                    {SHOW_FILTERS.map((filter) => (
                         <button
                             key={filter}
                             className={`${styles.filterBtn} ${activeFilter === filter ? styles.filterBtnActive : ''

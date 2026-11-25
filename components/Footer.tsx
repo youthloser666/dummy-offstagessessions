@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import ContactEmailForm from './ContactEmailForm';
 import { smoothScrollTo } from '@/lib/utils/scroll';
+import { usePublicSocials } from '@/hooks/usePublicSocials';
 
 interface FooterProps {
     footerBigText?: string;
@@ -11,29 +12,7 @@ interface FooterProps {
 
 export default function Footer({ footerBigText = 'Offstage Sessions' }: FooterProps) {
     const pathname = usePathname();
-    const [socials, setSocials] = useState({
-        email: 'offstage@offstagesessions.com',
-        facebook: 'https://www.facebook.com/offstagesessions',
-        instagram: 'https://instagram.com/offstagesession',
-        tiktok: 'https://www.tiktok.com/@offstagesessions',
-    });
-
-    useEffect(() => {
-        fetch('/api/socials')
-            .then((res) => res.json())
-            .then((json) => {
-                if (json.success && json.data) {
-                    setSocials((prev) => ({
-                        ...prev,
-                        email: json.data.email || prev.email,
-                        facebook: json.data.facebook || prev.facebook,
-                        instagram: json.data.instagram || prev.instagram,
-                        tiktok: json.data.tiktok || prev.tiktok,
-                    }));
-                }
-            })
-            .catch(() => {});
-    }, []);
+    const socials = usePublicSocials();
 
     // Self-contained observer to ensure footer reveal items become visible and STAY visible
     useEffect(() => {
