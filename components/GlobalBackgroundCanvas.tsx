@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useState, useEffect } from 'react';
+import React, { Suspense, useMemo, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { usePathname } from 'next/navigation';
@@ -9,13 +9,55 @@ import GridLines3D from './GridLines3D';
 import HeroVideoBackground from './HeroVideoBackground';
 import HeroScene3D from './HeroScene3D';
 
+function checkWebGLSupport(): boolean {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+    try {
+        const canvas = document.createElement('canvas');
+        return Boolean(
+            window.WebGLRenderingContext &&
+                (canvas.getContext('webgl2') ||
+                    canvas.getContext('webgl') ||
+                    canvas.getContext('experimental-webgl'))
+        );
+    } catch {
+        return false;
+    }
+}
+
+class CanvasErrorBoundary extends React.Component<
+    { children: React.ReactNode },
+    { hasError: boolean }
+> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(): { hasError: boolean } {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: unknown) {
+        console.warn('3D Canvas disabled due to WebGL/runtime error:', error);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return null;
+        }
+        return this.props.children;
+    }
+}
+
 export default function GlobalBackgroundCanvas() {
     const pathname = usePathname();
     const isHome = pathname === '/';
     const [mounted, setMounted] = useState(false);
+    const [webglSupported, setWebglSupported] = useState(false);
 
     useEffect(() => {
         setMounted(true);
+        setWebglSupported(checkWebGLSupport());
     }, []);
 
     // Crisp Retina & High-DPI rendering for both mobile and desktop (capped at 2.0 for maximum HD clarity without GPU lag)
@@ -25,7 +67,7 @@ export default function GlobalBackgroundCanvas() {
         return Math.min(Math.max(deviceDpr, 1.5), 2.0);
     }, []);
 
-    if (!mounted || pathname?.startsWith('/offstageadminv')) {
+    if (!mounted || !webglSupported || pathname?.startsWith('/offstageadminv')) {
         return (
             <div
                 className="fixed inset-0 w-full h-full pointer-events-none z-0"
@@ -36,40 +78,42 @@ export default function GlobalBackgroundCanvas() {
 
     return (
         <div className="fixed inset-0 w-full h-full pointer-events-none z-0" suppressHydrationWarning>
-            <Canvas
-                camera={{ position: [0, 0, 5], fov: 60 }}
-                gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-                dpr={[1, maxDpr]}
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    pointerEvents: 'none',
-                }}
-            >
-                <ambientLight intensity={0.8} />
-                <directionalLight position={[10, 10, 8]} intensity={1.7} />
-                <directionalLight position={[-10, -10, 5]} intensity={0.85} />
+            <CanvasErrorBoundary>
+                <Canvas
+                    camera={{ position: [0, 0, 5], fov: 60 }}
+                    gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+                    dpr={[1, maxDpr]}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        pointerEvents: 'none',
+                    }}
+                >
+                    <ambientLight intensity={0.8} />
+                    <directionalLight position={[10, 10, 8]} intensity={1.7} />
+                    <directionalLight position={[-10, -10, 5]} intensity={0.85} />
 
-                <Suspense fallback={null}>
-                    {/* User Selected Environment Preset: Studio */}
-                    <Environment preset="studio" />
+                    <Suspense fallback={null}>
+                        {/* User Selected Environment Preset: Studio */}
+                        <Environment preset="studio" />
 
-                    {/* Layer 0: Infinite 3D Photo Grid Collage */}
-                    <GridBackground isHome={isHome} />
+                        {/* Layer 0: Infinite 3D Photo Grid Collage */}
+                        <GridBackground isHome={isHome} />
 
-                    {/* Layer 1: 40px Square Grid Lines Overlay */}
-                    <GridLines3D />
+                        {/* Layer 1: 40px Square Grid Lines Overlay */}
+                        <GridLines3D />
 
-                    {/* Layer 1.5: 3D Video Background Plane (Directly behind Hero 3D Text & Glass) */}
-                    <HeroVideoBackground visible={isHome} />
+                        {/* Layer 1.5: 3D Video Background Plane (Directly behind Hero 3D Text & Glass) */}
+                        <HeroVideoBackground visible={isHome} />
 
-                    {/* Layer 2 & 3: Hero Moderniz 3D Text + 3D Glass OFFSTAGE (Warm GPU Caching) */}
-                    <HeroScene3D visible={isHome} />
-                </Suspense>
-            </Canvas>
+                        {/* Layer 2 & 3: Hero Moderniz 3D Text + 3D Glass OFFSTAGE (Warm GPU Caching) */}
+                        <HeroScene3D visible={isHome} />
+                    </Suspense>
+                </Canvas>
+            </CanvasErrorBoundary>
         </div>
     );
 }

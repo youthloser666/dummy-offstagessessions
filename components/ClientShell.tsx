@@ -31,7 +31,12 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         if (typeof window === 'undefined') return;
 
         const isHomePage = pathname === '/';
-        const alreadySeen = sessionStorage.getItem('splashSeen') === 'true';
+        let alreadySeen = false;
+        try {
+            alreadySeen = sessionStorage.getItem('splashSeen') === 'true';
+        } catch {
+            alreadySeen = false;
+        }
 
         if (isHomePage && !alreadySeen) {
             setSplashState('active');
@@ -87,7 +92,11 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     // Triggered when splash animation is fully complete
     const handleSplashComplete = useCallback(() => {
         if (typeof window !== 'undefined') {
-            sessionStorage.setItem('splashSeen', 'true');
+            try {
+                sessionStorage.setItem('splashSeen', 'true');
+            } catch {
+                // Ignore storage errors in restricted environments
+            }
             document.documentElement.classList.remove('splash-pending');
         }
         setSplashState('done');
